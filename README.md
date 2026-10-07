@@ -43,7 +43,7 @@ use it: page by page, not sentence by sentence.
    detection (4 of 217 pages at 0.5, Wilson 95% CI 0.7–4.6%; 62% of injected pages detected), and most of
    that detection came from the long Weni injections (93%, against 30% of the short xTRam1 ones); its
    22M sibling raised no alarm but detected 15%. Sentence and page benchmarks ranked the models in
-   opposite orders.
+   opposite orders (Section 5.4 of the paper, Tables 7 and 8).
 3. **The diagnosis held, the fix did not.** Adding 10,000 technical benign texts (Stack Overflow,
    docstrings) removed false alarms on technical sentences (38–87% → 0%) and cut benign README windows
    flagged from 99.6% to 7.2%, but page false alarms stayed at 19–35% (worst window of ~10 per page) and
@@ -207,7 +207,7 @@ avaliado do jeito que um hook de agente o usaria: página a página, não frase 
    detecção útil (4 de 217 páginas a 0,5, IC 95% de Wilson 0,7–4,6%; 62% das páginas com injeção
    detectadas), e quase toda essa detecção veio das injeções longas do Weni (93%, contra 30% das curtas do
    xTRam1); o irmão 22M não avisou, mas detectou 15%. Frase e página ordenaram os modelos em sentidos
-   opostos.
+   opostos (seção 5.4 do artigo, Tabelas 7 e 8).
 3. **O diagnóstico se confirmou, a correção não.** Acrescentar 10.000 textos técnicos benignos
    (StackOverflow, docstrings) zerou o aviso falso em frase técnica (38–87% → 0%) e derrubou as janelas
    de README marcadas de 99,6% para 7,2%, mas o aviso falso por página ficou em 19–35% (pior de ~10 janelas

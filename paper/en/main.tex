@@ -45,7 +45,7 @@ Prompt-injection classifiers are increasingly placed between LLM agents and the 
 of the injections in Weni, a native pt-BR set never used for training, and flags 0.13–0.7\% %
 of conversational benign sentences. Scored page by page through the code path of an agent hook, however, it raised a false alarm on all 217 %
 technical documentation pages at every threshold from 0.5 to 0.999%
-. Under the same protocol, one of three public classifiers also warned on every page, none detected more than 55\% of injected pages at 2\% false alarms, and sentence and page benchmarks ranked the models in opposite orders%
+. Under the same protocol, one of five public classifiers also warned on every page; only Llama Prompt Guard 2 (86M) combined a 1.8\% page false-alarm rate with 62\% detection; and sentence and page benchmarks ranked the models in opposite orders%
 . Retraining with 10,000 technical benign texts supported our diagnosis, a shortcut equating technical prose with injection: false alarms vanished on technical sentences and fell to 19–35\% of pages, but Weni detection dropped to 63.7\%%
 . No version we trained meets both acceptance criteria. We contribute the case study, with an acceptance criterion fixed before measurement; a page-level evaluation protocol; integration lessons for agent hooks; and planned open artifacts%
 .
@@ -63,9 +63,11 @@ The headline is a negative result. The best model passed the benchmark tests by 
 , and then, evaluated page by page on ordinary technical documentation, raised a false alarm on 217 of 217 pages %
 at every threshold we tried. A hand-written smoke-test sentence had been flagging the failure mode since the second training round, and we did not read it as the signal it was (Section~\ref{sec:6}).
 
-Two follow-up measurements sharpen the result. Under the same page protocol the failure is not peculiar to our model: one of three public classifiers also warned on every page, and the two better ones warned on about 15\% of the benign pages at threshold 0.5 while detecting 63–70\% of the injected ones (Section~\ref{sec:5.4})%
+Two follow-up measurements sharpen the result. Under the same page protocol the failure is not peculiar to our model: one of five public classifiers also warned on every page, and two others warned on about 15\% of the benign pages at threshold 0.5 while detecting 63–70\% of the injected ones (Section~\ref{sec:5.4})%
+. The exception is instructive: Llama Prompt Guard 2 (86M), whose card reports benign web data in training, warned on 4 of the 217 benign pages (1.8\%) while detecting 62\% of the injected ones, although it caught only 30\% of the short English injections and detects 93.7\% of Weni's sentences, below our criterion%
 . And retraining with technical benign text (v6, Section~\ref{sec:7}) removed the false alarms on technical sentences and cut page false alarms to 19–35\%, but lowered detection on Weni from 94.7\% to 63.7\%: part of the original model's gold-set accuracy rested on the same shortcut that broke it in use%
-. Neither of our candidate models meets both acceptance criteria, and no model we tested meets the page-level one.
+. Neither of our candidate models meets both acceptance criteria; of the models we tested, only Prompt Guard 2 (86M) meets the page-level one, and only as a point estimate (95\% interval 0.7–4.6\%)%
+.
 
 We think the case is useful beyond pt-BR because the failure is not exotic. The benign side of the training data was largely conversational (assistant commands and instruction-following prompts)%
 ; the deployment distribution is mostly technical prose full of imperatives (install, run, configure, ignore this warning). A classifier can separate injections from chat with near-perfect accuracy and still have learned nothing that separates injections from documentation.
@@ -79,7 +81,7 @@ A concurrent study by \citet{liu2026passing}, which appeared while this work was
 , with an acceptance criterion fixed in version control before the first measurement on the gold set%
 , and a post-hoc leakage audit that attributes about 1.3 of the best model's 94.7 points to near-duplicates in its training data%
 .
-\item \textbf{A page-level evaluation protocol for injection classifiers} that reuses the exact code path of the deployment hook, scores pages by the maximum over overlapping windows, and reports false alarms on benign technical pages alongside detection on pages with an inserted injection. Applied to three public classifiers, it shows that sentence-level and page-level evaluation can rank models in opposite orders%
+\item \textbf{A page-level evaluation protocol for injection classifiers} that reuses the exact code path of the deployment hook, scores pages by the maximum over overlapping windows, and reports false alarms on benign technical pages alongside detection on pages with an inserted injection. Applied to five public classifiers, it shows that sentence-level and page-level evaluation can rank models in opposite orders%
 . The benchmark is designed to be distributed as a hash-pinned manifest plus a builder, so no third-party text is redistributed; the hash list of the 217 benign pages exists, while the builder and the insertion entries are still to be written%
 .
 \item \textbf{Engineering lessons for integrating classifiers into agents}: an encoding bug that made benign text look like an injection, a server-version mismatch silently swallowed by a fail-open hook, a sliding window longer than the model's context%
@@ -439,23 +441,24 @@ The guard was rejected for the web-fetch hook, the hook stayed disabled, and the
 \subsection{What the page protocol adds}\label{sec:5.3}
 
 A sentence benchmark answers ``does this text, alone, look like an attack?'' A deployed guard answers ``does any part of this page look like an attack?'', which aggregates many windows (here about 10.4 benign windows per page with 640-character windows%
-). With a maximum over $k$ windows, a per-window false-positive rate $p$ becomes a page false-alarm rate of $1-(1-p)^k$ under independence, so even a modest per-window rate is amplified roughly $k$-fold. In our case the amplification is moot, because benign windows already score near 1.0; but the arithmetic explains why sentence-level false-positive rates below 1\% are not reassuring for page-level use. Per-window false-positive rates were not recorded in the original run (lacuna L4); the baseline run of Section~\ref{sec:5.4} recorded them. There, 99.6\% of v3's benign 640-character windows score at least 0.5, against 3.5–4.3\% for the two better public classifiers, whose page false alarms are this amplification at work%
+). With a maximum over $k$ windows, a per-window false-positive rate $p$ becomes a page false-alarm rate of $1-(1-p)^k$ under independence, so even a modest per-window rate is amplified roughly $k$-fold. In our case the amplification is moot, because benign windows already score near 1.0; but the arithmetic explains why sentence-level false-positive rates below 1\% are not reassuring for page-level use. Per-window false-positive rates were not recorded in the original run (lacuna L4); the baseline run of Section~\ref{sec:5.4} recorded them. There, 99.6\% of v3's benign 640-character windows score at least 0.5, against 3.5–4.3\% for the ProtectAI and Proventra classifiers, whose page false alarms are this amplification at work, and 0.5\% for Prompt Guard 2 (86M)%
 .
 
 \subsection{Public baselines under the same protocol}\label{sec:5.4}
 
-We ran three public classifiers under the same page protocol: two English DeBERTa-v3 models \citep{protectai2024deberta, deepset2023deberta} and one multilingual mDeBERTa model \citep{proventra2025mdeberta}, each with windows sized to its own context (1,300/200 characters at 512 tokens; 640/160 at 256 tokens for ours), plus a 640/160-window control for the ProtectAI and mDeBERTa models. The deepset control was not run, because that model's output already saturates with 1,300-character windows%
-. Llama Prompt Guard 2 \citep{meta2025promptguard2} and its predecessor \citep{meta2024promptguard} could not be evaluated: their repositories are gated, and access, which requires accepting the Llama license, had not been granted at the time of the run (HTTP 403)%
-. The mDeBERTa model, which shares Prompt Guard's backbone and whose card reports injections embedded in websites and articles among its training data, stands in as the multilingual representative%
-. All four models read the same exported pages, and each page is scored by the maximum over its windows of the attack log-odds, with thresholds applied to the corresponding probability; the log-odds keep a ranking where probabilities round to 1%
-. Sentence-level numbers use the 300 Weni items and the full English xTRam1 test split (2,060 sentences, 650 attacks)%
-. All runs used the same 4-core ARM cloud VM, on CPU in fp32%
+We ran five public classifiers under the same page protocol: two English DeBERTa-v3 models \citep{protectai2024deberta, deepset2023deberta}, one multilingual mDeBERTa model \citep{proventra2025mdeberta}, and both sizes of Llama Prompt Guard 2 \citep{meta2025promptguard2}, the 86M model on the same mDeBERTa-v3 backbone and the 22M model on the English DeBERTa-v3-xsmall. Each reads windows sized to its own context (1,300/200 characters at 512 tokens; 640/160 at 256 tokens for ours), and a 640/160-window control was run for every public model except deepset, whose output already saturates with 1,300-character windows%
+. Prompt Guard 2 was measured on 7 October, a day after the others, once access to its gated repository, which requires accepting the Llama 4 Community License, had been granted; its predecessor \citep{meta2024promptguard}, whose access is requested separately, still returned HTTP 403 and was not evaluated%
+. Prompt Guard 2's configuration names its two classes only LABEL\_0 and LABEL\_1, so before each run we checked that LABEL\_1 is the malicious class on a known injection and on a benign sentence%
+. The Proventra model, chosen as the multilingual representative while Prompt Guard was inaccessible, stays in the comparison; its card reports injections embedded in websites and articles among its training data%
+. All six models read the same exported pages, and each page is scored by the maximum over its windows of the attack log-odds, with thresholds applied to the corresponding probability; the log-odds keep a ranking where probabilities round to 1%
+. Sentence-level numbers use the 300 Weni items and the full English xTRam1 test split (2,060 sentences, 650 attacks), with the same text hashes in every run%
+. Our model and the first three public models ran on the same 4-core ARM cloud VM, on CPU in fp32; Prompt Guard 2 ran with the same script, library version and inputs on x86 CPU instances of a cloud notebook service, which keeps its quality numbers comparable but not its latency (Table~\ref{tab:8})%
 . Tables~\ref{tab:7} and 8 report the results.
 
 \begin{table}[tbp]
 \centering
 \small
-\caption{Public classifiers under the page protocol: false alarm (FA) on the 217 benign pages and detection (Det.) on the 60 injected pages (30 Weni, 30 xTRam1), in \%. ``Window'' is the model's token limit and the window length in characters; the last two rows are the 640/160 control. Models: e5-large v3 (ours), ProtectAI deberta-v3-base-prompt-injection-v2, Proventra mdeberta-v3-base-prompt-injection, deepset deberta-v3-base-injection. ``Det.@0.9'' is detection at 0.9, overall and (in parentheses) on the Weni / xTRam1 insertions. ``AUROC'' is computed over pages. ``Det.@2\%'' is detection at the lowest threshold that leaves at most 4 of the 217 benign pages above it (FA \ensuremath{\leq} 2\%). ``Win.'' is the share of benign windows with P \ensuremath{\geq} 0.5 (not recorded for the control).}\label{tab:7}
+\caption{Public classifiers under the page protocol: false alarm (FA) on the 217 benign pages and detection (Det.) on the 60 injected pages (30 Weni, 30 xTRam1), in \%. ``Window'' is the model's token limit and the window length in characters; the last four rows are the 640/160 control. Models: e5-large v3 (ours), ProtectAI deberta-v3-base-prompt-injection-v2, Proventra mdeberta-v3-base-prompt-injection, deepset deberta-v3-base-injection, PG2 86M and 22M = Llama-Prompt-Guard-2-86M and -22M. ``Det.@0.9'' is detection at 0.9, overall and (in parentheses) on the Weni / xTRam1 insertions. ``AUROC'' is computed over pages. ``Det.@2\%'' is detection at the lowest threshold that leaves at most 4 of the 217 benign pages above it (FA \ensuremath{\leq} 2\%). ``Win.'' is the share of benign windows with P \ensuremath{\geq} 0.5 (not recorded for the control).}\label{tab:7}
 \begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
 Model & Window & FA@0.5 & FA@0.9 & FA@0.99 & Det.@0.9 & AUROC & Det.@2\% & Win. \\
@@ -468,9 +471,17 @@ Proventra & 512/1,300 & 14.7 & 12.4 & 8.3 & 68 (70/67) & 0.883 & 40 & 3.5 %
  \\
 deepset & 512/1,300 & 100.0 & 100.0 & 100.0 & 100 (100/100) & 0.829 & 32 & 100.0 %
  \\
+PG2 86M & 512/1,300 & 1.8 & 0.9 & 0.0 & 57 (90/23) & 0.956 & 63 & 0.5 %
+ \\
+PG2 22M & 512/1,300 & 0.0 & 0.0 & 0.0 & 7 (13/0) & 0.639 & 23 & 0.0 %
+ \\
 ProtectAI & 512/640 & 30.9 & 21.2 & 8.8 & 77 (97/57) & 0.847 & 55 & — %
  \\
 Proventra & 512/640 & 38.2 & 33.6 & 26.7 & 85 (90/80) & 0.845 & 38 & — %
+ \\
+PG2 86M & 512/640 & 2.3 & 0.9 & 0.5 & 58 (93/23) & 0.923 & 65 & — %
+ \\
+PG2 22M & 512/640 & 0.9 & 0.0 & 0.0 & 18 (27/10) & 0.616 & 22 & — %
  \\
 \bottomrule
 \end{tabular}
@@ -479,7 +490,7 @@ Proventra & 512/640 & 38.2 & 33.6 & 26.7 & 85 (90/80) & 0.845 & 38 & — %
 \begin{table}[tbp]
 \centering
 \small
-\caption{The same classifiers on sentences at threshold 0.5, and cost per full window on the 4-core ARM VM (one window per call). Weni: detection on the 300 native pt-BR injections. xTRam1: full English test split, 2,060 sentences (650 attacks); TPR and FPR in \%.}\label{tab:8}
+\caption{The same classifiers on sentences at threshold 0.5, and cost per full window on the 4-core ARM VM (one window per call). Weni: detection on the 300 native pt-BR injections. xTRam1: full English test split, 2,060 sentences (650 attacks); TPR and FPR in \%. \ensuremath{\approx}: Prompt Guard 2 was timed on x86 notebook instances (1,138 and 433 ms per window there); its ARM cost is the instance time scaled by the ratio of the Proventra model timed on the same instance, an estimate rather than a measurement.}\label{tab:8}
 \begin{tabular}{@{}lrrrrrr@{}}
 \toprule
 Model & Weni det. & xTRam1 acc. & TPR & FPR & AUROC & ms/window \\
@@ -489,33 +500,42 @@ ProtectAI v2 & 99.3 & 94.9 & 84.2 & 0.1 & 0.992 & 868 \\
 Proventra mDeBERTa & 79.0 & 89.6 & 72.6 & 2.6 & 0.906 & 845 \\
 deepset & 100.0 & 48.3 & 98.9 & 75.0 & 0.666 & 879 %
  \\
+Prompt Guard 2 86M & 93.7 & 84.7 & 51.7 & 0.1 & 0.973 & \ensuremath{\approx}847 \\
+Prompt Guard 2 22M & 16.3 & 77.3 & 28.2 & 0.0 & 0.893 & \ensuremath{\approx}305 %
+ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \textbf{The failure is not unique to our model, nor universal.} The deepset classifier also warned on all 217 benign pages at every threshold up to 0.99 (Wilson 95\% CI 98.3–100\%), and on sentences it flags 75.0\% of the benign xTRam1 items%
 . ProtectAI v2 and the Proventra mDeBERTa model warned on 15.7\% (34/217; CI 11.4–21.1\%) and 14.7\% (32/217; CI 10.6–20.1\%) of the benign pages at 0.5, and on 5.5\% and 8.3\% at 0.99%
-. In these two models the median benign window scores 0.00028 and 0.00123, against 0.99998 for ours, and page false alarms come from a few windows (3.5–4.3\% of benign windows score at least 0.5) accumulated over about 4.9 windows per page: the amplification of Section~\ref{sec:5.3}%
-. Their model cards report broader training data than ours: ProtectAI lists more than twenty sources, including instructions and conversations, and Proventra reports injections embedded in legitimate content such as websites and articles%
+. Prompt Guard 2 warned on far fewer: the 86M model on 1.8\% (4/217; CI 0.7–4.6\%) at 0.5 and on none at 0.99, and the 22M model on none at any threshold (CI 0–1.7\% at 0.5)%
+. In ProtectAI and Proventra the median benign window scores 0.00028 and 0.00123, against 0.99998 for ours, and page false alarms come from a few windows (3.5–4.3\% of benign windows score at least 0.5) accumulated over about 4.9 windows per page: the amplification of Section~\ref{sec:5.3}. In Prompt Guard 2 (86M) the median benign window scores 0.004, and only 0.5\% of benign windows reach 0.5%
+. These model cards report broader training data than ours: ProtectAI lists more than twenty sources, including instructions and conversations; Proventra reports injections embedded in legitimate content such as websites and articles; and Prompt Guard 2 reports benign data from the web and an energy-based loss term on benign prompts that its card credits with better precision on out-of-distribution data%
 .
 
-\textbf{No model meets the page criterion.} At the lowest threshold that keeps false alarms at or below 2\%, detection is 32–50\% under the main protocol and at most 55\% in the control. The only point in the evaluated grid below 2\% false alarm with non-trivial detection is ProtectAI at threshold 0.999 (0.9\% false alarm, 50\% detection), and almost all of that detection comes from the longer Weni injections (90\%, against 10\% for xTRam1)%
+\textbf{One public model meets the page criterion, narrowly.} Prompt Guard 2 (86M) is the only model whose false-alarm rate at threshold 0.5 is below 2\%: 4 of 217 benign pages (1.8\%; 95\% CI 0.7–4.6\%, so 217 pages cannot show that it stays below 2\% with margin), with 62\% detection (37 of 60; 49–73\%). At 0.9 it warns on 0.9\% and detects 57\%, and its page AUROC, 0.956, is the highest in the comparison%
+. Its detection, however, comes almost entirely from the longer Weni insertions (93\%, against 30\% for xTRam1), and on sentences it misses the Weni criterion (93.7\% against 95\%) and detects 51.7\% of the English xTRam1 attacks at 0.1\% false positives. Part of the xTRam1 gap is definitional: its card counts as malicious only explicit attempts to override prior instructions, and the xTRam1 attacks it misses include requests for medical records or credentials and for a poem with a prescribed opening line, without any such instruction; most of the 19 Weni sentences it misses are HackAPrompt-style obfuscations%
+. The 22M model, whose card warns that its backbone has no multilingual pretraining, warns on no page but detects only 15\% of the injected pages (Weni 20\%) and 16.3\% of Weni sentences%
+. For the other models, detection at the lowest threshold that keeps false alarms at or below 2\% is 23–50\% under the main protocol and at most 55\% in the control. Their only point in the evaluated grid below 2\% false alarm with non-trivial detection is ProtectAI at threshold 0.999 (0.9\% false alarm, 50\% detection), and almost all of that detection also comes from the longer Weni injections (90\%, against 10\% for xTRam1)%
 . With 60 injected pages, the 95\% interval on detection spans about \ensuremath{\pm}12 points: ProtectAI detects 38 of 60 pages at 0.5 (51–74\%) and Proventra 42 of 60 (57–80\%)%
 .
 
-\textbf{Sentence and page rank the models in opposite orders.} On xTRam1 sentences our model has the highest accuracy (98.7\%) and AUROC (0.999) of the four; at page level it ties with deepset as the worst. The sentence benchmark did not predict behaviour in the unit in which the hook decides%
+\textbf{Sentence and page rank the models in opposite orders.} On xTRam1 sentences our model has the highest accuracy (98.7\%) and AUROC (0.999) of the six; at page level it ties with deepset for the most false alarms. Prompt Guard 2 (86M) shows the inversion from the other side: third by xTRam1 sentence AUROC (0.973, behind ours and ProtectAI), it has the best page AUROC (0.956). The sentence benchmark did not predict behaviour in the unit in which the hook decides%
 .
 
-\textbf{Saturation, not the threshold.} 98.2\% of our benign windows score at least 0.999. For deepset the output is nearly constant: page log-odds range from 6.41 to 6.79 on benign pages and from 6.65 to 6.88 on injected pages (5th–95th percentiles), so threshold 0.999 removes false alarms and detection together (0\% and 0\%). Our model keeps some ranking (page AUROC 0.857), but the threshold that brings false alarms to 2\% sits at $P > 1-5\times10^{-6}$, which depends on the fifth decimal place of a saturated output and is not an operating point. This is consistent with a defect of training data rather than of thresholding; the v6 retraining (Section~\ref{sec:7}) tests it directly%
+\textbf{Saturation, not the threshold.} 98.2\% of our benign windows score at least 0.999. For deepset the output is nearly constant: page log-odds range from 6.41 to 6.79 on benign pages and from 6.65 to 6.88 on injected pages (5th–95th percentiles), so threshold 0.999 removes false alarms and detection together (0\% and 0\%). Our model keeps some ranking (page AUROC 0.857), but the threshold that brings false alarms to 2\% sits at $P > 1-5\times10^{-6}$, which depends on the fifth decimal place of a saturated output and is not an operating point. Prompt Guard 2 (86M) is the opposite case: its benign page log-odds have median \ensuremath{-}4.9 (95th percentile \ensuremath{-}3.2) against +3.6 for injected pages, and its 2\% operating point lies at $P > 0.18$, in the middle of the output range. The 22M model's output is compressed on long windows (page probabilities between about 0.2 and 0.36 for almost every page), so it neither warns nor separates (page AUROC 0.639), although it separates isolated short sentences better (xTRam1 AUROC 0.893)%
+. This is consistent with a defect of training data rather than of thresholding; the v6 retraining (Section~\ref{sec:7}) tests it directly%
 .
 
-\textbf{Window size is an operating parameter.} Halving the window to 640/160 roughly doubled false alarms at 0.5 (ProtectAI 15.7\% \ensuremath{\rightarrow} 30.9\%, Proventra 14.7\% \ensuremath{\rightarrow} 38.2\%) and raised detection (63\% \ensuremath{\rightarrow} 80\% and 70\% \ensuremath{\rightarrow} 88\%): the short xTRam1 injections (median 136 characters) are diluted less in a short window (ProtectAI page detection on xTRam1: 30\% \ensuremath{\rightarrow} 63\%), while each page has about twice as many windows on which to err. Even at 640 characters, 9.2\% of our model's windows still exceed its 256-token context, against 6.7\% (ProtectAI, deepset) and 1.9\% (Proventra) of the 1,300-character windows at 512 tokens%
+\textbf{Window size is an operating parameter.} Halving the window to 640/160 roughly doubled false alarms at 0.5 (ProtectAI 15.7\% \ensuremath{\rightarrow} 30.9\%, Proventra 14.7\% \ensuremath{\rightarrow} 38.2\%) and raised detection (63\% \ensuremath{\rightarrow} 80\% and 70\% \ensuremath{\rightarrow} 88\%): the short xTRam1 injections (median 136 characters) are diluted less in a short window (ProtectAI page detection on xTRam1: 30\% \ensuremath{\rightarrow} 63\%), while each page has about twice as many windows on which to err. Prompt Guard 2 (86M) barely moved (false alarm 1.8\% \ensuremath{\rightarrow} 2.3\%, detection 62\% \ensuremath{\rightarrow} 65\%, page AUROC 0.956 \ensuremath{\rightarrow} 0.923). Even at 640 characters, 9.2\% of our model's windows still exceed its 256-token context, against 6.7\% (ProtectAI, deepset, Prompt Guard 2 22M) and 1.9\% (Proventra and Prompt Guard 2 86M, which share the mDeBERTa tokenizer) of the 1,300-character windows at 512 tokens%
 .
 
 \textbf{Cost.} On the ARM VM a full window takes about 1.05 s with our e5-large model (560M parameters) and 0.85–0.88 s with the DeBERTa-base models (184M); batching does not help on this CPU. An average page (4,736 characters) therefore costs about 11 s with our model (10.4 windows) and about 4 s with the DeBERTa models at 1,300 characters (4.9 windows), a material delay for a synchronous web-fetch hook%
+. Prompt Guard 2 was timed on the notebook instances next to the Proventra model as an anchor: there the 86M model costs the same as the Proventra model (1,138 against 1,136 ms per window; same backbone) and the 22M model 36\% of it, which puts them at about 4 s and 1.5 s per average page on the ARM VM by linear conversion%
 .
 
-\textbf{Caveats.} Benign pages are a single genre, and the injections are pasted text rather than hidden markup. The public models' training data are not fully documented; if Weni derives from HackAPrompt (Section~\ref{sec:3.4}), a model trained on HackAPrompt could be inflated on Weni. Our model's xTRam1 numbers carry the overlap caveat of Section~\ref{sec:3.1}. The baseline script reproduces the 94.7\% Weni detection of Section~\ref{sec:4}, which checks that it uses the same inference path as the deployed toolkit%
+\textbf{Caveats.} Benign pages are a single genre, and the injections are pasted text rather than hidden markup. The public models' training data are not fully documented; if Weni derives from HackAPrompt (Section~\ref{sec:3.4}), a model trained on HackAPrompt could be inflated on Weni, and Prompt Guard 2's card does not list its training sets either. Its narrower definition of an attack lowers its detection on both test sets and may also help keep its benign pages clean. Our model's xTRam1 numbers carry the overlap caveat of Section~\ref{sec:3.1}. The baseline script reproduces the 94.7\% Weni detection of Section~\ref{sec:4}, which checks that it uses the same inference path as the deployed toolkit%
 .
 
 \section{Diagnosis}\label{sec:6}
@@ -553,7 +573,7 @@ leaves no usable threshold: even at 0.9999 only one of the 217 benign pages woul
 \subsection{What the model sees}\label{sec:6.3}
 
 Each window enters the classifier as \code{query:\textvisiblespace{}} + up to 256 tokens of README text%
-. A window from a typical package page contains an installation command, a usage snippet, and second-person instructions (``set this variable'', ``run this command'', ``do not use X in production''). From the classifier's point of view these are short imperative strings addressed to an executing agent, which is what most training injections look like and what few training benign examples looked like. The benign side of the training data taught it what a harmless \emph{chat} looks like, not what harmless \emph{content} looks like. The highest-scoring benign pages in the baseline run (Section~\ref{sec:5.4}) fit this reading. For our model they are installation and test blocks, deprecation notices and tables with emoji, that is, imperative technical text; the public models fail elsewhere: ProtectAI on code that prompts the user for a secret or password and on a link to a security policy, the mDeBERTa model on code that reads environment variables and on a table of attack techniques, and deepset on licence and contribution text%
+. A window from a typical package page contains an installation command, a usage snippet, and second-person instructions (``set this variable'', ``run this command'', ``do not use X in production''). From the classifier's point of view these are short imperative strings addressed to an executing agent, which is what most training injections look like and what few training benign examples looked like. The benign side of the training data taught it what a harmless \emph{chat} looks like, not what harmless \emph{content} looks like. The highest-scoring benign pages in the baseline run (Section~\ref{sec:5.4}) fit this reading. For our model they are installation and test blocks, deprecation notices and tables with emoji, that is, imperative technical text; the public models fail elsewhere: ProtectAI on code that prompts the user for a secret or password and on a link to a security policy, the mDeBERTa model on code that reads environment variables and on a table of attack techniques, deepset on licence and contribution text, and Prompt Guard 2 (86M), on its four benign pages above 0.5, on fragments outside the prose: a table of check marks, badges and a header, a terminal example with an error message, and an options table%
 . After retraining (Section~\ref{sec:7}), the windows that still fire are of another kind: badges, sponsorship links and markdown tables%
 .
 
@@ -637,6 +657,7 @@ Threshold & FA v3 & FA v6 [95\% CI] & Det. v3 & Det. v6 [95\% CI] & Det. v6, Wen
 . The page criterion remains out of reach: 26 of the 217 benign pages (12.0\%) still score 1.0000 at the stored resolution, so no threshold brings false alarms to 2\%%
 . Page AUROC is 0.868 for v6; computed the same way on four-decimal probabilities, v3 gets 0.505 because almost all of its pages tie at 1.0, while its log-odds in the baseline run give 0.857 (Table~\ref{tab:7})%
 . The quality of the ranking is therefore similar; what changed is that the ranking now lies in a usable range of the output. Against the public baselines, v6 warns on more benign pages at 0.5 than ProtectAI v2 and the mDeBERTa model (34.6\% against 15.7\% and 14.7\%) and detects more injected pages (90\% against 63\% and 70\%): it sits elsewhere on the same trade-off rather than beyond it%
+. At the same 640/160 windows, Prompt Guard 2 (86M) ranks pages better than v6 (AUROC 0.923 against 0.868, the latter computed on four-decimal probabilities) and operates at 2.3\% false alarm with 65\% detection at threshold 0.5%
 . The windows that still fire, a median of 2 per flagged page, are README boilerplate absent from Stack Overflow and docstrings: HTML badges, sponsorship and donation links, markdown tables and link lists%
 .
 
@@ -707,12 +728,12 @@ After the fixes, the hook has 9 test cases, and the hook, classifier and embeddi
 \subsection{What benchmark accuracy measured here}\label{sec:9.1}
 
 The numbers in Table~\ref{tab:4} were produced with fixed partitions, a criterion committed before measurement, a leakage lock from v4 on, and no tuning on test sets, with the overlaps of Section~\ref{sec:3.1} as known exceptions. And yet the numbers answered a different question from the one that mattered. The benchmarks measured whether the model separates injections from mostly \emph{conversational} benign text, because that is what the benign side of the tests was largely made of: MASSIVE-pt and Dolly-pt are short requests to an assistant (Dolly enters through its instruction field only%
-), the English sets pair injections mostly with chat-like prompts, and Weni contains no benign items at all. The only technical benign item written into the suite was one smoke-test sentence, and from round A on it was wrong in every round where its score was recorded (Section~\ref{sec:6.2}). The public baselines make the same point from outside our pipeline: on xTRam1 sentences our model ranks first of four, and at page level it ties for last (Section~\ref{sec:5.4}).
+), the English sets pair injections mostly with chat-like prompts, and Weni contains no benign items at all. The only technical benign item written into the suite was one smoke-test sentence, and from round A on it was wrong in every round where its score was recorded (Section~\ref{sec:6.2}). The public baselines make the same point from outside our pipeline: on xTRam1 sentences our model ranks first of six, and at page level it ties for last (Section~\ref{sec:5.4}).
 
 Four concrete corrections follow for anyone evaluating an injection classifier for agent use:
 
 \begin{enumerate}
-\item \textbf{The benign side of the test must be drawn from the deployment distribution.} For a web-fetch or file-reading guard that means documentation, code, configuration, logs and ordinary web pages, not chat.
+\item \textbf{The benign side of the test must be drawn from the deployment distribution.} For a web-fetch or file-reading guard that means documentation, code, configuration, logs and ordinary web pages, not chat. The one public model in our comparison that keeps page false alarms near 2\%, Prompt Guard 2 (86M), is also the one whose card explicitly reports benign web data in training (Section~\ref{sec:5.4}).
 \item \textbf{Evaluate in the unit of decision.} If the deployed decision is ``warn on this page'', the metric is the page false-alarm rate at the deployed threshold, with detection measured on the same pages with an inserted attack.
 \item \textbf{Report intervals and margins.} At n = 300 the 95\% criterion could not be distinguished from the result (Section~\ref{sec:4}b); and the 20-point capacity effect between e5-base and e5-large on the same data %
 dwarfs most of the differences between data recipes we tried.
@@ -743,7 +764,7 @@ Our fine-tuned models had the analogous defect (uncalibrated, saturated outputs)
 
 We read our study as an independent replication of that gap, with three differences. First, a different language and a detector we trained ourselves. Its training data are known, so the gap could be traced to the composition of the benign side and the diagnosis tested by retraining (Section~\ref{sec:7}), which a study of third-party models cannot do. Where the two studies overlap, they agree: deepset warns on every page in our protocol as on every chunk in Liu's. Second, the unit of evaluation: we score whole pages through the code path of a deployed hook, which exposes the amplification over windows (Section~\ref{sec:5.3}), the window-size trade-off (Section~\ref{sec:5.4}) and the integration defects of Section~\ref{sec:8}. Third, the framing: our classifier was deployed as a typed decision, and Section~\ref{sec:9.2} draws the consequences for that family of models.
 
-Liu's markup result bears directly on ours. The windows v6 still flags are badges, sponsorship links and markdown tables (Section~\ref{sec:7.2}), which is consistent with markup, rather than imperative prose, being the main remaining source of false alarms once technical text is covered. We did not measure our models with and without markup. Doing so, and adding README boilerplate from a source disjoint from the benchmark as negatives, is the next experiment.
+Liu's markup result bears directly on ours. The windows v6 still flags are badges, sponsorship links and markdown tables (Section~\ref{sec:7.2}), and the four benign pages on which Prompt Guard 2 (86M) warns are also non-prose fragments (a check-mark table, badges, a terminal transcript, an options table; Section~\ref{sec:6.3}). Both observations are consistent with markup and other non-prose content, rather than imperative prose, being the main remaining source of false alarms once technical text is covered. We did not measure our models with and without markup. Doing so, and adding README boilerplate from a source disjoint from the benchmark as negatives, is the next experiment.
 
 \subsection{On negative results}\label{sec:9.4}
 
@@ -784,7 +805,7 @@ The guard stays out of the web-fetch hook; v3 remains in the local toolkit for c
 .
 \item \textbf{Score resolution.} Our evaluation stored probabilities rounded to four decimals, which limits threshold and AUROC analysis near 0 and 1 (Section~\ref{sec:7.2}); only the baseline run stored log-odds%
 .
-\item \textbf{Baselines.} Llama Prompt Guard was not evaluated (gated access). The public models' training data are not fully documented and may overlap Weni (through HackAPrompt) or xTRam1. Latencies come from a single 4-core ARM VM%
+\item \textbf{Baselines.} Prompt Guard v1 was not evaluated (gated access). The public models' training data are not fully documented and may overlap Weni (through HackAPrompt) or xTRam1. Prompt Guard 2 flags only explicit attempts to override instructions, a narrower notion of attack than the test sets', so its detection measures that difference as well as errors. Latencies come from a single 4-core ARM VM, except Prompt Guard 2's, measured on x86 notebook instances and converted by a same-instance anchor whose ratio varied from 1.18 to 1.82 with window and batch, so they indicate only the order of magnitude%
 .
 \item \textbf{Truncation.} All our models read at most 256 tokens per window%
 , and 9.2\% of the 640-character windows exceed that %
@@ -794,7 +815,7 @@ The guard stays out of the web-fetch hook; v3 remains in the local toolkit for c
 
 \section{Conclusion}\label{sec:11}
 
-A Brazilian Portuguese prompt-injection classifier trained only on open data passed its sentence benchmarks, missed its pre-fixed gold-set criterion by one text, and raised a false alarm on every technical documentation page it was shown. The failure is not peculiar to our model, since a public classifier does the same, and the unit of evaluation changes the verdict: sentence and page benchmarks ranked four models in opposite orders, and no model we tested detects more than 55\% of injected pages at 2\% false alarms. Adding technical benign text removed the false alarms on technical sentences and most of those on pages, at the cost of about a third of the detection on native pt-BR attacks, so no version we trained meets both criteria. The practical conclusions are modest: draw the benign side of the test from the deployment distribution, evaluate in the unit of decision through the deployment code path, freeze the inputs and keep raw scores, and expect a fix on one class to move the boundary for the other. The hook stays disabled.
+A Brazilian Portuguese prompt-injection classifier trained only on open data passed its sentence benchmarks, missed its pre-fixed gold-set criterion by one text, and raised a false alarm on every technical documentation page it was shown. The failure is not peculiar to our model, since a public classifier does the same, and the unit of evaluation changes the verdict: sentence and page benchmarks ranked the six models in opposite orders. Only one public model, Llama Prompt Guard 2 (86M), stays near 2\% page false alarms (1.8\%, with 62\% detection); it is also the one whose card reports benign web data in training, and it still detects only 30\% of the short injections and misses our sentence criterion on Weni, so it narrows the problem rather than closing it. Adding technical benign text removed the false alarms on technical sentences and most of those on pages, at the cost of about a third of the detection on native pt-BR attacks, so no version we trained meets both criteria. The practical conclusions are modest: draw the benign side of the test from the deployment distribution, evaluate in the unit of decision through the deployment code path, freeze the inputs and keep raw scores, and expect a fix on one class to move the boundary for the other. The hook stays disabled.
 
 \section{Ethics and data}\label{sec:12}
 
@@ -802,7 +823,7 @@ All training and evaluation data are public. Licenses were read from the Hugging
 . Two evaluation sets (Weni and xTRam1) declare no license; we load them only for evaluation, download them at run time, and do not redistribute them or their translations%
 . However, 577 rows of xTRam1's training split reached our training data indirectly, through ShieldLM (Section~\ref{sec:3.1}); the planned ``v3-pub'' weights remove them%
 . Dolly and Stack Overflow content are CC-BY-SA; we plan to publish weights under MIT following the precedent of models trained on the same data, and declare this position explicitly%
-. Llama Prompt Guard 2 was not evaluated (Section~\ref{sec:5.4}); had it been, it would have served only as an evaluation baseline, never to train, calibrate or distil our models%
+. Llama Prompt Guard 2 was evaluated under the Llama 4 Community License as a baseline only: its outputs were not used to train, calibrate or distil our models, and its weights are not redistributed (the copy used to run it sits in private storage of the notebook service)%
 .
 
 The page benchmark will not redistribute any README: it will ship package names, versions and hashes, and a builder will download the pages from PyPI and verify them%
