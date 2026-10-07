@@ -33,21 +33,21 @@
 
 \begin{document}
 
-\title{Aprovado no benchmark, reprovado no README: um resultado negativo na implantação de um classificador de prompt injection em português do Brasil}
+\title{Aprovado no benchmark, reprovado no README: vazamento e aprendizado por atalho em um classificador de prompt injection em português do Brasil}
 \author{Rodrigo Faria\\ \normalsize Pesquisador independente\\ \normalsize \url{https://github.com/alucardigo} \ensuremath{\cdot} \url{https://www.linkedin.com/in/faria-rodrigo}}
 \hypersetup{pdfauthor={Rodrigo Faria}}
 \date{\today}
-\hypersetup{pdftitle={Aprovado no benchmark, reprovado no README: um resultado negativo na implantação de um classificador de prompt injection em português do Brasil}}
+\hypersetup{pdftitle={Aprovado no benchmark, reprovado no README: vazamento e aprendizado por atalho em um classificador de prompt injection em português do Brasil}}
 \maketitle
 
 \begin{abstract}
-Classificadores de prompt injection são cada vez mais colocados entre agentes de LLM e o conteúdo que eles buscam. Relatamos um estudo de caso de uma semana, totalmente rastreado, da construção de um classificador desse tipo para o português do Brasil (pt-BR) apenas com dados abertos. Nosso melhor modelo, um multilingual-e5-large com fine-tuning, detecta 94,7\% %
-das injeções do Weni, um conjunto nativo em pt-BR nunca usado em treino, e marca 0,13–0,7\% %
-das frases benignas conversacionais. Pontuando página a página pelo caminho de código de um hook de agente, porém, ele deu aviso falso em todas as 217 %
+Classificadores de prompt injection estão cada vez mais entre agentes de LLM e o conteúdo que eles buscam. Relatamos um estudo de caso totalmente rastreado da construção de um classificador desse tipo para o português do Brasil (pt-BR) com dados abertos. Nosso melhor modelo, um multilingual-e5-large com fine-tuning, detectou 94,7\% %
+das injeções do Weni, um conjunto de teste nativo em pt-BR, mas o número estava inflado por vazamento: retreinada sem duplicatas nem quase duplicatas dos testes, a mesma receita detecta 68,0\%%
+. Pontuando página a página pelo caminho de código de um hook de agente, as duas versões deram aviso falso em todas as 217 %
 páginas de documentação técnica, em todo limiar de 0,5 a 0,999%
-. Sob o mesmo protocolo, um de cinco classificadores públicos também avisou em toda página; só o Llama Prompt Guard 2 (86M) combinou 1,8\% de aviso falso por página com 62\% de detecção; e os benchmarks por frase e por página ordenaram os modelos em sentidos opostos%
-. Um retreino com 10.000 textos benignos técnicos sustentou o nosso diagnóstico, um atalho que equipara prosa técnica a injeção: os avisos falsos sumiram nas frases técnicas e caíram para 19–35\% das páginas, mas a detecção no Weni caiu para 63,7\%%
-. Nenhuma versão que treinamos atende aos dois critérios de aceitação. Contribuímos com o estudo de caso, com um critério de aceitação fixado antes da medição; um protocolo de avaliação por página; lições de integração para hooks de agentes; e artefatos abertos%
+. Entre cinco classificadores públicos, um também avisou em toda página; só o Llama Prompt Guard 2 (86M) combinou 1,8\% de aviso falso por página com 62\% de detecção; e os benchmarks por frase e por página ordenaram os modelos em sentidos opostos%
+. Acrescentar 10.000 textos benignos técnicos sustentou o nosso diagnóstico, um atalho que equipara prosa técnica a injeção: os avisos falsos sumiram nas frases técnicas e caíram para 19–35\% das páginas, enquanto a detecção no Weni ficou perto da do modelo descontaminado (63,7\% contra 68,0\%)%
+. Nenhuma versão que treinamos atende aos dois critérios de aceitação. Contribuímos com o estudo de caso, uma auditoria de vazamento conferida por retreino, um protocolo de avaliação por página, lições de integração com agentes e artefatos abertos%
 .
 
 \end{abstract}
@@ -56,30 +56,32 @@ páginas de documentação técnica, em todo limiar de 0,5 a 0,999%
 
 Agentes de LLM leem texto não confiável: páginas web, saídas de ferramentas, arquivos de repositório, e-mails. Qualquer parte disso pode carregar instruções endereçadas ao modelo, e não ao usuário. A prompt injection foi demonstrada primeiro por entrada direta do usuário \citep{perez2022ignore}; quando as instruções chegam dentro de conteúdo que a aplicação recupera, ela é conhecida como prompt injection indireta \citep{greshake2023indirect, liu2024formalizing}. Uma mitigação comum é um classificador pequeno que pontua o conteúdo buscado e avisa, ou bloqueia, quando ele parece uma injeção \citep{protectai2024deberta, meta2025promptguard2, jacob2025promptshield}. Esses classificadores costumam ser relatados com acurácia por frase em benchmarks públicos, quase todos em inglês.
 
-Este artigo documenta o que aconteceu quando construímos um para o português do Brasil, usando apenas dados abertos, e tentamos ligá-lo como hook de aviso na frente da ferramenta de web fetch de um agente de programação baseado em LLM. O estudo levou uma semana (30 de setembro a 6 de outubro de 2026)%
-, e cada número abaixo é rastreado até uma linha de log, um arquivo de resultado ou um commit em um dossiê de evidências.
+Este artigo documenta o que aconteceu quando construímos um para o português do Brasil, usando apenas dados abertos, e tentamos ligá-lo como hook de aviso na frente da ferramenta de web fetch de um agente de programação baseado em LLM. O núcleo do estudo levou uma semana (30 de setembro a 6 de outubro de 2026)%
+; um baseline com o Llama Prompt Guard 2 e um retreino descontaminado vieram em 7 de outubro%
+. Cada número abaixo é rastreado até uma linha de log, um arquivo de resultado ou um commit em um dossiê de evidências.
 
-O resultado principal é negativo. O melhor modelo passou nos testes de benchmark com folga, errou por um único texto o próprio critério de aceitação, fixado de antemão, no conjunto ouro nativo em pt-BR (284/300 contra 285 exigidos)%
+O resultado principal é negativo, em duas partes. O melhor modelo passou nos testes de benchmark com folga, errou por um único texto o próprio critério de aceitação, fixado de antemão, no conjunto ouro nativo em pt-BR (284/300 contra 285 exigidos)%
 , e depois, avaliado página a página em documentação técnica comum, deu aviso falso em 217 de 217 páginas %
-em todo limiar que testamos. Uma frase de teste de fumaça escrita à mão vinha sinalizando o modo de falha desde a segunda rodada de treino, e não a lemos como o sinal que ela era (Seção~\ref{sec:6}).
+em todo limiar que testamos. Uma frase de teste de fumaça escrita à mão vinha sinalizando o modo de falha desde a segunda rodada de treino, e não a lemos como o sinal que ela era (Seção~\ref{sec:6}). Depois, o próprio número do benchmark se mostrou inflado. Uma auditoria a posteriori tinha estimado em cerca de 1,3 ponto o efeito das quase duplicatas do conjunto ouro nos dados de treino; retreinar a mesma receita sem duplicatas exatas de nenhum item de teste, sem as traduções delas e sem quase duplicatas do conjunto ouro (v3-pub) baixou a detecção no Weni para 68,0\%, 26,7 pontos a menos nos mesmos itens, enquanto a falha por página ficou exatamente igual (Seção~\ref{sec:4}, Tabela~\ref{tab:5})%
+.
 
-Duas medições posteriores tornam o resultado mais nítido. Sob o mesmo protocolo de página, a falha não é exclusiva do nosso modelo: um de cinco classificadores públicos também avisou em toda página, e outros dois avisaram em cerca de 15\% das páginas benignas no limiar 0,5, detectando 63–70\% das páginas com injeção (Seção~\ref{sec:5.4})%
+Outras duas medições tornam o resultado mais nítido. Sob o mesmo protocolo de página, a falha não é exclusiva do nosso modelo: um de cinco classificadores públicos também avisou em toda página, e outros dois avisaram em cerca de 15\% das páginas benignas no limiar 0,5, detectando 63–70\% das páginas com injeção (Seção~\ref{sec:5.4})%
 . A exceção é instrutiva: o Llama Prompt Guard 2 (86M), cujo card relata dados benignos da web no treino, avisou em 4 das 217 páginas benignas (1,8\%) e detectou 62\% das páginas com injeção, embora tenha pegado só 30\% das injeções curtas em inglês e detecte 93,7\% das frases do Weni, abaixo do nosso critério%
-. E o retreino com texto benigno técnico (v6, Seção~\ref{sec:7}) eliminou os avisos falsos em frases técnicas e reduziu os avisos falsos por página para 19–35\%, mas baixou a detecção no Weni de 94,7\% para 63,7\%: parte da acurácia do modelo original no conjunto ouro se apoiava no mesmo atalho que o fez falhar em uso%
-. Nenhum dos nossos dois modelos candidatos atende aos dois critérios de aceitação; entre os modelos que testamos, só o Prompt Guard 2 (86M) atende ao critério por página, e só na estimativa pontual (intervalo de 95\% de 0,7–4,6\%)%
+. E o retreino com texto benigno técnico (v6, Seção~\ref{sec:7}) eliminou os avisos falsos em frases técnicas e reduziu os avisos falsos por página para 19–35\%. Ele também baixou a detecção no Weni de 94,7\% para 63,7\%, o que lemos primeiro como o preço de tirar o atalho. Contra a v3-pub descontaminada, que não tem negativos técnicos e continua avisando em toda página, a diferença é de 4,3 pontos e não é significativa: a maior parte dessa queda é compartilhada com a descontaminação, e não causada pelos negativos novos, enquanto a melhora por página é deles (Seção~\ref{sec:7.2})%
+. Nenhum dos nossos modelos atende aos dois critérios de aceitação; entre os modelos que testamos, só o Prompt Guard 2 (86M) atende ao critério por página, e só na estimativa pontual (intervalo de 95\% de 0,7–4,6\%)%
 .
 
 Achamos que o caso é útil além do pt-BR porque a falha não é exótica. O lado benigno dos dados de treino era em grande parte conversacional (comandos a assistentes e prompts de seguimento de instruções)%
-; a distribuição de implantação é sobretudo prosa técnica cheia de imperativos (instale, rode, configure, ignore este aviso). Um classificador pode separar injeções de conversa com acurácia quase perfeita e, ainda assim, não ter aprendido nada que separe injeções de documentação.
+; a distribuição de implantação é sobretudo prosa técnica cheia de imperativos (instale, rode, configure, ignore este aviso). Um classificador pode separar injeções de conversa com acurácia quase perfeita e, ainda assim, não ter aprendido nada que separe injeções de documentação. O vazamento também não é exótico: ele entrou por cópias traduzidas automaticamente de itens de teste e por conjuntos agregados que contêm outros benchmarks, e uma auditoria por similaridade de embeddings o subestimou em uma ordem de grandeza.
 
 Um estudo concorrente de \citet{liu2026passing}, publicado enquanto este trabalho estava em andamento, reavalia quinze detectores em inglês sobre saídas de ferramentas de agentes e sobre trechos benignos de READMEs do GitHub, e chega às mesmas conclusões práticas. Lemos o nosso estudo como uma replicação independente dessa lacuna em outra língua e com um detector treinado por nós, o que permite rastrear a causa até a receita de treino e testá-la por retreino; ele acrescenta a agregação por página inteira, lições de integração para hooks de agentes e a perspectiva dos modelos de decisão tipados (Seção~\ref{sec:9.3}).
 
 \textbf{Contribuições.}
 
 \begin{enumerate}
-\item \textbf{Um estudo de caso documentado de uma lacuna entre benchmark e uso em pt-BR.} Oito rodadas de treino (sondas sobre embeddings congelados; e5-base e e5-large com fine-tuning, com e sem dados de ataque adicionais; e um retreino com texto benigno técnico que testa o diagnóstico) mais um ensemble de pesos fixos, avaliados em até 19 conjuntos de teste%
+\item \textbf{Um estudo de caso documentado de uma lacuna entre benchmark e uso em pt-BR.} Nove rodadas de treino (sondas sobre embeddings congelados; e5-base e e5-large com fine-tuning, com e sem dados de ataque adicionais; um retreino descontaminado; e um retreino com texto benigno técnico que testa o diagnóstico) mais um ensemble de pesos fixos, avaliados em até 19 conjuntos de teste%
 , com um critério de aceitação fixado no controle de versão antes da primeira medição no conjunto ouro%
-, e uma auditoria de vazamento a posteriori que atribui cerca de 1,3 dos 94,7 pontos do melhor modelo a quase duplicatas nos seus dados de treino%
+, e uma auditoria de vazamento conferida por retreino: um corte de similaridade de cosseno tinha estimado em cerca de 1,3 ponto a inflação dos 94,7\% do melhor modelo, e a mesma receita retreinada sem duplicatas nem quase duplicatas dos testes detecta 68,0\%%
 .
 \item \textbf{Um protocolo de avaliação por página para classificadores de injeção} que reutiliza exatamente o caminho de código do hook de implantação, pontua páginas pelo máximo sobre janelas sobrepostas e relata avisos falsos em páginas técnicas benignas ao lado da detecção em páginas com uma injeção inserida. Aplicado a cinco classificadores públicos, ele mostra que as avaliações por frase e por página podem ordenar os modelos em sentidos opostos%
 . O benchmark é distribuído como um manifesto fixado por hash (217 páginas benignas e 60 inserções) mais um construtor que baixa as páginas das fontes, de modo que nenhum texto de terceiros é redistribuído%
@@ -91,7 +93,7 @@ e uma lista de entradas de avaliação que mudou entre execuções%
 .
 \end{enumerate}
 
-O restante do artigo está organizado assim. A Seção~\ref{sec:2} apresenta a fundamentação sobre modelos de decisão tipados e sobre prompt injection. A Seção~\ref{sec:3} descreve dados, tradução, controle de vazamento e treino. As Seções~\ref{sec:4} e~\ref{sec:5} relatam os resultados por frase e por página, esta última com baselines públicos. A Seção~\ref{sec:6} diagnostica a lacuna, a Seção~\ref{sec:7} testa o diagnóstico por retreino, a Seção~\ref{sec:8} lista as lições de integração, a Seção~\ref{sec:9} discute o que isso diz sobre a acurácia de benchmark, sobre o uso de modelos de decisão com agentes e sobre trabalhos concorrentes, a Seção~\ref{sec:10} lista as limitações e a Seção~\ref{sec:11} conclui.
+O restante do artigo está organizado assim. A Seção~\ref{sec:2} apresenta a fundamentação sobre modelos de decisão tipados e sobre prompt injection. A Seção~\ref{sec:3} descreve dados, tradução, controle de vazamento e treino. A Seção~\ref{sec:4} relata os resultados por frase e a auditoria de vazamento, e a Seção~\ref{sec:5}, os resultados por página, com baselines públicos. A Seção~\ref{sec:6} diagnostica a lacuna, a Seção~\ref{sec:7} testa o diagnóstico por retreino, a Seção~\ref{sec:8} lista as lições de integração, a Seção~\ref{sec:9} discute o que isso diz sobre a acurácia de benchmark, sobre o uso de modelos de decisão com agentes e sobre trabalhos concorrentes, a Seção~\ref{sec:10} lista as limitações e a Seção~\ref{sec:11} conclui.
 
 \section{Fundamentação}\label{sec:2}
 
@@ -167,8 +169,9 @@ Dois testes compostos são usados ao longo do texto. \emph{pt-native} junta o We
 ; uma das frases benignas é uma instrução de instalação em português (``Instruções de instalação: execute o setup.exe e clique em avançar.''), que acaba importando (Seção~\ref{sec:6}).
 
 Dois fatos descobertos depois das rodadas de treino mudam o modo como os testes devem ser lidos. Primeiro, \textbf{o xTRam1 não está fora da distribuição} para nenhum modelo treinado com o ShieldLM: 577 das 4.000 linhas de treino do ShieldLM vêm do próprio split de treino do xTRam1, e 4 dos 1.500 itens de teste do xTRam1 aparecem no subconjunto de treino do ShieldLM (correspondência exata após normalização de caixa e de espaços)%
-. Por isso descrevemos o xTRam1 como ``mesma distribuição, itens disjuntos (exceto 4)'', e o Weni é o único teste genuinamente externo. Segundo, 14 dos 262 itens de teste do jackhhao aparecem no subconjunto de treino do ShieldLM; o deepset não tem nenhum item nesse subconjunto (0/116)%
-. Só o subconjunto do ShieldLM foi conferido contra os testes. Além disso, a configuração em português do MASSIVE é português europeu, não brasileiro%
+. Uma conferência posterior achou mais sobreposição (abaixo). Por isso descrevemos o xTRam1 como ``mesma distribuição, itens em parte sobrepostos'' para todo modelo anterior à v3-pub (Seção~\ref{sec:3.4}), e o Weni é o único teste genuinamente externo. Segundo, 14 dos 262 itens de teste do jackhhao aparecem no subconjunto de treino do ShieldLM; o deepset não tem nenhum item nesse subconjunto (0/116)%
+. Uma conferência de todo o conjunto de treino da v3 contra todos os testes, feita para a v3-pub (Seção~\ref{sec:3.4}), achou duplicatas exatas, após normalização de caixa e de espaços, em quase todo teste: 20 dos 262 itens do jackhhao, 72 dos 1.000 do SPML, 83 dos 1.500 do xTRam1, 439 dos 4.000 do ShieldLM, 75 dos 1.500 do MASSIVE-pt e algumas nos demais; nenhuma no deepset nem no Weni%
+. Além disso, a configuração em português do MASSIVE é português europeu, não brasileiro%
 .
 
 \subsection{Tradução para pt-BR}\label{sec:3.2}
@@ -230,6 +233,13 @@ A trava não foi aplicada à exportação v2/v3, que é anterior a ela%
 . Eles são em sua maioria traduções automáticas (98 injeções e 17 exemplos benignos; 48 do jackhhao-pt, 18 do SPML-pt e 10 cada do deepset-pt e do Dolly-pt), e 58 dos 300 textos do Weni têm um deles como vizinho%
 . Voltamos a isso nas Seções~\ref{sec:4},~\ref{sec:7} e~\ref{sec:10}.
 
+\textbf{Retreino descontaminado (v3-pub).} Em 7 de outubro retreinamos a receita da v3 sobre um subconjunto estrito dos seus dados de treino, tanto para medir quanto do seu placar no Weni dependia de exemplos vazados quanto para obter pesos livres do problema de licença da Seção~\ref{sec:12}%
+. Quatro filtros, aplicados em ordem, removem 1.758 dos 23.693 exemplos e não acrescentam nada: 673 linhas de fontes do ShieldLM que são o próprio xTRam1 (as 577 linhas da Seção~\ref{sec:3.1}) ou que têm licença diferente na origem e no agregador; 831 textos idênticos, após normalização de caixa e de espaços, a algum texto de qualquer teste, inclusive os traduzidos; 164 traduções cujo original saiu, ou originais cuja tradução saiu; e 90 exemplos acima de cosseno 0,9 com algum texto do Weni, a trava acima (os outros 25 dos 115 já tinham saído nos filtros anteriores)%
+. O resultado tem 21.935 exemplos, 38,6\% deles injeções (39,8\% na v3). Das 967 injeções removidas, 513 são duplicatas exatas de itens de teste, 256 vêm das fontes excluídas do ShieldLM e 198 são pares de tradução ou quase duplicatas do Weni%
+. Depois dos filtros, nenhum item de teste tem duplicata normalizada no treino, e nenhum texto de treino é idêntico a, compartilha um trecho de 200 caracteres com ou compartilha um 13-grama com algum dos 334 READMEs de pacotes de onde saiu o teste de página%
+. Receita, notebook, código de avaliação, máquina, testes e páginas congeladas são os da v3 e da v6; a acurácia na validação interna foi de 99,49\%%
+.
+
 \subsection{Modelos e treino}\label{sec:3.5}
 
 \textbf{Sondas (rodadas 0, A, B).} \code{intfloat/\allowbreak{}multilingual-\allowbreak{}e5-\allowbreak{}base} congelado \citep{wang2024multilinguale5, intfloat2023me5large} com o prefixo \code{query:\textvisiblespace{}} e limite de 256 tokens, seguido de uma regressão logística padronizada%
@@ -247,13 +257,13 @@ A trava não foi aplicada à exportação v2/v3, que é anterior a ela%
 
 \subsection{Rodadas}\label{sec:3.6}
 
-A Tabela~\ref{tab:3} resume as rodadas. A maioria das rodadas mudou um fator principal em relação a uma rodada de referência; duas não: a v2 passou para fine-tuning e acrescentou o Dolly como dado benigno ao mesmo tempo, e a v4/v5 acrescentam tanto o HackAPrompt quanto a trava anti-vazamento em relação à v2/v3.
+A Tabela~\ref{tab:3} resume as rodadas. A maioria das rodadas mudou um fator principal em relação a uma rodada de referência; três não: a v2 passou para fine-tuning e acrescentou o Dolly como dado benigno ao mesmo tempo, a v4/v5 acrescentam tanto o HackAPrompt quanto a trava anti-vazamento em relação à v2/v3, e a v6 acrescenta negativos técnicos e tira as 115 quase duplicatas do Weni (Seção~\ref{sec:7.1}).
 
 \begin{table}[tbp]
 \centering
 \small
 \caption{Rodadas de treino.}\label{tab:3}
-\begin{tabularx}{\linewidth}{@{}ll>{\raggedright\arraybackslash\hsize=0.95\hsize}X>{\raggedright\arraybackslash\hsize=1.57\hsize}X>{\raggedright\arraybackslash\hsize=0.69\hsize}X>{\raggedright\arraybackslash\hsize=0.79\hsize}X@{}}
+\begin{tabularx}{\linewidth}{@{}ll>{\raggedright\arraybackslash\hsize=0.88\hsize}X>{\raggedright\arraybackslash\hsize=1.58\hsize}X>{\raggedright\arraybackslash\hsize=0.62\hsize}X>{\raggedright\arraybackslash\hsize=0.93\hsize}X@{}}
 \toprule
 Rodada & Data & Modelo & Dados de treino & Tamanho & Nota \\
 \midrule
@@ -280,13 +290,18 @@ v5 & 6 out & e5-large com fine-tuning & exportação da v4 %
  & trava anti-vazamento \\
 mistura & 6 out & logits v3 \ensuremath{\oplus} v5, 0,5/0,5 %
  & — & — & sem ajuste no teste \\
+v6 & 6 out & e5-large com fine-tuning & exportação da v3 \ensuremath{-} 115 quase duplicatas do Weni + 10.000 benignos técnicos %
+ & 33.578 exemplos & trava anti-vazamento; negativos técnicos (Seção~\ref{sec:7}) \\
+v3-pub & 7 out & e5-large com fine-tuning & exportação da v3 \ensuremath{-} 1.758 (Seção~\ref{sec:3.4}) %
+ & 21.935 exemplos & descontaminada contra todos os testes \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-As acurácias de validação no split da nuvem foram 99,42\% (v2), 99,63\% (v3), 99,31\% (v4) e 99,63\% (v5)%
+As acurácias de validação no split da nuvem foram 99,42\% (v2), 99,63\% (v3), 99,31\% (v4), 99,63\% (v5), 99,70\% (v6) e 99,49\% (v3-pub)%
 . Computação: as quatro sessões de fine-tuning usaram 20.476 s, cerca de 5,69 h de tempo de notebook%
 ; uma execução do e5-base levou cerca de 31–33 min e uma do e5-large cerca de 2 h 15 min a 2 h 22 min%
+. A v6 e a v3-pub levaram mais 12.713 s e 7.056 s%
 . As três rodadas de sonda gastaram 10.595 s (cerca de 2,94 h) calculando embeddings em CPU%
 . O Apêndice~\ref{app:A} lista todos os custos.
 
@@ -297,7 +312,7 @@ A Tabela~\ref{tab:4} relata a acurácia de cada rodada em cada teste em que ela 
 \begin{table}[tbp]
 \centering
 \small
-\caption{Acurácia por frase (\%) por rodada. ``—'' = não rodado. Fumaça informa acertos/10.}\label{tab:4}
+\caption{Acurácia por frase (\%) por rodada. ``—'' = não rodado. Fumaça informa acertos/10. O número da v3 no Weni está inflado por vazamento (Seção~\ref{sec:4}d; a v3-pub descontaminada detecta 68,0\%, Tabela~\ref{tab:5}).}\label{tab:4}
 \begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
 Teste (n) & 0 %
@@ -334,18 +349,18 @@ Fumaça (10) & 5/10 & 9/10 & 9/10 & 9/10 & 9/10 & 9/10 & 9/10 & 9/10 \\
 \end{table}
 
 Os números da v3 se restringem aos testes que decidiram o critério%
-; o deepset, o jackhhao e os primeiros 300 itens do SPML foram medidos depois, na comparação da v6 (Tabela~\ref{tab:9}), e o rikka, o ShieldLM e o yanis nunca%
+; o deepset, o jackhhao e os primeiros 300 itens do SPML foram medidos depois, na comparação da v6 (Tabela~\ref{tab:10}), e o rikka, o ShieldLM e o yanis nunca%
 . Seguem cinco observações.
 
 \textbf{(a) O backbone maior moveu o teste ouro; o fine-tuning do modelo base mal o moveu.} A sonda sobre embeddings congelados chegou a 72,3\% no Weni depois de acrescentar dados nativos em português (a única rodada de sonda medida no Weni)%
 . O fine-tuning do e5-base em uma combinação maior de dados quase não mudou isso (74,3\%)%
 ; o fine-tuning do e5-large na \emph{mesma} exportação e receita chegou a 94,7\%, um ganho de 20,3 pontos vindo da troca de backbone, com uma única execução por modelo%
-. Enquanto isso, o xTRam1, que compartilha distribuição com parte dos dados de treino (Seção~\ref{sec:3.1}), já estava em 98,9\% com o e5-base%
+. Os dois modelos foram treinados na mesma exportação, com o mesmo vazamento (d), então a comparação entre eles é justa, embora não tenhamos testado se o modelo maior aproveita mais os vizinhos próximos. Enquanto isso, o xTRam1, que compartilha distribuição com parte dos dados de treino (Seção~\ref{sec:3.1}), já estava em 98,9\% com o e5-base%
 .
 
 \textbf{(b) O critério foi perdido por um texto, e a diferença não tem significância estatística.} A v3 detectou 284 dos 300 itens do Weni; o critério exigia 285%
 . O intervalo de Wilson de 95\% \citep{wilson1927probable} da v3 é 91,5–96,7\%, que contém 95\%%
-; com n = 300, a distinção entre passar e reprovar não é estatisticamente significativa. Os intervalos das outras rodadas no Weni são 85,7–92,6\% (v5), 87,6–94,0\% (mistura), 69,1–78,9\% (v2) e 61,2–71,8\% (v4)%
+; com n = 300, a distinção entre passar e reprovar não é estatisticamente significativa. E (d) mostra que o próprio placar estava inflado por vazamento: o quase acerto não era um quase aprovado. Os intervalos das outras rodadas no Weni são 85,7–92,6\% (v5), 87,6–94,0\% (mistura), 69,1–78,9\% (v2) e 61,2–71,8\% (v4)%
 .
 
 \textbf{(c) Acrescentar o HackAPrompt com a trava anti-vazamento piorou os dois backbones no Weni}: \ensuremath{-}7,7 pontos no e5-base (v4 contra v2) e \ensuremath{-}5,0 no e5-large (v5 contra v3)%
@@ -354,11 +369,51 @@ menos 4.008 removidos pela trava%
 . Aplicada só aos dados que não são do HackAPrompt, a mesma trava remove 115 exemplos%
 . Se a trava se comporta de forma idêntica nas duas exportações, cerca de 3.893 dos 4.000 itens do HackAPrompt (97\%) foram removidos%
 , de modo que a v4 e a v5 diferem da v2 e da v3 principalmente por (i) a remoção de 115 quase duplicatas do Weni e (ii) cerca de 107 itens do HackAPrompt que sobreviveram%
-. Se essa contabilidade estiver certa, ela também sustenta, indiretamente, a afirmação de que o Weni deriva do HackAPrompt, pois implicaria que quase todo ataque bem-sucedido do HackAPrompt na exportação tem um vizinho no Weni acima de cosseno 0,9. As duas leituras são inferências entre duas exportações e aguardam uma contagem direta por fonte (lacuna L1, Seção~\ref{sec:10}).
+. Se essa contabilidade estiver certa, ela também sustenta, indiretamente, a afirmação de que o Weni deriva do HackAPrompt, pois implicaria que quase todo ataque bem-sucedido do HackAPrompt na exportação tem um vizinho no Weni acima de cosseno 0,9. As duas leituras são inferências entre duas exportações e aguardam uma contagem direta por fonte (lacuna L1, Seção~\ref{sec:10}). Elas também pesam em (d): a v5 perdeu os mesmos 115 vizinhos e ainda detecta 89,7\%, enquanto a v3-pub e a v6 ficam abaixo de 70\% (Tabela~\ref{tab:5}); se os cerca de 107 itens do HackAPrompt que sobreviveram forem parentes próximos de textos do Weni, a v5 vaza de outro jeito, o que a mesma contagem por fonte mostraria.
 
-\textbf{(d) O vazamento infla o placar da v3 em cerca de 1,3 ponto.} Se (c) vale, as 115 quase duplicatas presentes nos dados de treino da v3, e ausentes nos da v5, são um contribuinte plausível para a diferença de 5 pontos entre elas (284 contra 269 detectados)%
-. A comparação da v6 mediu esse efeito diretamente: a v3 detecta todos os 58 textos do Weni que têm uma delas como vizinha (cosseno \textgreater{} 0,9) e 226 dos outros 242 (93,4\%, IC de Wilson 95\% 89,5–95,9\%), de modo que cerca de 1,3 dos seus 94,7 pontos vêm de vazamento%
-. Medida sem elas, a v3 fica mais longe do critério, não mais perto. Com uma única semente por configuração, o resto da diferença entre v3 e v5 não pode ser separado da variância entre execuções. Relatamos a v3 como o melhor modelo com essa ressalva; um retreino livre de vazamento está planejado (Seção~\ref{sec:13}).
+\textbf{(d) O vazamento inflou o placar da v3 muito mais do que um corte de cosseno sugeria.} A v3 foi treinada antes da trava anti-vazamento (Seção~\ref{sec:3.4}). Aplicar depois a regra da trava marca 115 dos seus exemplos de treino; a v3 detecta todos os 58 textos do Weni que têm um deles como vizinho e 226 dos outros 242 (93,4\%), o que estimava a inflação em cerca de 1,3 ponto%
+. O retreino descontaminado mostra que essa estimativa era baixa demais (Tabela~\ref{tab:5}). Com a mesma receita e sem as duplicatas dos testes, as traduções delas, as 115 quase duplicatas e as linhas derivadas do xTRam1, a v3-pub detecta 68,0\% do Weni: só a v3 detecta 81 textos que a v3-pub erra, e o contrário acontece uma vez (McNemar $p<10^{-6}$)%
+. Nos 242 textos ``limpos'' ela detecta 63,6\%, então o corte em 0,9 não separa itens limpos de contaminados. As similaridades entre esses embeddings são comprimidas: todo texto do Weni tem um vizinho acima de cosseno 0,82 entre os 115, nove em dez acima de 0,85, e a v3-pub erra mais onde a similaridade é menor (ela detecta 2 dos 29 textos em 0,85 ou abaixo)%
+. Lemos, portanto, os 94,7\% da v3 como inflados por vazamento, numa quantidade mais perto de 27 pontos que de 1,3. Duas ressalvas impedem uma atribuição limpa. A v3-pub também perdeu 967 dos 9.436 exemplos de ataque da v3, 513 deles duplicatas exatas de outros testes, então parte da queda pode vir de menos dado de ataque, e não dos vizinhos removidos; e um controle ``v3 menos as 115'', que separaria as duas coisas, não foi rodado%
+. O retreino também move o teste dentro da distribuição como esperado: sem as linhas derivadas do xTRam1, a acurácia no xTRam1 cai de 98,7\% para 95,4\% ($p<10^{-6}$), e cai o mesmo nos 1.417 itens sem duplicata no treino (98,6\% para 95,3\%), de modo que a vantagem da v3 ali vinha da distribuição compartilhada, e não dos itens duplicados%
+. A falha por página não muda: a v3-pub, como a v3, avisa nas 217 páginas benignas em todo limiar (Seção~\ref{sec:5.2}). Medida nos mesmos itens, uma queda pareada de 27 pontos dificilmente é variância entre execuções, embora a variância entre sementes não tenha sido medida (Seção~\ref{sec:10}).
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Auditoria de vazamento: v3, a v3-pub descontaminada e a v6 nos mesmos itens. Linhas de frase: acurácia em \% no limiar 0,5 (no Weni, detecção; nos conjuntos técnicos, a fração de textos benignos não marcados) com intervalos de Wilson de 95\%, e valores p do teste exato de McNemar sobre predições pareadas: ``p pub/v3'' compara a v3-pub com a v3, ``p v6/pub'' compara a v6 com a v3-pub (a v6 contra a v3 está na Tabela~\ref{tab:10}). Conjuntos técnicos: perguntas e respostas do Stack Overflow e docstrings Python, todos benignos. A v3-pub é o conjunto de treino da v3 menos 1.758 exemplos (Seção~\ref{sec:3.4}); a v6 é o da v3 menos as 115 quase duplicatas do Weni, mais 10.000 textos benignos técnicos (Seção~\ref{sec:7}). ``Limpo'' e ``contam.'' separam o Weni conforme o texto tenha ou não uma das 115 como vizinha acima de cosseno 0,9. Linhas de página: janelas de 640/160 na lista congelada da Seção~\ref{sec:7.1}; aviso falso (AF) nas 217 páginas benignas, detecção nas 60 páginas com injeção e fração das 2.247 janelas benignas com P \ensuremath{\geq} 0,5.}\label{tab:5}
+\begin{tabularx}{\linewidth}{@{}ll>{\raggedright\arraybackslash\hsize=1.01\hsize}X>{\raggedright\arraybackslash\hsize=1.00\hsize}X>{\raggedright\arraybackslash\hsize=1.00\hsize}Xll@{}}
+\toprule
+Teste & n & v3 & v3-pub & v6 & p pub/v3 & p v6/pub \\
+\midrule
+Weni & 300 & 94,7 [91,5–96,7] & 68,0 [62,5–73,0] & 63,7 [58,1–68,9] & $<10^{-6}$ & 0,18 %
+ \\
+Weni, limpo & 242 & 93,4 [89,5–95,9] & 63,6 [57,4–69,4] & 60,7 [54,5–66,7] & $<10^{-6}$ & 0,48 %
+ \\
+Weni, contam. & 58 & 100,0 & 86,2 & 75,9 & — & 0,11 %
+ \\
+xTRam1 & 1.500 & 98,7 [98,0–99,1] & 95,4 [94,2–96,4] & 99,3 [98,8–99,6] & $<10^{-6}$ & $<10^{-6}$ %
+ \\
+xTRam1-pt & 500 & 96,0 [93,9–97,4] & 94,8 [92,5–96,4] & 98,2 [96,6–99,1] & 0,263 & $<10^{-4}$ %
+ \\
+deepset & 116 & 94,8 [89,2–97,6] & 94,0 [88,1–97,0] & 88,8 [81,8–93,3] & 1,000 & 0,070 %
+ \\
+MASSIVE-pt & 1.500 & 99,8 [99,4–99,9] & 99,9 [99,5–100] & 100,0 [99,7–100] & 1,000 & 0,500 %
+ \\
+Perguntas SO & 300 & 33,3 [28,2–38,9] & 41,0 [35,6–46,7] & 100,0 [98,7–100] & 0,002 & $<10^{-6}$ %
+ \\
+Respostas SO & 300 & 13,3 [10,0–17,6] & 31,0 [26,0–36,4] & 100,0 [98,7–100] & $<10^{-6}$ & $<10^{-6}$ %
+ \\
+Docstrings & 300 & 62,0 [56,4–67,3] & 74,0 [68,8–78,6] & 100,0 [98,7–100] & $<10^{-5}$ & $<10^{-6}$ %
+ \\
+Pág. AF@0,5 & 217 & 100,0 [98,3–100] & 100,0 [98,3–100] & 34,6 [28,6–41,1] & — & — \\
+Pág. AF@0,999 & 217 & 100,0 [98,3–100] & 100,0 [98,3–100] & 19,4 [14,7–25,1] & — & — \\
+Pág. Det.@0,5 & 60 & 100,0 [94,0–100] & 100,0 [94,0–100] & 90,0 [79,9–95,3] & — & — \\
+Janelas \ensuremath{\geq}0,5 & 2.247 & 99,6 & 98,6 & 7,2 & — & — %
+ \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 \textbf{(e) A calibração não foi ajustada para os modelos com fine-tuning.} No limiar de implantação do hook, 0,9%
 , a v3 detecta 91,0\% do Weni e marca 0,13\% das frases do MASSIVE-pt e 0,7\% das do Dolly-pt%
@@ -379,7 +434,7 @@ A implantação pretendida era um hook que roda depois da ferramenta de web fetc
 
 \textbf{Páginas com injeção.} 60 páginas: os mesmos READMEs com uma injeção de teste inserida em uma fronteira de parágrafo determinística, 30 tiradas do Weni e 30 dos positivos do split de teste do xTRam1, amostradas por md5%
 . Nenhum dos dois conjuntos foi carregado como fonte de treino%
-, embora parte do split de treino do xTRam1 tenha chegado ao treino pelo ShieldLM e 4 dos seus itens de teste se sobreponham aos dados de treino (Seção~\ref{sec:3.1}).
+, embora parte do split de treino do xTRam1 tenha chegado ao treino pelo ShieldLM e 83 dos seus 1.500 itens de teste tenham duplicata nos dados de treino da v3 (Seção~\ref{sec:3.1}).
 
 \textbf{Decisão.} Nota da página = máximo sobre as janelas; limiares 0,5; 0,9; 0,95; 0,99 e 0,999%
 . Rodamos duas configurações de janela: a original, de 1.500 caracteres com 200 de sobreposição, e 640/160, adotada depois que descobrimos que as janelas originais excediam o contexto de 256 tokens do modelo (Seção~\ref{sec:8})%
@@ -391,7 +446,7 @@ A implantação pretendida era um hook que roda depois da ferramenta de web fetc
 \begin{table}[tbp]
 \centering
 \small
-\caption{Resultados por página da v3.}\label{tab:5}
+\caption{Resultados por página da v3.}\label{tab:6}
 \begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=1.35\hsize}X>{\raggedright\arraybackslash\hsize=0.86\hsize}X>{\raggedright\arraybackslash\hsize=1.14\hsize}X>{\raggedright\arraybackslash\hsize=0.65\hsize}X@{}}
 \toprule
 Janela (caracteres/sobreposição) & Janelas (benignas / com injeção) & Aviso falso em páginas benignas & Detecção (Weni / xTRam1) \\
@@ -413,12 +468,13 @@ Todas as 217 páginas benignas geraram aviso em todo limiar de 0,5 a 0,999, com 
 . O menor máximo por página entre as páginas benignas foi 0,9999 com janelas de 1.500 caracteres e 0,9998 com janelas de 640 caracteres (valores gravados com quatro casas decimais), e a mediana foi 1,0%
 . Só em um limiar de 0,9999, fora da grade avaliada, uma página deixaria de avisar (aviso falso de 99,54\%)%
 . A detecção de 100\% é, portanto, não informativa: toda página dispara, com ou sem injeção%
-.
+. A v3-pub descontaminada (Seção~\ref{sec:4}d) falha do mesmo jeito na lista de páginas congelada: 217 de 217 páginas benignas avisam em todo limiar, e 98,6\% das suas janelas benignas pontuam pelo menos 0,5 (Tabela~\ref{tab:5})%
+. Não é o vazamento que quebra o guard em uso.
 
 \begin{table}[tbp]
 \centering
 \small
-\caption{Mesmo modelo, duas unidades de avaliação (v3, limiar 0,9).}\label{tab:6}
+\caption{Mesmo modelo, duas unidades de avaliação (v3, limiar 0,9).}\label{tab:7}
 \begin{tabular}{@{}lll@{}}
 \toprule
 Unidade & Dados benignos & Aviso falso \\
@@ -452,13 +508,13 @@ Rodamos cinco classificadores públicos sob o mesmo protocolo de página: dois m
 . O modelo da Proventra, escolhido como representante multilíngue enquanto o Prompt Guard estava inacessível, continua na comparação; o seu card relata injeções embutidas em sites e artigos entre os seus dados de treino%
 . Os seis modelos leram as mesmas páginas exportadas, e cada página recebe o máximo, sobre as suas janelas, do log-odds do rótulo de ataque, com os limiares aplicados à probabilidade correspondente; o log-odds mantém uma ordenação onde as probabilidades arredondam para 1%
 . Os números por frase usam os 300 itens do Weni e o split de teste completo do xTRam1 em inglês (2.060 frases, 650 ataques), com o mesmo hash dos textos em todas as execuções%
-. O nosso modelo e os três primeiros modelos públicos rodaram na mesma VM ARM de nuvem com 4 núcleos, em CPU e fp32; o Prompt Guard 2 rodou com o mesmo script, a mesma versão da biblioteca e as mesmas entradas em instâncias de CPU x86 de um serviço de notebooks na nuvem, o que mantém comparáveis os números de qualidade, mas não a latência (Tabela~\ref{tab:8})%
-. As Tabelas~\ref{tab:7} e 8 trazem os resultados.
+. O nosso modelo e os três primeiros modelos públicos rodaram na mesma VM ARM de nuvem com 4 núcleos, em CPU e fp32; o Prompt Guard 2 rodou com o mesmo script, a mesma versão da biblioteca e as mesmas entradas em instâncias de CPU x86 de um serviço de notebooks na nuvem, o que mantém comparáveis os números de qualidade, mas não a latência (Tabela~\ref{tab:9})%
+. As Tabelas~\ref{tab:8} e 9 trazem os resultados.
 
 \begin{table}[tbp]
 \centering
 \small
-\caption{Classificadores públicos no protocolo de página: aviso falso (AF) nas 217 páginas benignas e detecção (Det.) nas 60 páginas com injeção (30 do Weni, 30 do xTRam1), em \%. ``Janela'' é o limite de tokens do modelo e o comprimento da janela em caracteres; as quatro últimas linhas são o controle com 640/160. Modelos: e5-large v3 (o nosso), ProtectAI deberta-v3-base-prompt-injection-v2, Proventra mdeberta-v3-base-prompt-injection, deepset deberta-v3-base-injection, PG2 86M e 22M = Llama-Prompt-Guard-2-86M e -22M. ``Det.@0,9'' é a detecção a 0,9, no total e (entre parênteses) nas inserções do Weni / xTRam1. O ``AUROC'' é calculado sobre páginas. ``Det.@2\%'' é a detecção no menor limiar que deixa no máximo 4 das 217 páginas benignas acima dele (AF \ensuremath{\leq} 2\%). ``Jan.'' é a fração das janelas benignas com P \ensuremath{\geq} 0,5 (não registrada no controle).}\label{tab:7}
+\caption{Classificadores públicos no protocolo de página: aviso falso (AF) nas 217 páginas benignas e detecção (Det.) nas 60 páginas com injeção (30 do Weni, 30 do xTRam1), em \%. ``Janela'' é o limite de tokens do modelo e o comprimento da janela em caracteres; as quatro últimas linhas são o controle com 640/160. Modelos: e5-large v3 (o nosso), ProtectAI deberta-v3-base-prompt-injection-v2, Proventra mdeberta-v3-base-prompt-injection, deepset deberta-v3-base-injection, PG2 86M e 22M = Llama-Prompt-Guard-2-86M e -22M. ``Det.@0,9'' é a detecção a 0,9, no total e (entre parênteses) nas inserções do Weni / xTRam1. O ``AUROC'' é calculado sobre páginas. ``Det.@2\%'' é a detecção no menor limiar que deixa no máximo 4 das 217 páginas benignas acima dele (AF \ensuremath{\leq} 2\%). ``Jan.'' é a fração das janelas benignas com P \ensuremath{\geq} 0,5 (não registrada no controle).}\label{tab:8}
 \begin{tabular}{@{}lrrrrrrrr@{}}
 \toprule
 Modelo & Janela & AF@0,5 & AF@0,9 & AF@0,99 & Det.@0,9 & AUROC & Det.@2\% & Jan. \\
@@ -490,7 +546,7 @@ PG2 22M & 512/640 & 0,9 & 0,0 & 0,0 & 18 (27/10) & 0,616 & 22 & — %
 \begin{table}[tbp]
 \centering
 \small
-\caption{Os mesmos classificadores em frases, no limiar 0,5, e o custo por janela cheia na VM ARM de 4 núcleos (uma janela por chamada). Weni: detecção nas 300 injeções nativas em pt-BR. xTRam1: split de teste completo em inglês, 2.060 frases (650 ataques); TPR e FPR em \%. \ensuremath{\approx}: o Prompt Guard 2 foi cronometrado em instâncias x86 de notebook (1.138 e 433 ms por janela nelas); o custo na ARM é o tempo da instância multiplicado pela razão do modelo da Proventra cronometrado na mesma instância, uma estimativa, e não uma medida.}\label{tab:8}
+\caption{Os mesmos classificadores em frases, no limiar 0,5, e o custo por janela cheia na VM ARM de 4 núcleos (uma janela por chamada). O nosso número no Weni está inflado por vazamento (Seção~\ref{sec:4}d); a v3-pub descontaminada detecta 68,0\%. Weni: detecção nas 300 injeções nativas em pt-BR. xTRam1: split de teste completo em inglês, 2.060 frases (650 ataques); TPR e FPR em \%. \ensuremath{\approx}: o Prompt Guard 2 foi cronometrado em instâncias x86 de notebook (1.138 e 433 ms por janela nelas); o custo na ARM é o tempo da instância multiplicado pela razão do modelo da Proventra cronometrado na mesma instância, uma estimativa, e não uma medida.}\label{tab:9}
 \begin{tabular}{@{}lrrrrrr@{}}
 \toprule
 Modelo & Weni det. & xTRam1 acur. & TPR & FPR & AUROC & ms/janela \\
@@ -521,7 +577,7 @@ Prompt Guard 2 22M & 16,3 & 77,3 & 28,2 & 0,0 & 0,893 & \ensuremath{\approx}305 
 . Com 60 páginas com injeção, o intervalo de 95\% da detecção cobre cerca de \ensuremath{\pm}12 pontos: o ProtectAI detecta 38 de 60 páginas a 0,5 (51–74\%) e o Proventra, 42 de 60 (57–80\%)%
 .
 
-\textbf{Frase e página ordenam os modelos em sentidos opostos.} Nas frases do xTRam1, o nosso modelo tem a maior acurácia (98,7\%) e o maior AUROC (0,999) dos seis; por página, empata com o da deepset no maior aviso falso. O Prompt Guard 2 (86M) mostra a inversão pelo outro lado: terceiro no AUROC por frase do xTRam1 (0,973, atrás do nosso e do ProtectAI), tem o melhor AUROC por página (0,956). O benchmark de frases não previu o comportamento na unidade em que o hook decide%
+\textbf{Frase e página ordenam os modelos em sentidos opostos.} Nas frases do xTRam1, o nosso modelo tem a maior acurácia (98,7\%) e o maior AUROC (0,999) dos seis, num teste que está dentro da distribuição dele (Seção~\ref{sec:3.1}; a v3-pub faz 95,4\% no recorte de 1.500 itens da Tabela~\ref{tab:5}); por página, empata com o da deepset no maior aviso falso. O Prompt Guard 2 (86M) mostra a inversão pelo outro lado: terceiro no AUROC por frase do xTRam1 (0,973, atrás do nosso e do ProtectAI), tem o melhor AUROC por página (0,956). O benchmark de frases não previu o comportamento na unidade em que o hook decide%
 .
 
 \textbf{Saturação, não limiar.} 98,2\% das nossas janelas benignas pontuam pelo menos 0,999. No modelo da deepset a saída é quase constante: o log-odds da página vai de 6,41 a 6,79 nas páginas benignas e de 6,65 a 6,88 nas páginas com injeção (percentis 5 a 95), e por isso o limiar 0,999 derruba de uma vez o aviso falso e a detecção (0\% e 0\%). O nosso ainda guarda alguma ordem (AUROC por página de 0,857), mas o limiar que leva o aviso falso a 2\% fica em $P > 1-5\times10^{-6}$, que depende da quinta casa decimal de uma saída saturada e não serve como ponto de operação. O Prompt Guard 2 (86M) é o caso oposto: o log-odds da página benigna tem mediana \ensuremath{-}4,9 (percentil 95 em \ensuremath{-}3,2), contra +3,6 na página com injeção, e o seu ponto de operação de 2\% fica em $P > 0{,}18$, no meio da faixa de saída. Já a saída do de 22M fica comprimida em janelas longas (probabilidade da página entre cerca de 0,2 e 0,36 para quase toda página), de modo que ele nem avisa nem separa (AUROC por página de 0,639), embora separe melhor frases curtas isoladas (AUROC de 0,893 no xTRam1)%
@@ -535,7 +591,7 @@ Prompt Guard 2 22M & 16,3 & 77,3 & 28,2 & 0,0 & 0,893 & \ensuremath{\approx}305 
 . O Prompt Guard 2 foi cronometrado nas instâncias de notebook ao lado do modelo da Proventra, como âncora: lá o de 86M custa o mesmo que o da Proventra (1.138 contra 1.136 ms por janela; mesmo backbone) e o de 22M, 36\% dele, o que os põe em cerca de 4 s e 1,5 s por página média na VM ARM, por conversão linear%
 .
 
-\textbf{Ressalvas.} As páginas benignas são de um único gênero, e as injeções são texto colado, não marcação escondida. Os dados de treino dos modelos públicos não estão documentados por inteiro; se o Weni deriva da HackAPrompt (Seção~\ref{sec:3.4}), um modelo treinado com a HackAPrompt pode ter o Weni inflado, e o card do Prompt Guard 2 também não lista as suas bases de treino. A definição mais estreita de ataque do Prompt Guard 2 baixa a sua detecção nos dois conjuntos de teste e pode também ajudar a manter limpas as suas páginas benignas. Os números do nosso modelo no xTRam1 carregam a ressalva de sobreposição da Seção~\ref{sec:3.1}. O script dos baselines reproduz os 94,7\% de detecção no Weni da Seção~\ref{sec:4}, o que confere que ele usa o mesmo caminho de inferência do kit implantado%
+\textbf{Ressalvas.} As páginas benignas são de um único gênero, e as injeções são texto colado, não marcação escondida. Os dados de treino dos modelos públicos não estão documentados por inteiro; se o Weni deriva da HackAPrompt (Seção~\ref{sec:3.4}), um modelo treinado com a HackAPrompt pode ter o Weni inflado, e o card do Prompt Guard 2 também não lista as suas bases de treino. A definição mais estreita de ataque do Prompt Guard 2 baixa a sua detecção nos dois conjuntos de teste e pode também ajudar a manter limpas as suas páginas benignas. Os números do nosso modelo no xTRam1 carregam a ressalva de sobreposição da Seção~\ref{sec:3.1}. Tampouco o Weni é limpo para nós: os nossos 94,7\% estão inflados por vazamento (Seção~\ref{sec:4}d), e, diante da v3-pub descontaminada (68,0\%), os modelos públicos com maior detecção no Weni, o ProtectAI v2 (99,3\%) e o Prompt Guard 2 86M (93,7\%), ficam muito à frente, com a ressalva que acabamos de fazer sobre os seus dados de treino. O script dos baselines reproduz os 94,7\% de detecção no Weni da Seção~\ref{sec:4}, o que confere que ele usa o mesmo caminho de inferência do kit implantado%
 .
 
 \section{Diagnóstico}\label{sec:6}
@@ -545,6 +601,7 @@ Prompt Guard 2 22M & 16,3 & 77,3 & 28,2 & 0,0 & 0,893 & \ensuremath{\approx}305 
 A nossa explicação de trabalho, registrada no dia da falha, é que o modelo aprendeu a tratar texto técnico e imperativo como injeção porque os exemplos benignos de treino eram conversacionais (comandos a assistentes do MASSIVE e instruções do Dolly)%
 . Corpora de injeção estão cheios de imperativos dirigidos a um sistema (``ignore'', ``imprima'', ``execute'', ``revele''); os corpora benignos que usamos também contêm imperativos, mas conversacionais, dirigidos a um assistente. A documentação técnica fica do lado da injeção dessa fronteira: imperativos na segunda pessoa, comandos de shell, diretivas de configuração, avisos sobre o que sobrescrever. \textbf{Essa explicação era uma hipótese quando a falha foi encontrada.} Ela é consistente com as evidências abaixo%
 ; o retreino v6 (Seção~\ref{sec:7}) a testa, e a sustenta para a prosa técnica, deixando avisos falsos residuais na marcação dos READMEs%
+; e a v3-pub descontaminada, que continua avisando em toda página, descarta o vazamento como causa (Seção~\ref{sec:7.2})%
 .
 
 \subsection{Evidências}\label{sec:6.2}
@@ -556,6 +613,7 @@ A nossa explicação de trabalho, registrada no dia da falha, é que o modelo ap
 
 \textbf{A documentação estava ausente do treino.} Uma auditoria do conjunto de treino da v6, que contém literalmente 23.578 dos 23.693 textos de treino da v3%
 , contra os 329 textos de metadados de pacotes da máquina não encontrou nenhum texto de treino idêntico a um README, nenhum texto de treino contido em um README (\ensuremath{\geq} 200 caracteres) e nenhum README contido no conjunto de treino; 9 textos de treino compartilhavam um 13-grama com algum README, todos boilerplate XML/XHTML%
+. A mesma auditoria da v3-pub, um subconjunto estrito dos dados de treino da v3, contra 334 textos de metadados não achou nada em comum, nem um 13-grama%
 . Nenhum dos READMEs do benchmark, nem qualquer fragmento longo deles, estava entre os exemplos benignos de treino; não medimos quanto texto parecido com README, vindo de outras fontes, os dados de treino continham.
 
 \textbf{A saturação elimina o limiar como controle.} Como os modelos com fine-tuning foram servidos sem calibração de temperatura%
@@ -596,45 +654,49 @@ A v6 é comparada com a v3 nos mesmos itens: intervalos de Wilson de 95\% por te
 . A aceitação exige taxa de aviso falso por página abaixo de 2\%, com a detecção relatada%
 .
 
+\textbf{Um controle descontaminado.} A v6 mudou três coisas ao mesmo tempo: acrescentou negativos técnicos, tirou as 115 quase duplicatas do Weni e baixou a fração de positivos. A v3-pub (Seção~\ref{sec:3.4}), treinada um dia depois, é um controle parcial. Como a v6, ela não tem as 115 quase duplicatas do Weni, e, ao contrário da v6, não tem negativos técnicos; mas ela também tira as duplicatas dos testes, as traduções delas e as linhas derivadas do xTRam1 que a v6 mantém (1.758 exemplos removidos contra 115), e a sua fração de positivos é de 38,6\%, contra 27,8\% na v6%
+. Comparar a v6 com a v3-pub isola, portanto, os negativos técnicos melhor do que comparar a v6 com a v3, mas não é uma ablação. A v3-pub foi avaliada nos mesmos itens, páginas congeladas, código e máquina da v3 e da v6, e pareada contra as duas%
+.
+
 \subsection{Resultados}\label{sec:7.2}
 
-A Tabela~\ref{tab:9} compara v3 e v6 em frases e a Tabela~\ref{tab:10}, em páginas.
+A Tabela~\ref{tab:10} compara v3, v3-pub e v6 em frases e a Tabela~\ref{tab:11}, em páginas; a Tabela~\ref{tab:5} traz os intervalos e os testes pareados das linhas principais.
 
 \begin{table}[tbp]
 \centering
 \small
-\caption{v3 contra v6 em frases no limiar 0,5: acurácia em \% (no Weni, detecção), nos mesmos itens para os dois modelos, com o teste exato de McNemar sobre predições pareadas. Alguns n diferem da Tabela~\ref{tab:4}: os testes deepset, jackhhao, SPML, Dolly e técnicos usam os seus primeiros 300 itens (todos, quando há menos). ``Weni, limpo'' exclui os 58 textos com uma quase duplicata nos dados de treino da v3. Os testes técnicos são separados por hash das novas fontes de treino da v6.}\label{tab:9}
-\begin{tabular}{@{}lrrrrl@{}}
+\caption{v3, v3-pub e v6 em frases no limiar 0,5: acurácia em \% (no Weni, detecção), nos mesmos itens para os três modelos, com o teste exato de McNemar da v6 contra a v3 sobre predições pareadas (os testes pareados da v3-pub estão na Tabela~\ref{tab:5} e no texto). Alguns n diferem da Tabela~\ref{tab:4}: os testes deepset, jackhhao, SPML, Dolly e técnicos usam os seus primeiros 300 itens (todos, quando há menos). ``Weni, limpo'' exclui os 58 textos com uma quase duplicata nos dados de treino da v3. Os testes técnicos são separados por hash das novas fontes de treino da v6.}\label{tab:10}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=1.00\hsize}Xrrrrrl@{}}
 \toprule
-Teste & n & v3 & v6 & Dif. (p.p.) & McNemar p \\
+Teste & n & v3 & v3-pub & v6 & v6 \ensuremath{-} v3 (p.p.) & McNemar p, v6/v3 \\
 \midrule
-Weni, pt-BR nativo & 300 & 94,7 & 63,7 & \ensuremath{-}31,0 & $<10^{-6}$ \\
-Weni, limpo & 242 & 93,4 & 60,7 & \ensuremath{-}32,6 & $<10^{-6}$ %
+Weni, pt-BR nativo & 300 & 94,7 & 68,0 & 63,7 & \ensuremath{-}31,0 & $<10^{-6}$ \\
+Weni, limpo & 242 & 93,4 & 63,6 & 60,7 & \ensuremath{-}32,6 & $<10^{-6}$ %
  \\
-xTRam1, en & 1.500 & 98,7 & 99,3 & +0,7 & 0,031 \\
-xTRam1-pt, MT & 500 & 96,0 & 98,2 & +2,2 & 0,007 \\
-MASSIVE-pt, benigno & 1.500 & 99,8 & 100,0 & +0,2 & 0,250 \\
-Dolly, benigno en & 300 & 99,7 & 99,3 & \ensuremath{-}0,3 & 1,000 \\
-Dolly-pt, benigno MT & 1.000 & 99,3 & 99,6 & +0,3 & 0,250 \\
-deepset, en & 116 & 94,8 & 88,8 & \ensuremath{-}6,0 & 0,016 \\
-deepset-pt, MT & 116 & 93,1 & 89,7 & \ensuremath{-}3,4 & 0,125 \\
-jackhhao, en & 262 & 98,9 & 99,2 & +0,4 & 1,000 \\
-jackhhao-pt, MT & 262 & 98,1 & 98,5 & +0,4 & 1,000 \\
-SPML, en & 300 & 100,0 & 100,0 & 0,0 & 1,000 \\
-SPML-pt, MT & 300 & 100,0 & 100,0 & 0,0 & 1,000 \\
-Perguntas do SO, benigno técnico & 300 & 33,3 & 100,0 & +66,7 & $<10^{-6}$ \\
-Respostas do SO, benigno técnico & 300 & 13,3 & 100,0 & +86,7 & $<10^{-6}$ \\
-Docstrings, benigno técnico & 300 & 62,0 & 100,0 & +38,0 & $<10^{-6}$ \\
-Fumaça (acertos/10) & 10 & 9/10 & 10/10 & — & 1,000 %
+xTRam1, en & 1.500 & 98,7 & 95,4 & 99,3 & +0,7 & 0,031 \\
+xTRam1-pt, MT & 500 & 96,0 & 94,8 & 98,2 & +2,2 & 0,007 \\
+MASSIVE-pt, benigno & 1.500 & 99,8 & 99,9 & 100,0 & +0,2 & 0,250 \\
+Dolly, benigno en & 300 & 99,7 & 99,7 & 99,3 & \ensuremath{-}0,3 & 1,000 \\
+Dolly-pt, benigno MT & 1.000 & 99,3 & 99,8 & 99,6 & +0,3 & 0,250 \\
+deepset, en & 116 & 94,8 & 94,0 & 88,8 & \ensuremath{-}6,0 & 0,016 \\
+deepset-pt, MT & 116 & 93,1 & 92,2 & 89,7 & \ensuremath{-}3,4 & 0,125 \\
+jackhhao, en & 262 & 98,9 & 99,2 & 99,2 & +0,4 & 1,000 \\
+jackhhao-pt, MT & 262 & 98,1 & 98,9 & 98,5 & +0,4 & 1,000 \\
+SPML, en & 300 & 100,0 & 100,0 & 100,0 & 0,0 & 1,000 \\
+SPML-pt, MT & 300 & 100,0 & 100,0 & 100,0 & 0,0 & 1,000 \\
+Perguntas do SO, benigno técnico & 300 & 33,3 & 41,0 & 100,0 & +66,7 & $<10^{-6}$ \\
+Respostas do SO, benigno técnico & 300 & 13,3 & 31,0 & 100,0 & +86,7 & $<10^{-6}$ \\
+Docstrings, benigno técnico & 300 & 62,0 & 74,0 & 100,0 & +38,0 & $<10^{-6}$ \\
+Fumaça (acertos/10) & 10 & 9/10 & 9/10 & 10/10 & — & 1,000 %
  \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{table}
 
 \begin{table}[tbp]
 \centering
 \small
-\caption{v3 contra v6 em páginas (janelas de 640/160, lista de páginas congelada): aviso falso (AF) nas 217 páginas benignas e detecção (Det.) nas 60 páginas com injeção, em \%, com intervalos de Wilson de 95\% para a v6. A v3 avisa em toda página benigna e detecta toda página com injeção em todo limiar (intervalos 98,3–100\% e 94,0–100\%).}\label{tab:10}
+\caption{v3 contra v6 em páginas (janelas de 640/160, lista de páginas congelada): aviso falso (AF) nas 217 páginas benignas e detecção (Det.) nas 60 páginas com injeção, em \%, com intervalos de Wilson de 95\% para a v6. A v3 avisa em toda página benigna e detecta toda página com injeção em todo limiar (intervalos 98,3–100\% e 94,0–100\%), e a v3-pub também (Tabela~\ref{tab:5}).}\label{tab:11}
 \begin{tabular}{@{}rrlrlr@{}}
 \toprule
 Limiar & AF v3 & AF v6 [IC 95\%] & Det. v3 & Det. v6 [IC 95\%] & Det. v6, Weni / xTRam1 \\
@@ -650,38 +712,41 @@ Limiar & AF v3 & AF v6 [IC 95\%] & Det. v3 & Det. v6 [IC 95\%] & Det. v6, Weni /
 \end{table}
 
 \textbf{O diagnóstico se sustenta para a prosa técnica.} Em frases técnicas benignas separadas do treino, a v3 marcava 66,7\% das perguntas do Stack Overflow, 86,7\% das respostas e 38,0\% das docstrings; a v6 não marca nenhuma das 900%
-. Esses testes vêm das mesmas fontes dos novos dados de treino da v6, portanto estão dentro da distribuição dela; o teste de página não está, já que nenhum README entrou no treino (Seção~\ref{sec:6.2}). Nos READMEs, a fração de janelas benignas de 640 caracteres com nota de pelo menos 0,5 caiu de 99,6\% para 7,2\%, uma redução de catorze vezes%
+. A descontaminação sozinha faz pouco: a v3-pub, sem negativos técnicos, ainda marca 59,0\%, 69,0\% e 26,0\% delas%
+. Esses testes vêm das mesmas fontes dos novos dados de treino da v6, portanto estão dentro da distribuição dela; o teste de página não está, já que nenhum README entrou no treino (Seção~\ref{sec:6.2}). Nos READMEs, a fração de janelas benignas de 640 caracteres com nota de pelo menos 0,5 caiu de 99,6\% (v3) e 98,6\% (v3-pub) para 7,2\% (v6), uma redução de catorze vezes%
 .
 
 \textbf{A correção não basta para o hook.} Os avisos falsos por página caíram de 100\% para 34,6\% no limiar 0,5 e para 19,4\% em 0,999, e a detecção nas páginas com injeção passou a ser informativa (90,0\% e 81,7\%)%
+. Como a v3-pub, descontaminada mas sem negativos técnicos, continua avisando em toda página benigna, essa queda se deve aos negativos técnicos, e não à remoção dos exemplos vazados%
 . O critério de página continua fora de alcance: 26 das 217 páginas benignas (12,0\%) ainda pontuam 1,0000 na resolução gravada, de modo que nenhum limiar leva o aviso falso a 2\%%
-. O AUROC por página é 0,868 na v6; calculado do mesmo modo, sobre probabilidades com quatro casas, a v3 fica com 0,505 porque quase todas as suas páginas empatam em 1,0, enquanto os seus log-odds na execução dos baselines dão 0,857 (Tabela~\ref{tab:7})%
+. O AUROC por página é 0,868 na v6; calculado do mesmo modo, sobre probabilidades com quatro casas, a v3 fica com 0,505 (a v3-pub, com 0,500) porque quase todas as páginas delas empatam em 1,0, enquanto os seus log-odds na execução dos baselines dão 0,857 (Tabela~\ref{tab:8})%
 . A qualidade da ordenação é, portanto, parecida; o que mudou é que a ordenação agora fica numa faixa utilizável da saída. Diante dos baselines públicos, a v6 avisa em mais páginas benignas no limiar 0,5 que o ProtectAI v2 e o modelo mDeBERTa (34,6\% contra 15,7\% e 14,7\%) e detecta mais páginas com injeção (90\% contra 63\% e 70\%): ela ocupa outro ponto da mesma troca, e não um ponto além dela%
 . Com as mesmas janelas de 640/160, o Prompt Guard 2 (86M) ordena as páginas melhor que a v6 (AUROC de 0,923 contra 0,868, este calculado sobre probabilidades com quatro casas) e opera com 2,3\% de aviso falso e 65\% de detecção no limiar 0,5%
 . As janelas que ainda disparam, uma mediana de 2 por página marcada, são boilerplate de README que não existe no Stack Overflow nem em docstrings: badges em HTML, links de patrocínio e de doação, tabelas markdown e listas de links%
 .
 
-\textbf{A correção custou detecção em pt-BR.} No Weni, a v6 detecta 63,7\% contra 94,7\% da v3: a v6 erra 94 textos que a v3 acerta, e o contrário acontece uma vez (McNemar $p<10^{-6}$). Nos 242 textos do Weni sem quase duplicata nos dados de treino da v3, a detecção cai de 93,4\% para 60,7\% (80 textos contra 1; $p<10^{-6}$)%
-. Os outros testes com ataques ficam iguais ou melhoram (xTRam1-pt 96,0\% \ensuremath{\rightarrow} 98,2\%, $p = 0{,}007$; jackhhao e SPML sem mudança), exceto o deepset em inglês (94,8\% \ensuremath{\rightarrow} 88,8\%, $p = 0{,}016$)%
-. A fração menor de positivos no treino da v6 (27,8\% contra 39,8\%) empurra as decisões para benigno, mas não explica a queda no Weni: baixar o limiar quase não a recupera (67,0\% em 0,1; 69,3\% em 0,01), porque 23\% dos textos do Weni recebem P = 0,0000%
-. Os textos perdidos são curtos (705 caracteres em média, contra 1.101 dos demais) e apresentados como tarefas legítimas (``gere um título de filme sobre a frase...'', ``traduza...'', ``você é um mecanismo de busca...''), com a frase-alvo do ataque fatiada ou ofuscada%
-. A troca depende da classe negativa. Pareando as injeções do Weni com os negativos técnicos, a v3 não detecta nenhuma com taxa de falso positivo de 2\% (na resolução gravada) e a v6 detecta 77\% (AUC 0,843 contra 0,885), enquanto, contra negativos do tipo assistente, a v3 é o modelo melhor (AUC 0,999 contra 0,883)%
+\textbf{A maior parte da queda no Weni pode não ser da correção.} No Weni, a v6 detecta 63,7\% contra 94,7\% da v3 (94 textos contra 1; McNemar $p<10^{-6}$), e 60,7\% contra 93,4\% nos 242 textos limpos%
+. Lemos isso primeiro como o preço de tirar o atalho. O controle descontaminado enfraquece essa leitura: a v3-pub, que não tem negativos técnicos, detecta 68,0\% (63,6\% nos textos limpos). Contra ela, a v6 perde 4,3 pontos, com 47 textos detectados só pela v3-pub e 34 só pela v6 (McNemar $p = 0{,}18$; nos textos limpos, 39 contra 32, $p = 0{,}48$)%
+. A leitura mais econômica é que o que a v6 e a v3-pub têm em comum, a perda de dados de treino próximos do teste, responde pela maior parte das duas quedas, e os negativos técnicos, por pouco no limiar 0,5. Não é a única leitura. A v5 perdeu os mesmos 115 vizinhos e manteve 89,7\%, embora também tenha ganhado cerca de 107 ataques do HackAPrompt que podem ser parentes do Weni (Seção~\ref{sec:4}c), e a v3-pub erra mais onde a similaridade com os 115 é menor (Seção~\ref{sec:4}d); o fator comum pode, então, ser os cortes mais amplos da v3-pub, e não os 115, e nesse caso a perda da v6 deveria mais aos negativos novos do que os 4,3 pontos sugerem. As bases também diferem (Seção~\ref{sec:7.1}). O controle ``v3 menos as 115'' decidiria entre essas leituras. Na ordenação, o custo dos negativos novos é mais claro. Pareada com negativos do tipo assistente, a v3-pub ainda separa bem o Weni (AUC 0,977; 95,7\% de detecção com taxa de falso positivo de 2\%), de modo que os seus erros em 0,5 são sobretudo de calibração; a v6 o separa pior (AUC 0,883; 77,0\%) e dá P = 0,0000 a 23\% dos textos do Weni, contra 4,3\% na v3-pub, de modo que baixar o limiar quase não os recupera (67,0\% em 0,1 e 69,3\% em 0,01, contra 73,0\% e 78,0\% na v3-pub)%
+. Pareadas com os negativos técnicos, a ordem se inverte: a v3 e a v3-pub não detectam nenhuma injeção do Weni com taxa de falso positivo de 2\% (AUC 0,843 e 0,655, na resolução gravada), enquanto a v6 detecta 77\% (AUC 0,885)%
+. Os textos que a v6 perde em relação à v3 são curtos (705 caracteres em média, contra 1.101 dos demais) e apresentados como tarefas legítimas (``gere um título de filme sobre a frase...'', ``traduza...'', ``você é um mecanismo de busca...''), com a frase-alvo do ataque fatiada ou ofuscada%
+. Os outros testes com ataques ficam iguais ou melhoram (xTRam1-pt 96,0\% \ensuremath{\rightarrow} 98,2\%, $p = 0{,}007$; jackhhao e SPML sem mudança), exceto o deepset em inglês (94,8\% \ensuremath{\rightarrow} 88,8\%, $p = 0{,}016$), em que a v3-pub fica em 94,0\% (v6 contra v3-pub: $p = 0{,}07$)%
 .
 
-\textbf{Leitura.} Parte da acurácia da v3 no Weni se apoiava no mesmo atalho que produzia os avisos falsos: texto com cara de instrução é ataque. Quando o modelo aprende que instruções técnicas são benignas, os ataques do Weni apresentados como tarefa também passam a parecer benignos. Nenhuma das duas versões atende aos dois critérios: a v3 reprova no critério de página e a v6, no critério do Weni. A v3 continua no kit apenas para texto conversacional, e o hook continua desligado%
-. A comparação não é uma ablação limpa: além de acrescentar negativos técnicos, a v6 tirou as 115 quase duplicatas do Weni e mudou o equilíbrio de classes, numa única execução, e um controle ``v3 limpa'' (v3 menos as 115, sem os negativos técnicos) não foi rodado%
+\textbf{Leitura.} Dois efeitos que a nossa primeira leitura confundia agora se separam, um com firmeza e outro provisoriamente. Com firmeza: são os negativos técnicos, e não a descontaminação, que melhoram o texto técnico e as páginas; eles levam os avisos falsos técnicos de 26–69\% na v3-pub a 0\% e os avisos falsos por página de 100\% a 34,6\% no limiar 0,5, onde a descontaminação sozinha não muda nada nas páginas. Provisoriamente: a maior parte da queda no Weni é compartilhada com a descontaminação, e não causada pelos negativos técnicos, cujo custo no Weni é pequeno em 0,5 e visível na ordenação contra negativos conversacionais; o controle que isola os 115 vizinhos do Weni não foi rodado%
+. Nenhuma das três versões atende aos dois critérios: a v3 erra o Weni por um texto com um placar inflado e reprova no critério de página, e a v3-pub e a v6 reprovam nos dois. A v3 continua no kit apenas para texto conversacional, e o hook continua desligado%
 .
 
 \section{Lições de engenharia para a integração com agentes}\label{sec:8}
 
 O guard foi testado de ponta a ponta antes de ser ligado, e esse teste encontrou três defeitos no hook (I1–I3) antes mesmo que a falha por página ficasse visível%
 ; um defeito relacionado, de formato de resposta, no cliente do classificador (I4) tinha sido corrigido mais cedo no mesmo dia%
-. Listamos os defeitos que se generalizam para qualquer classificador colocado dentro do laço de um agente (Tabela~\ref{tab:11}; o registro completo de incidentes está no Apêndice~\ref{app:B}).
+. Listamos os defeitos que se generalizam para qualquer classificador colocado dentro do laço de um agente (Tabela~\ref{tab:12}; o registro completo de incidentes está no Apêndice~\ref{app:B}).
 
 \begin{table}[tbp]
 \centering
 \small
-\caption{Defeitos de integração.}\label{tab:11}
+\caption{Defeitos de integração.}\label{tab:12}
 \begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash\hsize=0.60\hsize}X>{\raggedright\arraybackslash\hsize=1.50\hsize}X>{\raggedright\arraybackslash\hsize=0.90\hsize}X@{}}
 \toprule
 \# & Sintoma & Causa raiz & Correção \\
@@ -728,17 +793,18 @@ Depois das correções, o hook tem 9 casos de teste, e as suítes do hook, do cl
 
 \subsection{O que a acurácia de benchmark mediu aqui}\label{sec:9.1}
 
-Os números da Tabela~\ref{tab:4} foram produzidos com partições fixas, um critério registrado em commit antes da medição, uma trava anti-vazamento a partir da v4 e nenhum ajuste nos conjuntos de teste, com as sobreposições da Seção~\ref{sec:3.1} como exceções conhecidas. E, ainda assim, os números responderam a uma pergunta diferente da que importava. Os benchmarks mediram se o modelo separa injeções de texto benigno majoritariamente \emph{conversacional}, porque era disso que o lado benigno dos testes era feito em grande parte: MASSIVE-pt e Dolly-pt são pedidos curtos a um assistente (o Dolly entra só pelo campo de instrução%
-), os conjuntos em inglês pareiam injeções sobretudo com prompts de tipo conversa, e o Weni não contém nenhum item benigno. O único item benigno técnico escrito na suíte foi uma frase de teste de fumaça, e a partir da rodada A ela estava errada em toda rodada em que sua nota foi gravada (Seção~\ref{sec:6.2}). Os baselines públicos mostram o mesmo de fora do nosso pipeline: nas frases do xTRam1 o nosso modelo fica em primeiro entre seis, e por página empata em último (Seção~\ref{sec:5.4}).
+Os números da Tabela~\ref{tab:4} foram produzidos com partições fixas, um critério registrado em commit antes da medição, uma trava anti-vazamento a partir da v4 e nenhum ajuste nos conjuntos de teste, com as sobreposições da Seção~\ref{sec:3.1} como exceções conhecidas. Mesmo assim, estavam inflados: o melhor placar no Weni dependia de dados de treino que uma descontaminação remove (Seção~\ref{sec:4}d). E responderam a uma pergunta diferente da que importava. Os benchmarks mediram se o modelo separa injeções de texto benigno majoritariamente \emph{conversacional}, porque era disso que o lado benigno dos testes era feito em grande parte: MASSIVE-pt e Dolly-pt são pedidos curtos a um assistente (o Dolly entra só pelo campo de instrução%
+), os conjuntos em inglês pareiam injeções sobretudo com prompts de tipo conversa, e o Weni não contém nenhum item benigno. O único item benigno técnico escrito na suíte foi uma frase de teste de fumaça, e a partir da rodada A ela estava errada em toda rodada em que sua nota foi gravada (Seção~\ref{sec:6.2}). Os baselines públicos mostram o mesmo de fora do nosso pipeline: nas frases do xTRam1 o nosso modelo fica em primeiro entre seis, ajudado por dados da mesma distribuição, e por página empata em último (Seção~\ref{sec:5.4}).
 
-Seguem quatro correções concretas para quem avalia um classificador de injeção para uso por agentes:
+Seguem cinco correções concretas para quem avalia um classificador de injeção para uso por agentes:
 
 \begin{enumerate}
 \item \textbf{O lado benigno do teste precisa ser tirado da distribuição de implantação.} Para um guard de web fetch ou de leitura de arquivos, isso significa documentação, código, configuração, logs e páginas web comuns, não conversa. O único modelo público da nossa comparação que mantém o aviso falso por página perto de 2\%, o Prompt Guard 2 (86M), é também aquele cujo card relata explicitamente dados benignos da web no treino (Seção~\ref{sec:5.4}).
 \item \textbf{Avalie na unidade de decisão.} Se a decisão implantada é ``avisar sobre esta página'', a métrica é a taxa de aviso falso por página no limiar implantado, com a detecção medida nas mesmas páginas com um ataque inserido.
-\item \textbf{Relate intervalos e margens.} Com n = 300 o critério de 95\% não podia ser distinguido do resultado (Seção~\ref{sec:4}b); e o efeito de capacidade de 20 pontos entre e5-base e e5-large nos mesmos dados %
+\item \textbf{Relate intervalos e margens.} Com n = 300 o critério de 95\% não podia ser distinguido do resultado (Seção~\ref{sec:4}b); e o efeito de capacidade de 20 pontos entre e5-base e e5-large nos mesmos dados (com vazamento) %
 supera a maioria das diferenças entre as receitas de dados que testamos.
-\item \textbf{Rode de novo todo teste de positivos depois de mudar a classe negativa.} Acrescentar os negativos que faltavam consertou a prosa técnica e quebrou os ataques apresentados como tarefa (Seção~\ref{sec:7.2}); uma correção voltada para avisos falsos precisa ser conferida de novo no conjunto ouro antes de ir para produção.
+\item \textbf{Descontamine contra todos os testes e confira a auditoria com um retreino.} Um corte de cosseno em 0,9 contra o conjunto ouro, aplicado a posteriori, estimou em 1,3 ponto o vazamento no nosso melhor modelo; retreinar sem duplicatas nem quase duplicatas dos testes custou 26,7 (Seção~\ref{sec:4}d). As similaridades de embeddings são comprimidas, então um limiar que parece rigoroso pode separar pouco. Confira todo teste, inclusive as cópias traduzidas: duplicatas exatas após normalização apareceram em quase todo teste que usamos (Seção~\ref{sec:3.1}).
+\item \textbf{Separe os efeitos antes de atribuí-los.} Atribuímos primeiro a queda da v6 no Weni aos negativos novos; o controle descontaminado mostrou que a maior parte dela é compartilhada com a descontaminação (Seção~\ref{sec:7.2}). Uma correção voltada para avisos falsos precisa ser conferida de novo no conjunto ouro, e contra um controle que difira dela só pela correção.
 \end{enumerate}
 
 \subsection{Modelos de decisão tipados com agentes: um diálogo com Akita (2026)}\label{sec:9.2}
@@ -751,10 +817,10 @@ Os nossos modelos com fine-tuning tinham o defeito análogo (saídas não calibr
 
 \textbf{Treinar um classificador dedicado exige definir a tarefa pela sua distribuição de entrada.} O post anterior aponta um classificador dedicado à tarefa como uma alternativa a uma API de decisão hospedada \citep{akita2026typesafe}. Fizemos exatamente isso, e o classificador era excelente na tarefa tal como definida pelos seus rótulos de treino. A tarefa tal como definida pelas suas entradas (conteúdo buscado arbitrário, em sua maioria técnico e benigno) nunca foi representada. Para modelos de decisão em geral, a pergunta a fazer não é só ``quais são as opções?'', mas também ``como é a classe negativa em uso?''.
 
-\textbf{O escalonamento por confiança colapsa sob saturação.} Um padrão comum de integração encaminha decisões de alta confiança para automação e as de baixa confiança para um modelo mais forte ou para um humano. Com as probabilidades cravadas em 1,0, a faixa de escalonamento fica vazia: toda página é um caso ``fácil'', confiante e errado. A v6 mostra a imagem espelhada: 23\% dos ataques do Weni recebem P = 0,0000, confiantes e errados na outra direção%
+\textbf{O escalonamento por confiança colapsa sob saturação.} Um padrão comum de integração encaminha decisões de alta confiança para automação e as de baixa confiança para um modelo mais forte ou para um humano. Com as probabilidades cravadas em 1,0, a faixa de escalonamento fica vazia: toda página é um caso ``fácil'', confiante e errado. A v6 mostra a imagem espelhada: 23\% dos ataques do Weni recebem P = 0,0000, confiantes e errados na outra direção (4,3\% na v3-pub)%
 . O roteamento por confiança só é tão bom quanto a calibração \emph{sob a distribuição de implantação}.
 
-\textbf{Corrigir a classe negativa move a fronteira também para a classe positiva.} O conserto óbvio, acrescentar o tipo de exemplo negativo que faltava, funcionou no que mirava e quebrou outra coisa: ataques formulados como tarefas comuns ficaram indistinguíveis de instruções técnicas (Seção~\ref{sec:7.2}). Quando as duas classes compartilham a forma de superfície, mais dados de um lado deslocam a fronteira através do outro. Um conjunto fechado de opções não torna simples o julgamento por trás dele, e uma interface tipada não avisa o integrador quando é esse o caso.
+\textbf{Corrigir a classe negativa pode mover a fronteira também para a classe positiva, mas confira antes de concluir que moveu.} Lemos primeiro a perda de 31 pontos da v6 no Weni como o preço do conserto: ataques formulados como tarefas comuns ficando indistinguíveis de instruções técnicas. O controle descontaminado (Seção~\ref{sec:7.2}) mostra que a maior parte dessa perda é compartilhada com a descontaminação; no limiar 0,5 os negativos novos custam 4,3 pontos contra ele, dentro do ruído, enquanto na ordenação contra negativos conversacionais custam mais (AUC 0,977 contra 0,883). Quando as duas classes compartilham a forma de superfície, mais dados de um lado podem deslocar a fronteira através do outro, e uma interface tipada não avisa o integrador quando isso acontece; mas uma queda num conjunto ouro só é evidência de fronteira deslocada depois de descartado o vazamento.
 
 \textbf{Falha silenciosa é propriedade da integração, não do modelo.} As evidências do post dizem respeito ao comportamento do modelo; o nosso bug mais perigoso (I3) não tinha nada a ver com o modelo. Um guard que falha aberto e em silêncio parece exatamente um guard que não encontra nada.
 
@@ -763,29 +829,31 @@ Os nossos modelos com fine-tuning tinham o defeito análogo (saídas não calibr
 \citet{liu2026passing} reavalia quinze detectores públicos em benchmarks de agentes (AgentDojo, $\tau$-bench, BIPIA) e em texto benigno que inclui cerca de 2.500 trechos de READMEs do GitHub, de 80 a 220 palavras. O estudo relata que o classificador da deepset marca todos os trechos de README e é inutilizável, que tirar a marcação HTML dos READMEs corta pela metade ou mais a taxa de falso positivo de dois outros detectores, e que os falsos positivos em texto comum não preveem os falsos positivos em saídas de ferramentas. Suas recomendações são medir falsos positivos nas entradas do próprio agente, relatar a detecção numa taxa fixa e baixa de falso positivo, verificar se o detector foi treinado no benchmark e preferir detectores treinados com entradas parecidas com as que vão filtrar%
 . Ele apareceu em 2 de outubro, com o nosso estudo em andamento, e só o encontramos durante a revisão da literatura; os dois foram feitos de forma independente.
 
-Lemos o nosso estudo como uma replicação independente dessa lacuna, com três diferenças. Primeiro, outra língua e um detector treinado por nós. Os seus dados de treino são conhecidos, então a lacuna pôde ser rastreada até a composição do lado benigno e o diagnóstico pôde ser testado por retreino (Seção~\ref{sec:7}), o que um estudo de modelos de terceiros não consegue fazer. Onde os dois estudos se sobrepõem, eles concordam: o modelo da deepset avisa em toda página no nosso protocolo, como em todo trecho no de Liu. Segundo, a unidade de avaliação: pontuamos páginas inteiras pelo caminho de código de um hook implantado, o que expõe a amplificação sobre as janelas (Seção~\ref{sec:5.3}), a troca ligada ao tamanho da janela (Seção~\ref{sec:5.4}) e os defeitos de integração da Seção~\ref{sec:8}. Terceiro, o enquadramento: o nosso classificador foi implantado como uma decisão tipada, e a Seção~\ref{sec:9.2} tira as consequências para essa família de modelos.
+Lemos o nosso estudo como uma replicação independente dessa lacuna, com três diferenças. Primeiro, outra língua e um detector treinado por nós. Os seus dados de treino são conhecidos, então a lacuna pôde ser rastreada até a composição do lado benigno e o diagnóstico pôde ser testado por retreino (Seção~\ref{sec:7}), o que um estudo de modelos de terceiros não consegue fazer. Onde os dois estudos se sobrepõem, eles concordam: o modelo da deepset avisa em toda página no nosso protocolo, como em todo trecho no de Liu. O nosso resultado de vazamento é também um caso concreto da terceira recomendação de Liu, verificar se o detector foi treinado no benchmark: o nosso próprio modelo, com uma auditoria de vazamento no pipeline, tinha sido treinado com duplicatas e vizinhos próximos dos seus testes (Seção~\ref{sec:4}d). Segundo, a unidade de avaliação: pontuamos páginas inteiras pelo caminho de código de um hook implantado, o que expõe a amplificação sobre as janelas (Seção~\ref{sec:5.3}), a troca ligada ao tamanho da janela (Seção~\ref{sec:5.4}) e os defeitos de integração da Seção~\ref{sec:8}. Terceiro, o enquadramento: o nosso classificador foi implantado como uma decisão tipada, e a Seção~\ref{sec:9.2} tira as consequências para essa família de modelos.
 
 O resultado de Liu sobre marcação toca diretamente o nosso. As janelas que a v6 ainda marca são badges, links de patrocínio e tabelas markdown (Seção~\ref{sec:7.2}), e as quatro páginas benignas em que o Prompt Guard 2 (86M) avisa também são trechos fora da prosa (uma tabela de marcas de verificação, badges, uma transcrição de terminal, uma tabela de opções; Seção~\ref{sec:6.3}). As duas observações são coerentes com a marcação e outros conteúdos fora da prosa, e não a prosa imperativa, serem a principal fonte restante de avisos falsos uma vez coberto o texto técnico. Não medimos os nossos modelos com e sem marcação. Fazer isso, e acrescentar como negativos boilerplate de README tirado de uma fonte disjunta do benchmark, é o próximo experimento.
 
 \subsection{Sobre resultados negativos}\label{sec:9.4}
 
 O guard fica fora do hook de web fetch; a v3 continua no kit local apenas para texto conversacional, e o kit segue com outras decisões%
-. Relatamos a falha em detalhe porque o caminho que levou a ela (dados abertos, splits cuidadosos, um critério fixado de antemão, um resultado forte no benchmark) é o caminho que a maioria dos praticantes seguiria, e o passo que apanhou o problema, avaliar na unidade de uso em conteúdo comum, é barato e ainda raramente relatado; uma exceção recente mede detectores em trechos benignos de READMEs em inglês, e não em páginas inteiras \citep{liu2026passing}. A tentativa de correção é relatada pela mesma razão: ela funcionou no que mirava, e o preço só apareceu num teste para o qual ela não estava voltada.
+. Relatamos a falha em detalhe porque o caminho que levou a ela (dados abertos, splits cuidadosos, um critério fixado de antemão, um resultado forte no benchmark) é o caminho que a maioria dos praticantes seguiria, e o passo que apanhou o problema, avaliar na unidade de uso em conteúdo comum, é barato e ainda raramente relatado; uma exceção recente mede detectores em trechos benignos de READMEs em inglês, e não em páginas inteiras \citep{liu2026passing}. A tentativa de correção e o retreino descontaminado são relatados pela mesma razão: a primeira funcionou no que mirava, e o segundo mostrou que a maior parte do preço que atribuímos a ela é compartilhada com o vazamento saindo do benchmark.
 
 \section{Limitações}\label{sec:10}
 
 \begin{itemize}
-\item \textbf{Uma única execução por configuração.} Não se mediu variância entre sementes; diferenças de poucos pontos entre rodadas (por exemplo, v3 contra v5) podem ser ruído%
-.
+\item \textbf{Uma única execução por configuração.} Não se mediu variância entre sementes; diferenças de poucos pontos entre rodadas (por exemplo, v3 contra v5, ou v3-pub contra v6 no Weni) podem ser ruído%
+. A diferença pareada de 26,7 pontos entre v3 e v3-pub é grande para um efeito de semente, mas isso não foi medido.
 \item \textbf{Vazamento no melhor modelo.} A v3 foi treinada antes da trava anti-vazamento; 115 dos seus exemplos de treino são quase duplicatas de textos do Weni%
-, o que vale cerca de 1,3 ponto dos seus 94,7\% (Seção~\ref{sec:4}d)%
+. Um corte a posteriori em cosseno 0,9 estimou o efeito deles em 1,3 ponto; o retreino descontaminado perde 26,7 (Seção~\ref{sec:4}d)%
+. Qual das remoções da v3-pub responde pelo efeito não está isolado: ela também removeu 967 exemplos de ataque, 513 deles duplicatas exatas de outros testes, e o controle ``v3 menos as 115'' não foi rodado%
 . A divisão por fonte dos 4.008 exemplos removidos na v4 não foi gravada, e a contabilidade da Seção~\ref{sec:4}(c) é uma inferência entre exportações (lacuna L1)%
 .
-\item \textbf{O xTRam1 não está fora da distribuição}, e 14 itens de teste do jackhhao vazaram para o treino (Seção~\ref{sec:3.1})%
+\item \textbf{O xTRam1 não está fora da distribuição} da v2 à v6, e duplicatas exatas de itens de teste estavam nos dados de treino da v3 em quase todo teste, entre elas 20 dos 262 itens do jackhhao e 83 dos 1.500 do xTRam1 (Seção~\ref{sec:3.1})%
+. Só a v3-pub está livre delas; no xTRam1 ela faz 95,4\%, contra 98,7\% da v3%
 .
 \item \textbf{Avaliação incompleta da v3.} A v3 só foi medida no deepset, no jackhhao e nos primeiros 300 itens do SPML na comparação da v6, e nunca no rikka, ShieldLM ou yanis; números de alguns desses que aparecem nos metadados do pack implantado não têm origem rastreável e não são usados aqui%
 .
-\item \textbf{Intervalos.} Os intervalos de Wilson são relatados para o Weni, para as taxas por página e para as páginas da comparação entre v3 e v6; os demais testes das Tabelas~\ref{tab:4} e 9 não têm intervalos (lacuna L6)%
+\item \textbf{Intervalos.} Os intervalos de Wilson são relatados para o Weni, para as taxas por página, para as páginas da comparação entre v3 e v6 e para as linhas da Tabela~\ref{tab:5}; os demais testes das Tabelas~\ref{tab:4} e 10 não têm intervalos no texto (lacuna L6; o v3pub.json os traz)%
 .
 \item \textbf{Idioma.} O conjunto benigno em português (MASSIVE) é português europeu%
 ; as traduções automáticas não foram revisadas por um humano.
@@ -802,7 +870,7 @@ O guard fica fora do hook de web fetch; a v3 continua no kit local apenas para t
 .
 \item \textbf{Avisos dos data cards.} O card do SPML desaconselha treinar detectores com ele; nós o usamos e apontamos isso como ameaça à validade%
 .
-\item \textbf{Afirmação causal testada só em parte.} A v6 mudou três coisas ao mesmo tempo (negativos técnicos, remoção das 115 quase duplicatas do Weni, equilíbrio de classes) numa única execução, e o controle ``v3 limpa'' não foi rodado; os seus testes técnicos estão dentro da distribuição dela; e não medimos o efeito da marcação (Seções~\ref{sec:7.2} e~\ref{sec:9.3})%
+\item \textbf{Afirmações causais testadas só em parte.} A v6 mudou três coisas ao mesmo tempo (negativos técnicos, remoção das 115 quase duplicatas do Weni, equilíbrio de classes) numa única execução. A v3-pub descontaminada é um controle parcial, mas as bases não são idênticas: a v6 mantém as duplicatas dos testes, as traduções delas e as linhas derivadas do xTRam1 que a v3-pub remove, e a v3-pub remove 1.758 exemplos onde a v6 remove 115 (Seção~\ref{sec:7.1}). A atribuição da queda no Weni continua, portanto, provisória até o controle ``v3 menos as 115'' ser rodado. Os testes técnicos da v6 estão dentro da distribuição dela, e não medimos o efeito da marcação (Seções~\ref{sec:7.2} e~\ref{sec:9.3})%
 .
 \item \textbf{Resolução das notas.} A nossa avaliação gravou probabilidades arredondadas em quatro casas, o que limita a análise de limiar e de AUROC perto de 0 e de 1 (Seção~\ref{sec:7.2}); só a execução dos baselines gravou log-odds%
 .
@@ -816,13 +884,13 @@ O guard fica fora do hook de web fetch; a v3 continua no kit local apenas para t
 
 \section{Conclusão}\label{sec:11}
 
-Um classificador de prompt injection em português do Brasil, treinado só com dados abertos, passou nos seus benchmarks de frases, perdeu por um texto o critério do conjunto ouro fixado de antemão e deu aviso falso em toda página de documentação técnica que lhe foi mostrada. A falha não é exclusiva do nosso modelo, já que um classificador público faz o mesmo, e a unidade de avaliação muda o veredito: os benchmarks por frase e por página ordenaram os seis modelos em sentidos opostos. Só um modelo público, o Llama Prompt Guard 2 (86M), fica perto de 2\% de aviso falso por página (1,8\%, com 62\% de detecção); é também aquele cujo card relata dados benignos da web no treino, e ainda assim ele detecta só 30\% das injeções curtas e não atinge o nosso critério por frase no Weni, de modo que estreita o problema sem fechá-lo. Acrescentar texto benigno técnico eliminou os avisos falsos em frases técnicas e a maior parte deles nas páginas, ao custo de cerca de um terço da detecção em ataques nativos em pt-BR, de modo que nenhuma versão que treinamos atende aos dois critérios. As conclusões práticas são modestas: tirar o lado benigno do teste da distribuição de implantação, avaliar na unidade de decisão pelo caminho de código da implantação, congelar as entradas e guardar as notas cruas, e esperar que uma correção numa classe mova a fronteira da outra. O hook continua desligado.
+Um classificador de prompt injection em português do Brasil, treinado só com dados abertos, passou nos seus benchmarks de frases, perdeu por um texto o critério do conjunto ouro fixado de antemão e deu aviso falso em toda página de documentação técnica que lhe foi mostrada. As duas metades desse resultado se mostraram importantes. O número do benchmark estava inflado: retreinada sem duplicatas nem quase duplicatas dos testes, a mesma receita detecta 68,0\% dos ataques nativos em pt-BR, e não 94,7\%, uma inflação que uma auditoria por similaridade de cosseno tinha estimado em 1,3 ponto. A falha em uso é real e separada: o modelo descontaminado continua avisando em toda página. Ela não é exclusiva do nosso modelo, já que um classificador público faz o mesmo, e a unidade de avaliação muda o veredito: os benchmarks por frase e por página ordenaram os seis modelos em sentidos opostos. Só um modelo público, o Llama Prompt Guard 2 (86M), fica perto de 2\% de aviso falso por página (1,8\%, com 62\% de detecção); é também aquele cujo card relata dados benignos da web no treino, e ainda assim ele detecta só 30\% das injeções curtas e não atinge o nosso critério por frase no Weni, de modo que estreita o problema sem fechá-lo. Acrescentar texto benigno técnico eliminou os avisos falsos em frases técnicas e a maior parte deles nas páginas; contra o controle descontaminado, custou 4,3 pontos de detecção no Weni no limiar 0,5, dentro do ruído, de modo que a maior parte da queda que atribuíamos a ele é compartilhada com a descontaminação, à espera de um controle que isole os vizinhos do Weni. Nenhuma versão que treinamos atende aos dois critérios. As conclusões práticas são modestas: descontaminar contra todos os testes e conferir a auditoria com um retreino; tirar o lado benigno do teste da distribuição de implantação; avaliar na unidade de decisão pelo caminho de código da implantação; congelar as entradas e guardar as notas cruas; e separar os efeitos antes de atribuí-los. O hook continua desligado.
 
 \section{Ética e dados}\label{sec:12}
 
 Todos os dados de treino e de avaliação são públicos. As licenças foram lidas da API do Hugging Face Hub, dos dataset cards e dos arquivos LICENSE/NOTICE em 6 de outubro de 2026%
 . Dois conjuntos de avaliação (Weni e xTRam1) não declaram licença; nós os carregamos só para avaliação, baixamos em tempo de execução e não os redistribuímos, nem as suas traduções%
-. Porém, 577 linhas do split de treino do xTRam1 chegaram indiretamente aos nossos dados de treino, pelo ShieldLM (Seção~\ref{sec:3.1}); os pesos ``v3-pub'' planejados as removem%
+. Porém, 577 linhas do split de treino do xTRam1 chegaram indiretamente aos nossos dados de treino, pelo ShieldLM (Seção~\ref{sec:3.1}); os pesos da v3-pub, treinada em 7 de outubro, as excluem, junto com as linhas do ShieldLM cuja licença difere entre a origem e o agregador (Seção~\ref{sec:3.4})%
 . O conteúdo do Dolly e do Stack Overflow é CC-BY-SA; planejamos publicar os pesos sob MIT seguindo o precedente de modelos treinados nos mesmos dados, e declaramos essa posição explicitamente%
 . O Llama Prompt Guard 2 foi avaliado sob a Llama 4 Community License apenas como baseline: as suas saídas não foram usadas para treinar, calibrar ou destilar os nossos modelos, e os seus pesos não são redistribuídos (a cópia usada para rodá-lo fica num armazenamento privado do serviço de notebooks)%
 .
@@ -830,7 +898,7 @@ Todos os dados de treino e de avaliação são públicos. As licenças foram lid
 O benchmark de páginas não redistribui nenhum README: ele distribui nomes de pacotes, versões e hashes, e um construtor baixa as páginas do PyPI e as confere%
 . Nenhum dado pessoal, texto privado ou dado organizacional foi usado neste estudo. O modelo publicado detecta injeções e não é uma ferramenta de ataque; não publicamos texto de ataque além do que os conjuntos públicos citados já contêm.
 
-Um guard com taxa de aviso falso de 100\% é nocivo de um jeito sutil: os usuários aprendem a ignorar seus avisos. O model card vai declarar a falha por página na primeira linha%
+Um guard com taxa de aviso falso de 100\% é nocivo de um jeito sutil: os usuários aprendem a ignorar seus avisos. O model card vai declarar a falha por página na primeira linha e relatar os números da própria v3-pub, não os 94,7\% da v3, inflados por vazamento%
 .
 
 \textbf{Uso de assistência de IA.} Boa parte do código experimental, dos logs e do primeiro rascunho deste artigo foi produzida com a ajuda de um agente de programação baseado em LLM. Todo número relatado é rastreado até uma linha de log, um arquivo de resultado ou um commit; as afirmações que não puderam ser rastreadas estão listadas como limitações. %
@@ -843,9 +911,10 @@ O código, os resultados e o benchmark de páginas estão publicados em \url{htt
 \begin{itemize}
 \item \textbf{Código} (Apache-2.0): pipeline de treino e exportação, tradução determinística com cache, ensemble de pesos fixos, construtor e avaliador do benchmark de páginas, um hook de agente de referência (desligado por padrão), testes. Repositório: \url{https://github.com/alucardigo/passing-the-benchmark}. O repositório público começa sem o histórico de desenvolvimento%
 .
-\item \textbf{Pesos} (MIT): v3 ou, de preferência, uma ``v3-pub'' livre de vazamento, retreinada sem as linhas do ShieldLM derivadas do xTRam1 e sem os itens duplicados do jackhhao. A v6 não atende ao critério por página (Seção~\ref{sec:7.2}) e não é publicada como guard%
-. O model card abre com a falha por página.
-\item \textbf{Resultados} (CC-BY-4.0): um JSON por rodada com o SHA-256 dos pesos e as probabilidades por página indexadas, as probabilidades por item da comparação entre v3 e v6, e os log-odds por página e por frase da execução dos baselines, sem texto de terceiros%
+\item \textbf{Pesos} (MIT): a v3-pub, treinada e avaliada (Seção~\ref{sec:3.4}, Tabela~\ref{tab:5}), mas ainda não publicada. O card dela vai abrir com a falha por página e relatar os seus próprios números (Weni 68,0\%, xTRam1 95,4\%, 217 de 217 avisos falsos por página), não os da v3%
+. A v6 não atende ao critério por página (Seção~\ref{sec:7.2}) e não é publicada como guard%
+.
+\item \textbf{Resultados} (CC-BY-4.0): um JSON por rodada com o SHA-256 dos pesos e as probabilidades por página indexadas, as probabilidades por item das comparações entre v3 e v6 e com a v3-pub, e os log-odds por página e por frase da execução dos baselines, sem texto de terceiros%
 .
 \item \textbf{Benchmark de páginas}: um manifesto de 217 páginas benignas e 60 inserções (pacote, versão, SHA-256 dos metadados e da página; fonte, revisão, md5 e posição de cada inserção) mais um construtor que recusa hashes divergentes, seguindo o padrão do Decision Index%
 . O avaliador aceita qualquer classificador do Hugging Face, corta as janelas em caracteres, conta os tokens delas e relata a fração que passa do contexto do modelo, além dos avisos falsos e da detecção por limiar com intervalos de Wilson%
@@ -863,13 +932,15 @@ O código, os resultados e o benchmark de páginas estão publicados em \url{htt
 
 \begin{center}
 \small
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=0.74\hsize}X>{\raggedright\arraybackslash\hsize=1.26\hsize}X@{}}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=0.79\hsize}X>{\raggedright\arraybackslash\hsize=1.21\hsize}X@{}}
 \toprule
 Recurso & Medição \\
 \midrule
 Notebook na nuvem, 2\ensuremath{\times} T4, sessões de fine-tuning & v2 1.995,9 s (inclui uma tentativa fracassada de e5-large) \ensuremath{\cdot} v3 8.511,4 s \ensuremath{\cdot} v4 1.848,3 s \ensuremath{\cdot} v5 8.120,5 s \ensuremath{\cdot} total 20.476 s \ensuremath{\approx} 5,69 h %
  \\
 Notebook na nuvem, fine-tuning da v6 & 12.713 s \ensuremath{\approx} 3,53 h (a primeira tentativa, idêntica, terminou em erro sem log) %
+ \\
+Notebook na nuvem, fine-tuning da v3-pub & 7.056 s \ensuremath{\approx} 1,96 h %
  \\
 Cota gratuita de GPU do serviço de notebooks & cerca de 30 h por semana %
  \\
@@ -935,13 +1006,15 @@ Data (2026, UTC\ensuremath{-}3) & Evento \\
  \\
 5 out & Rodada A (xTRam1-pt 81,8\%); rodada B (Weni 72,3\%); v2 (Weni 74,3\%); trava anti-vazamento; hook pronto, mas desligado %
  \\
-6 out & v4 (Weni 66,7\%); v5 (89,7\%); v3 reavaliada (94,67\%); mistura (91,3\%); v3 escolhida, status experimental %
+6 out & v4 (Weni 66,7\%); v5 (89,7\%); v3 reavaliada (94,67\%, depois mostrado inflado por vazamento); mistura (91,3\%); v3 escolhida, status experimental %
  \\
 6 out & Defeitos do hook encontrados; avaliação por página: 100\% de avisos falsos nos dois tamanhos de janela; guard rejeitado para web fetch %
  \\
 6 out & Iniciada a exportação da v6 com dados benignos técnicos %
  \\
 6 out & Baselines públicos no protocolo de página; v6 treinada e avaliada contra a v3 nas páginas congeladas; hook mantido desligado %
+ \\
+7 out & Llama Prompt Guard 2 (86M, 22M) no protocolo de página; v3-pub treinada e avaliada contra a v3 e a v6 (Weni 68,0\%; 100\% de avisos falsos por página) %
  \\
 \bottomrule
 \end{tabularx}

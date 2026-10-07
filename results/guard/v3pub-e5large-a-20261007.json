@@ -1,0 +1,38 @@
+{
+ "arquivo_original": "guard-prompt_injection-e5large-v3pub-20261007-142712.json",
+ "rodada": "v3-pub (e5-large, treino descontaminado)",
+ "sha256_pesos": "acb8d28f19b3613d8fe7ddf8c782993e5ef8cbf80830b455cbdbb45e7cf69769",
+ "skill": "guard",
+ "modelo": "prompt_injection-e5large-v3pub",
+ "data": "2026-10-07",
+ "max_teste": null,
+ "teste": {
+  "weni": {
+   "n": 300,
+   "acuracia": 0.68,
+   "ece": 0.2893,
+   "recall": {
+    "true": 0.68
+   }
+  },
+  "xtram1-pt": {
+   "n": 500,
+   "acuracia": 0.948,
+   "ece": 0.0494,
+   "recall": {
+    "false": 0.9745,
+    "true": 0.8844
+   }
+  },
+  "fumaca": {
+   "n": 10,
+   "acuracia": 0.9,
+   "ece": 0.1,
+   "recall": {
+    "false": 0.8,
+    "true": 1.0
+   }
+  }
+ },
+ "sha256_pesos_nota": "sha256 do model.safetensors baixado do Kaggle (o mesmo na cópia local e na da VM ARM)"
+}

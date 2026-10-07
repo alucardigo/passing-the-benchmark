@@ -1,0 +1,98 @@
+{
+ "arquivo_original": "guard-prompt_injection-e5large-v3pub-20261007-152418.json",
+ "rodada": "v3-pub (e5-large, treino descontaminado)",
+ "sha256_pesos": "acb8d28f19b3613d8fe7ddf8c782993e5ef8cbf80830b455cbdbb45e7cf69769",
+ "skill": "guard",
+ "modelo": "prompt_injection-e5large-v3pub",
+ "data": "2026-10-07",
+ "max_teste": 300,
+ "teste": {
+  "deepset": {
+   "n": 116,
+   "acuracia": 0.9397,
+   "ece": 0.0602,
+   "recall": {
+    "false": 1.0,
+    "true": 0.8833
+   }
+  },
+  "jackhhao": {
+   "n": 262,
+   "acuracia": 0.9924,
+   "ece": 0.0037,
+   "recall": {
+    "false": 0.9919,
+    "true": 0.9928
+   }
+  },
+  "spml": {
+   "n": 300,
+   "acuracia": 1.0,
+   "ece": 0.0,
+   "recall": {
+    "false": 1.0,
+    "true": 1.0
+   }
+  },
+  "dolly": {
+   "n": 300,
+   "acuracia": 0.9967,
+   "ece": 0.0033,
+   "recall": {
+    "false": 0.9967
+   }
+  },
+  "so_perguntas": {
+   "n": 300,
+   "acuracia": 0.41,
+   "ece": 0.5253,
+   "recall": {
+    "false": 0.41
+   }
+  },
+  "so_respostas": {
+   "n": 300,
+   "acuracia": 0.31,
+   "ece": 0.6553,
+   "recall": {
+    "false": 0.31
+   }
+  },
+  "docstrings": {
+   "n": 300,
+   "acuracia": 0.74,
+   "ece": 0.223,
+   "recall": {
+    "false": 0.74
+   }
+  },
+  "deepset-pt": {
+   "n": 116,
+   "acuracia": 0.9224,
+   "ece": 0.0769,
+   "recall": {
+    "false": 1.0,
+    "true": 0.85
+   }
+  },
+  "jackhhao-pt": {
+   "n": 262,
+   "acuracia": 0.9885,
+   "ece": 0.0139,
+   "recall": {
+    "false": 0.9919,
+    "true": 0.9856
+   }
+  },
+  "spml-pt": {
+   "n": 300,
+   "acuracia": 1.0,
+   "ece": 0.0001,
+   "recall": {
+    "false": 1.0,
+    "true": 1.0
+   }
+  }
+ },
+ "sha256_pesos_nota": "sha256 do model.safetensors baixado do Kaggle (o mesmo na cópia local e na da VM ARM)"
+}

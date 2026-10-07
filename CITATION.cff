@@ -17,9 +17,10 @@ keywords:
   - text classification
   - evaluation
   - negative result
+  - data leakage
 preferred-citation:
   type: article
-  title: "Passing the Benchmark, Failing the README: A Negative Result on Deploying a Brazilian Portuguese Prompt-Injection Classifier"
+  title: "Passing the Benchmark, Failing the README: Leakage and Shortcut Learning in a Brazilian Portuguese Prompt-Injection Classifier"
   authors:
     - family-names: Faria
       given-names: Rodrigo

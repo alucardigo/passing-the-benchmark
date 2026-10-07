@@ -1,7 +1,11 @@
 # Paper / Artigo
 
-**Passing the Benchmark, Failing the README: A Negative Result on Deploying a Brazilian Portuguese
+**Passing the Benchmark, Failing the README: Leakage and Shortcut Learning in a Brazilian Portuguese
 Prompt-Injection Classifier**, Rodrigo Faria (Independent Researcher), 2026. CC BY 4.0.
+
+Revised on 2026-10-07 (evening): a decontaminated retraining (v3-pub) showed that the best model's 94.7% on
+the native pt-BR test was inflated by leakage (68.0% without it); title, abstract, Sections 3.4, 4, 7 and
+9–13 and Table 5 were updated. Earlier versions are in the git history.
 
 | | English | Português |
 |---|---|---|

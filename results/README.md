@@ -14,13 +14,14 @@ Só métricas, sem texto de terceiro. Licença CC BY 4.0. Os nomes seguem as rod
 | `sonda-a-20261005.json` | round A (probe + pt-BR translations) | |
 | `sonda-b-20261005.json` | round B (probe + native pt sources) | weights in `sonda-b/` |
 | `v2-e5base-20261005.json` | v2, fine-tuned e5-base | same export as v3; no leak filter |
-| `v3-e5large-20261006.json` | **v3**, fine-tuned e5-large | Weni 94.7%; 100% page false alarms |
+| `v3-e5large-20261006.json` | **v3**, fine-tuned e5-large | Weni 94.7% (inflated by leakage, see v3-pub); 100% page false alarms |
 | `v3-e5large-extras-20261006.json` | v3, extra tests (first 300 items) | deepset, jackhhao, SPML, technical benign |
 | `v4-e5base-hackaprompt-20261006.json` | v4, e5-base + HackAPrompt | leak filter on |
 | `v5-e5large-hackaprompt-20261006.json` | v5, e5-large + HackAPrompt | |
 | `v5-e5large-hackaprompt-reavaliado-20261006.json` | v5 re-evaluated (per-item probabilities for the ensemble) | |
 | `v3-v5-mistura-20261006.json` | fixed 0.5/0.5 log-odds ensemble of v3 and v5 | recomputed from the stored per-item probabilities (`pipeline/misturar.py`) |
 | `v6-e5large-a-20261006.json`, `-b-`, `-extras-` | v6, e5-large + 10,000 technical benign texts | Weni 63.7%; page false alarms 19–35% |
+| `v3pub-e5large-a-20261007.json`, `-b-`, `-extras-` | v3-pub, e5-large on v3's training data minus 1,758 examples (leakage and licence filters) | Weni 68.0%; 100% page false alarms |
 
 `arquivo_original` keeps the file name used during the study; `rodada` names the round. The label
 `laya-e5large-v3` in the baseline files is the study's name for our fine-tuned e5-large v3; it is not a
@@ -61,6 +62,18 @@ PTGUARD_CACHE=results/v6/dados python analysis/comparar_versoes.py --base v3 --n
   --pag-base results/v6/dados/paginas-640-160-v3.json --pag-nova results/v6/dados/paginas-640-160-v6.json \
   --weni-vizinhos results/v6/dados/weni_vizinhos.json --saida work/v6-check
 ```
+
+## `v3pub/`: v3 x v3-pub x v6 comparison / comparação v3 x v3-pub x v6
+
+`v3pub.md` (write-up, in Portuguese), `v3pub.json` (numbers), `v3pub-tabelas.md` (tables) and `dados/`
+(per-item P(injection) and gold labels of v3-pub for every test, per-page and per-window probabilities,
+duplicate counts by source and reason in `auditoria.json`, the page-leakage check, and `extra.json` with the
+recipe, hashes and threshold/similarity analyses). The per-item data of v3 and v6 are in `v6/dados/`. The
+three-version comparison script used in the study is not in this repository yet; `analysis/comparar_versoes.py`
+compares two versions. v3-pub removes from v3's training data the ShieldLM rows taken from xTRam1 or from
+TrustAIRLab, every text equal (after normalisation) to a test text, the translation pairs of those, and the
+Weni near-duplicates; `pipeline/treinar.py exportar --rodada v3-pub` approximates it (xTRam1 rows,
+duplicates and the Weni filter only).
 
 ## `runs/` (ignored by git) / (fora do git)
 

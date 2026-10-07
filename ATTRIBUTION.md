@@ -36,7 +36,8 @@ the position taken is stated explicitly.
   [MIT at the source; the ShieldLM card says CC-BY-NC-SA-4.0], Harelix Apache-2.0, yanismiraoui
   Apache-2.0, deepset Apache-2.0, InjecAgent MIT, jackhhao, JailbreakBench MIT). Subsample of 4,000
   training rows, **577 of which come from the train split of xTRam1**, which declares no license (see
-  below). The planned `v3-pub` round removes them (`pipeline/treinar.py exportar --rodada v3-pub`).
+  below). The v3-pub round (trained 2026-10-07, `results/v3pub/`) removed them, together with the
+  TrustAIRLab rows; `pipeline/treinar.py exportar --rodada v3-pub` drops the xTRam1 rows only.
 - `yanismiraoui/prompt_injections` @`bd55359f` — Apache-2.0; its NOTICE is reproduced in `NOTICE` and
   below.
 - AmazonScience/massive (via `mteb/amazon_massive_intent` @`940fd47a`, config `pt`) — CC-BY-4.0 at the

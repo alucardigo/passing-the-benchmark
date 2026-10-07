@@ -1,0 +1,15 @@
+{
+ "treino": "treino.jsonl da v3-pub (dataset privado no Kaggle; não publicado)",
+ "n_treino": 21935,
+ "n_metadata": 334,
+ "identicos_a_readme": 0,
+ "treino_contido_em_readme_200c": 0,
+ "readme_contido_no_treino": 0,
+ "textos_com_13grama_de_readme": 0,
+ "readmes_com_algum_13grama_no_treino": 0,
+ "rotulos": {
+  "false": 13466,
+  "true": 8469
+ },
+ "13gramas_mais_comuns": []
+}

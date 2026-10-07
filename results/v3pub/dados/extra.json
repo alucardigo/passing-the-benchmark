@@ -1,0 +1,196 @@
+{
+ "treino": {
+  "receita": {
+   "modelo_base": "intfloat/multilingual-e5-large",
+   "epocas": 3,
+   "lr": 2e-05,
+   "lote": "8 x acumulação 4 (efetivo 32)",
+   "weight_decay": 0.01,
+   "aquecimento": "6% dos passos",
+   "precisao": "fp16 (treino), fp32 (inferência CPU)",
+   "max_length": 256,
+   "prefixo": "query: ",
+   "validacao": "8% estratificada, seed 0, melhor época por acurácia",
+   "gradient_checkpointing": true,
+   "hardware": "Kaggle 2x T4",
+   "notebook": "kaggle/guard-treino.ipynb (o mesmo da v3 e da v6, sem alteração)",
+   "temperatura_instalada": 1.0
+  },
+  "exportacao": {
+   "comando": "pipeline do estudo com os quatro filtros da v3-pub (LAYA_PUB=1; código do estudo, fora deste repositório). A rodada v3-pub de pipeline/treinar.py é uma aproximação: exclui só safeguard/* e não aplica a regra de pares de tradução",
+   "antes_dos_filtros": 23693,
+   "removidos_publicacao": {
+    "origem_excluida": 673,
+    "duplicata_de_teste": 831,
+    "par_de_traducao": 164
+   },
+   "removidos_trava_weni_cos_0_9": 90,
+   "n_v3pub": 21935,
+   "rotulos_v3pub": {
+    "false": 13466,
+    "true": 8469
+   },
+   "n_v3": 23693,
+   "rotulos_v3": {
+    "false": 14257,
+    "true": 9436
+   },
+   "fracao_positivos": {
+    "v3": 0.3983,
+    "v3pub": 0.3861,
+    "v6": 0.2781
+   },
+   "treino_jsonl_sha256": "6c7c65b7165a6d59eb11457018921875746f481206b36f812ecd69515fa8acea",
+   "relacao": "v3pub é subconjunto estrito da v3 (21.935 de 23.693 textos, idênticos; nenhum texto novo). Os 109 textos distintos (115 linhas) que a trava tirou da v6 por serem quase iguais ao Weni não estão na v3pub (conferido por conjunto).",
+   "regras": {
+    "origem_excluida": "linhas do recorte de treino do ShieldLM com source safeguard/* (é o xTRam1, sem licença, usado aqui como teste) ou trustailab/* (licença divergente: MIT na origem, CC-BY-NC-SA-4.0 no card do ShieldLM)",
+    "duplicata_de_teste": "texto de treino igual (espaços colapsados, caixa baixa) a qualquer texto de qualquer teste, inclusive os traduzidos; generaliza as 14 duplicatas do jackhhao do plano de publicação (pela regra normalizada, 20 itens do teste jackhhao tinham duplicata)",
+    "par_de_traducao": "quando o original ou a tradução sai, o outro sai junto (a tradução de um texto de teste também é vazamento)",
+    "trava_weni": "cosseno e5-base > 0,9 com algum texto do Weni (a mesma trava da v6)"
+   }
+  },
+  "kaggle": {
+   "dataset": "dataset privado no Kaggle (não publicado: contém texto de bases de terceiros)",
+   "kernel": "kernel privado no Kaggle (GPU 2x T4)",
+   "validacao_interna_acuracia": {
+    "v3": 0.9963,
+    "v6": 0.997,
+    "v3pub": 0.9949
+   },
+   "validacao_interna_loss": {
+    "v3": 0.0439,
+    "v6": 0.0507,
+    "v3pub": 0.0808
+   },
+   "duracao_s": {
+    "v3": 8511,
+    "v6": 12713,
+    "v3pub": 7056
+   }
+  },
+  "pesos": {
+   "pasta": "models/prompt_injection-e5large-v3pub (pesos ainda não publicados)",
+   "model_safetensors_sha256": "acb8d28f19b3613d8fe7ddf8c782993e5ef8cbf80830b455cbdbb45e7cf69769",
+   "conferido": "o mesmo hash na saída do Kaggle, na cópia local e na cópia da VM ARM",
+   "config": "idêntica à da v6 (XLMRobertaForSequenceClassification, id2label 0=false 1=true)",
+   "licenca_proposta": "MIT (plano de publicação do estudo)"
+  }
+ },
+ "auditoria_paginas_no_treino": {
+  "n_metadata": 334,
+  "identicos_a_readme": 0,
+  "treino_contido_em_readme_200c": 0,
+  "readme_contido_no_treino": 0,
+  "textos_com_13grama_de_readme": 0,
+  "readmes_com_algum_13grama_no_treino": 0
+ },
+ "paginas_impressao_sha256_16": "349cf30a6cebfa99",
+ "avaliacao": {
+  "maquina": "VM ARM na nuvem (Ampere A1, 4 OCPU aarch64), CPU fp32, max_length 256; a mesma máquina e o mesmo código de avaliação (md5 idêntico ao local) da v3 e da v6",
+  "codigo": "avaliação por frase do estudo (equivalente a pipeline/treinar.py avaliar, sem a base hackaprompt); extras com --max-teste 300 (primeiros 300 de cada teste, iguais para v3, v6 e v3pub)",
+  "v3pub": [
+   "results/guard/v3pub-e5large-a-20261007.json",
+   "results/guard/v3pub-e5large-extras-20261007.json",
+   "results/guard/v3pub-e5large-b-20261007.json"
+  ],
+  "paginas": "avaliação por página pelo caminho de código do hook, janelas 640/160, nas páginas congeladas (remontáveis por bench/paginas/construir.py; equivalente a bench/paginas/avaliar.py --janela 640 --sobra 160), na mesma VM ARM"
+ },
+ "analises_adicionais": {
+  "weni_por_limiar": {
+   "limiares": [
+    0.5,
+    0.1,
+    0.01,
+    0.001
+   ],
+   "v3": [
+    0.947,
+    0.96,
+    0.987,
+    0.987
+   ],
+   "v3pub": [
+    0.68,
+    0.73,
+    0.78,
+    0.84
+   ],
+   "v6": [
+    0.637,
+    0.67,
+    0.693,
+    0.723
+   ],
+   "fracao_P_zero_4casas": {
+    "v3": 0.0,
+    "v3pub": 0.043,
+    "v6": 0.23
+   }
+  },
+  "aviso_falso_assistente_por_limiar": {
+   "testes": "massive_pt+dolly-pt+dolly (n=2800)",
+   "v3": [
+    0.004,
+    0.005,
+    0.006,
+    0.008
+   ],
+   "v3pub": [
+    0.002,
+    0.002,
+    0.003,
+    0.003
+   ],
+   "v6": [
+    0.002,
+    0.002,
+    0.003,
+    0.003
+   ]
+  },
+  "aviso_falso_tecnico_por_limiar": {
+   "testes": "so_perguntas+so_respostas+docstrings (n=900)",
+   "v3": [
+    0.638,
+    0.717,
+    0.798,
+    0.884
+   ],
+   "v3pub": [
+    0.513,
+    0.584,
+    0.667,
+    0.779
+   ],
+   "v6": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "weni_por_similaridade_aos_115": {
+   "obs": "max cosseno e5-base de cada texto do Weni contra os 115 exemplos que só a v3 viu; todos os 300 ficam acima de 0,82 (mínimo 0,826) e 271 acima de 0,85 (quantis 10/50/90%: 0,850/0,887/0,906); corrigido na publicação: a versão do estudo dizia \"todos acima de 0,85\", o que contradiz a própria contagem por faixa (29 textos em (0,80; 0,85])",
+   "faixas": {
+    "(0.80,0.85]": {
+     "n": 29,
+     "v3": 1.0,
+     "v3pub": 0.069,
+     "v6": 0.69
+    },
+    "(0.85,0.90]": {
+     "n": 213,
+     "v3": 0.925,
+     "v3pub": 0.714,
+     "v6": 0.596
+    },
+    "(0.90,1.00]": {
+     "n": 58,
+     "v3": 1.0,
+     "v3pub": 0.862,
+     "v6": 0.759
+    }
+   }
+  }
+ }
+}
