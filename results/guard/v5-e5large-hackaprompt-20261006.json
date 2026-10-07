@@ -1,0 +1,62 @@
+{
+ "arquivo_original": "guard-guard-e5large-20261006-063319.json",
+ "rodada": "v5 (e5-large + HackAPrompt)",
+ "sha256_pesos": "eba38b65490d61c7c2155e8304c621d7836e06213df17fa0a9995558755bae02",
+ "skill": "guard",
+ "modelo": "guard-e5large",
+ "data": "2026-10-06",
+ "teste": {
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.9913,
+   "ece": 0.0087,
+   "recall": {
+    "false": 0.9913,
+    "true": 0.9914
+   }
+  },
+  "massive_pt": {
+   "n": 1500,
+   "acuracia": 1.0,
+   "ece": 0.0004,
+   "recall": {
+    "false": 1.0
+   }
+  },
+  "weni": {
+   "n": 300,
+   "acuracia": 0.8967,
+   "ece": 0.1016,
+   "recall": {
+    "true": 0.8967
+   }
+  },
+  "xtram1-pt": {
+   "n": 500,
+   "acuracia": 0.98,
+   "ece": 0.021,
+   "recall": {
+    "false": 0.9802,
+    "true": 0.9796
+   }
+  },
+  "dolly-pt": {
+   "n": 1000,
+   "acuracia": 0.995,
+   "ece": 0.0055,
+   "recall": {
+    "false": 0.995
+   }
+  },
+  "fumaca": {
+   "n": 10,
+   "acuracia": 0.9,
+   "ece": 0.1,
+   "recall": {
+    "false": 0.8,
+    "true": 1.0
+   }
+  }
+ },
+ "sha256_pesos_nota": "sha256 do model.safetensors (fp16) baixado do Kaggle"
+}

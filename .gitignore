@@ -1,0 +1,31 @@
+# ambiente
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+build/
+dist/
+
+# caches e saídas locais: texto de bases de terceiros, páginas remontadas, pesos
+.cache/
+work/
+models/
+results/runs/
+mlruns/
+*.log
+
+# credenciais (nunca no repositório)
+.env
+kaggle.json
+**/token
+**/token-*
+
+# LaTeX (o PDF final fica em paper/)
+paper/**/*.aux
+paper/**/*.log
+paper/**/*.out
+paper/**/*.blg
+paper/**/*.synctex.gz
+paper/**/main.pdf

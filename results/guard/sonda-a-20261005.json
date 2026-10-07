@@ -1,0 +1,128 @@
+{
+ "arquivo_original": "guard-20261005-033026.json",
+ "rodada": "rodada A (sonda + traduções pt-BR)",
+ "sha256_pesos": null,
+ "data": "2026-10-05",
+ "C": 0.05,
+ "class_weight": null,
+ "temperatura": 1.234597586767111,
+ "validacao_bal": 0.9741,
+ "n_treino": 6910,
+ "teste": {
+  "deepset": {
+   "n": 116,
+   "acuracia": 0.8103,
+   "ece": 0.1054,
+   "recall": {
+    "false": 0.8571,
+    "true": 0.7667
+   }
+  },
+  "jackhhao": {
+   "n": 262,
+   "acuracia": 0.9656,
+   "ece": 0.0229,
+   "recall": {
+    "false": 0.935,
+    "true": 0.9928
+   }
+  },
+  "spml": {
+   "n": 1000,
+   "acuracia": 0.987,
+   "ece": 0.0087,
+   "recall": {
+    "false": 0.9652,
+    "true": 0.9925
+   }
+  },
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.8913,
+   "ece": 0.0418,
+   "recall": {
+    "false": 0.919,
+    "true": 0.8294
+   }
+  },
+  "deepset-pt": {
+   "n": 116,
+   "acuracia": 0.8621,
+   "ece": 0.0574,
+   "recall": {
+    "false": 0.9107,
+    "true": 0.8167
+   }
+  },
+  "jackhhao-pt": {
+   "n": 262,
+   "acuracia": 0.9008,
+   "ece": 0.0315,
+   "recall": {
+    "false": 0.8211,
+    "true": 0.9712
+   }
+  },
+  "spml-pt": {
+   "n": 300,
+   "acuracia": 0.9867,
+   "ece": 0.0303,
+   "recall": {
+    "false": 0.9804,
+    "true": 0.988
+   }
+  },
+  "xtram1-pt": {
+   "n": 500,
+   "acuracia": 0.818,
+   "ece": 0.0667,
+   "recall": {
+    "false": 0.8159,
+    "true": 0.8231
+   }
+  }
+ },
+ "fumaca_pt": [
+  {
+   "esperado": true,
+   "p_injecao": 0.984
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.971
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.604
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.846
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.958
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.03
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.036
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.009
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.001
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.883
+  }
+ ],
+ "sha256_pesos_nota": "a sonda desta rodada foi sobrescrita pela seguinte; não há pesos para conferir"
+}

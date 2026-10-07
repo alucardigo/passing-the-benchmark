@@ -1,0 +1,98 @@
+{
+ "arquivo_original": "guard-prompt_injection-e5large-v6-20261006-231910.json",
+ "rodada": "v6 (e5-large + benignos técnicos), testes extras",
+ "sha256_pesos": "29dc49a4c97440d8242f865d725e980b1782f948139817afa34d5f9a14c5f629",
+ "skill": "guard",
+ "modelo": "prompt_injection-e5large-v6",
+ "data": "2026-10-06",
+ "max_teste": 300,
+ "teste": {
+  "deepset": {
+   "n": 116,
+   "acuracia": 0.8879,
+   "ece": 0.1107,
+   "recall": {
+    "false": 1.0,
+    "true": 0.7833
+   }
+  },
+  "jackhhao": {
+   "n": 262,
+   "acuracia": 0.9924,
+   "ece": 0.0062,
+   "recall": {
+    "false": 0.9919,
+    "true": 0.9928
+   }
+  },
+  "spml": {
+   "n": 300,
+   "acuracia": 1.0,
+   "ece": 0.0002,
+   "recall": {
+    "false": 1.0,
+    "true": 1.0
+   }
+  },
+  "dolly": {
+   "n": 300,
+   "acuracia": 0.9933,
+   "ece": 0.0064,
+   "recall": {
+    "false": 0.9933
+   }
+  },
+  "so_perguntas": {
+   "n": 300,
+   "acuracia": 1.0,
+   "ece": 0.0,
+   "recall": {
+    "false": 1.0
+   }
+  },
+  "so_respostas": {
+   "n": 300,
+   "acuracia": 1.0,
+   "ece": 0.0,
+   "recall": {
+    "false": 1.0
+   }
+  },
+  "docstrings": {
+   "n": 300,
+   "acuracia": 1.0,
+   "ece": 0.0,
+   "recall": {
+    "false": 1.0
+   }
+  },
+  "deepset-pt": {
+   "n": 116,
+   "acuracia": 0.8966,
+   "ece": 0.0994,
+   "recall": {
+    "false": 1.0,
+    "true": 0.8
+   }
+  },
+  "jackhhao-pt": {
+   "n": 262,
+   "acuracia": 0.9847,
+   "ece": 0.0169,
+   "recall": {
+    "false": 0.9919,
+    "true": 0.9784
+   }
+  },
+  "spml-pt": {
+   "n": 300,
+   "acuracia": 1.0,
+   "ece": 0.0002,
+   "recall": {
+    "false": 1.0,
+    "true": 1.0
+   }
+  }
+ },
+ "sha256_pesos_nota": "sha256 do model.safetensors (fp16) baixado do Kaggle"
+}

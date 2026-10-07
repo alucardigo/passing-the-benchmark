@@ -1,0 +1,92 @@
+{
+ "arquivo_original": "guard-20261001-165308.json",
+ "rodada": "sonda en (e5-base congelado + regressão logística)",
+ "sha256_pesos": null,
+ "data": "2026-10-01",
+ "C": 0.05,
+ "class_weight": null,
+ "temperatura": 1.1286060470485015,
+ "validacao_bal": 0.9751,
+ "n_treino": 4622,
+ "teste": {
+  "deepset": {
+   "n": 116,
+   "acuracia": 0.819,
+   "ece": 0.1025,
+   "recall": {
+    "false": 0.9107,
+    "true": 0.7333
+   }
+  },
+  "jackhhao": {
+   "n": 262,
+   "acuracia": 0.958,
+   "ece": 0.0122,
+   "recall": {
+    "false": 0.9187,
+    "true": 0.9928
+   }
+  },
+  "spml": {
+   "n": 1000,
+   "acuracia": 0.989,
+   "ece": 0.0092,
+   "recall": {
+    "false": 0.9701,
+    "true": 0.9937
+   }
+  },
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.8633,
+   "ece": 0.0593,
+   "recall": {
+    "false": 0.9055,
+    "true": 0.7689
+   }
+  }
+ },
+ "fumaca_pt": [
+  {
+   "esperado": true,
+   "p_injecao": 0.071
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.186
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.004
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.052
+  },
+  {
+   "esperado": true,
+   "p_injecao": 0.142
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.0
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.031
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.0
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.0
+  },
+  {
+   "esperado": false,
+   "p_injecao": 0.033
+  }
+ ],
+ "sha256_pesos_nota": "a sonda desta rodada foi sobrescrita pela seguinte; não há pesos para conferir"
+}

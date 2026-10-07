@@ -1,0 +1,29 @@
+{
+ "nota": "Revisões do Hugging Face fixadas em 06/10/2026, depois das rodadas de 05-06/10 (o código da época chamava load_dataset sem revision). O artigo declara essa limitação.",
+ "datasets": {
+  "deepset/prompt-injections": "4f61ecb038e9c3fb77e21034b22511b523772cdd",
+  "jackhhao/jailbreak-classification": "2f2ceeb39658696fd3f462403562b6eea5306287",
+  "reshabhs/SPML_Chatbot_Prompt_Injection": "02ce8084e979bc7d4c24ee35d22ecb7f2db96ff5",
+  "xTRam1/safe-guard-prompt-injection": "a3a877d608f37b7d20d9945671902df895ecdb46",
+  "rikka-snow/prompt-injection-multilingual": "f1ad1f3dd44581f53a4c67e96a9dde2fb419ee5b",
+  "dmilush/shieldlm-prompt-injection": "dd660ae7670a793e886dbf3f7cdb5f597df180c8",
+  "yanismiraoui/prompt_injections": "bd55359f2f332afc35f277ac3dd08f7111b024c9",
+  "mteb/amazon_massive_intent": "940fd47a81eaa7f2cc7b129674d945d618ac38c2",
+  "Weni/prompt-injections-1.0.0": "9707fa47b35b92f2cad2112632710e1b4bef0416",
+  "databricks/databricks-dolly-15k": "bdd27f4d94b9c1f951818a7da7fd7aeea5dbff1a",
+  "hackaprompt/hackaprompt-dataset": "25b87fbedfb86840abaf8cd09af7a029208a971a",
+  "imoxto/prompt_injection_hackaprompt_gpt35": "efc8f438ebe47ecebb602b9442761253d38064be",
+  "pacovaldez/stackoverflow-questions": "869802e52b4dfa074d8a8e255ce85580711cdc25",
+  "koutch/stackoverflow_python": "ee6f39553b6fe4424f0a52b61a8de2a893390744",
+  "Nan-Do/code-search-net-python": "39db91866dd0f251f3b0c7f42c0f85634101df6e"
+ },
+ "modelos": {
+  "intfloat/multilingual-e5-base": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "intfloat/multilingual-e5-large": "3d7cfbdacd47fdda877c5cd8a79fbcc4f2a574f3",
+  "Helsinki-NLP/opus-mt-tc-big-en-pt": "9f2863d807ecf91a374bdbecb8d01e402e90622e",
+  "protectai/deberta-v3-base-prompt-injection-v2": "90c9989b1a342275dd0d1a95aad283c04e075671",
+  "proventra/mdeberta-v3-base-prompt-injection": "b8a89d3096cf11a71d57b283c854f5ae2ed3df83",
+  "deepset/deberta-v3-base-injection": "80dda00d0b0d9a03917a7685e2ddbcd28e04dbb1",
+  "meta-llama/Llama-Prompt-Guard-2-86M": "a8ded8e697ce7c355e395a0df51f94adb4a2fd27"
+ }
+}

@@ -1,0 +1,37 @@
+{
+ "arquivo_original": "guard-prompt_injection-e5large-v6-20261006-235141.json",
+ "rodada": "v6 (e5-large + benignos técnicos)",
+ "sha256_pesos": "29dc49a4c97440d8242f865d725e980b1782f948139817afa34d5f9a14c5f629",
+ "skill": "guard",
+ "modelo": "prompt_injection-e5large-v6",
+ "data": "2026-10-06",
+ "max_teste": null,
+ "teste": {
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.9933,
+   "ece": 0.0067,
+   "recall": {
+    "false": 0.9952,
+    "true": 0.9892
+   }
+  },
+  "massive_pt": {
+   "n": 1500,
+   "acuracia": 1.0,
+   "ece": 0.0,
+   "recall": {
+    "false": 1.0
+   }
+  },
+  "dolly-pt": {
+   "n": 1000,
+   "acuracia": 0.996,
+   "ece": 0.004,
+   "recall": {
+    "false": 0.996
+   }
+  }
+ },
+ "sha256_pesos_nota": "sha256 do model.safetensors (fp16) baixado do Kaggle"
+}

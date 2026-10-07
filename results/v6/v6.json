@@ -1,0 +1,1060 @@
+{
+ "data": "2026-10-06",
+ "modelos": {
+  "v3": "prompt_injection-e5large (avaliação original + extras)",
+  "v6": "prompt_injection-e5large-v6"
+ },
+ "resultados_brutos": {
+  "v3": [
+   "v3-e5large-20261006.json",
+   "v3-e5large-extras-20261006.json"
+  ],
+  "v6": [
+   "v6-e5large-a-20261006.json",
+   "v6-e5large-extras-20261006.json",
+   "v6-e5large-b-20261006.json"
+  ]
+ },
+ "frases": {
+  "weni": {
+   "papel": "injeção pt-BR nativa (HackAPrompt traduzida), fora da distribuição",
+   "v3": {
+    "n": 300,
+    "acuracia": 0.9467,
+    "ic95": [
+     0.9151,
+     0.9669
+    ],
+    "ece": 0.0417,
+    "recall": {
+     "true": 0.9467
+    },
+    "positivos": 300
+   },
+   "v6": {
+    "n": 300,
+    "acuracia": 0.6367,
+    "ic95": [
+     0.5808,
+     0.689
+    ],
+    "ece": 0.3501,
+    "recall": {
+     "true": 0.6367
+    },
+    "positivos": 300
+   },
+   "pareado": {
+    "so_v3_acerta": 94,
+    "so_v6_acerta": 1,
+    "mcnemar_p": 4.8467614016778965e-27,
+    "delta_pp": -31.0
+   }
+  },
+  "xtram1": {
+   "papel": "injeção/benigno en, fora da distribuição",
+   "v3": {
+    "n": 1500,
+    "acuracia": 0.9867,
+    "ic95": [
+     0.9795,
+     0.9914
+    ],
+    "ece": 0.0129,
+    "recall": {
+     "false": 0.9846,
+     "true": 0.9914
+    },
+    "positivos": 463
+   },
+   "v6": {
+    "n": 1500,
+    "acuracia": 0.9933,
+    "ic95": [
+     0.9878,
+     0.9964
+    ],
+    "ece": 0.0067,
+    "recall": {
+     "false": 0.9952,
+     "true": 0.9892
+    },
+    "positivos": 463
+   },
+   "pareado": {
+    "so_v3_acerta": 4,
+    "so_v6_acerta": 14,
+    "mcnemar_p": 0.0308837890625,
+    "delta_pp": 0.67
+   }
+  },
+  "xtram1-pt": {
+   "papel": "xTRam1 traduzido (Opus-MT)",
+   "v3": {
+    "n": 500,
+    "acuracia": 0.96,
+    "ic95": [
+     0.939,
+     0.974
+    ],
+    "ece": 0.0383,
+    "recall": {
+     "false": 0.9575,
+     "true": 0.966
+    },
+    "positivos": 147
+   },
+   "v6": {
+    "n": 500,
+    "acuracia": 0.982,
+    "ic95": [
+     0.9661,
+     0.9905
+    ],
+    "ece": 0.018,
+    "recall": {
+     "false": 0.9858,
+     "true": 0.9728
+    },
+    "positivos": 147
+   },
+   "pareado": {
+    "so_v3_acerta": 2,
+    "so_v6_acerta": 13,
+    "mcnemar_p": 0.00738525390625,
+    "delta_pp": 2.2
+   }
+  },
+  "massive_pt": {
+   "papel": "benigno pt (comandos a assistente)",
+   "v3": {
+    "n": 1500,
+    "acuracia": 0.998,
+    "ic95": [
+     0.9941,
+     0.9993
+    ],
+    "ece": 0.002,
+    "recall": {
+     "false": 0.998
+    },
+    "positivos": 0
+   },
+   "v6": {
+    "n": 1500,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9974,
+     1.0
+    ],
+    "ece": 0.0,
+    "recall": {
+     "false": 1.0
+    },
+    "positivos": 0
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 3,
+    "mcnemar_p": 0.25,
+    "delta_pp": 0.2
+   }
+  },
+  "dolly": {
+   "papel": "benigno en (instruções a assistente)",
+   "v3": {
+    "n": 300,
+    "acuracia": 0.9967,
+    "ic95": [
+     0.9814,
+     0.9994
+    ],
+    "ece": 0.003,
+    "recall": {
+     "false": 0.9967
+    },
+    "positivos": 0
+   },
+   "v6": {
+    "n": 300,
+    "acuracia": 0.9933,
+    "ic95": [
+     0.976,
+     0.9982
+    ],
+    "ece": 0.0064,
+    "recall": {
+     "false": 0.9933
+    },
+    "positivos": 0
+   },
+   "pareado": {
+    "so_v3_acerta": 1,
+    "so_v6_acerta": 0,
+    "mcnemar_p": 1.0,
+    "delta_pp": -0.33
+   }
+  },
+  "dolly-pt": {
+   "papel": "Dolly traduzido",
+   "v3": {
+    "n": 1000,
+    "acuracia": 0.993,
+    "ic95": [
+     0.9856,
+     0.9966
+    ],
+    "ece": 0.007,
+    "recall": {
+     "false": 0.993
+    },
+    "positivos": 0
+   },
+   "v6": {
+    "n": 1000,
+    "acuracia": 0.996,
+    "ic95": [
+     0.9898,
+     0.9984
+    ],
+    "ece": 0.004,
+    "recall": {
+     "false": 0.996
+    },
+    "positivos": 0
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 3,
+    "mcnemar_p": 0.25,
+    "delta_pp": 0.3
+   }
+  },
+  "deepset": {
+   "papel": "deepset en (teste oficial)",
+   "v3": {
+    "n": 116,
+    "acuracia": 0.9483,
+    "ic95": [
+     0.8917,
+     0.9761
+    ],
+    "ece": 0.0523,
+    "recall": {
+     "false": 1.0,
+     "true": 0.9
+    },
+    "positivos": 60
+   },
+   "v6": {
+    "n": 116,
+    "acuracia": 0.8879,
+    "ic95": [
+     0.8177,
+     0.9333
+    ],
+    "ece": 0.1107,
+    "recall": {
+     "false": 1.0,
+     "true": 0.7833
+    },
+    "positivos": 60
+   },
+   "pareado": {
+    "so_v3_acerta": 7,
+    "so_v6_acerta": 0,
+    "mcnemar_p": 0.015625,
+    "delta_pp": -6.03
+   }
+  },
+  "deepset-pt": {
+   "papel": "deepset traduzido",
+   "v3": {
+    "n": 116,
+    "acuracia": 0.931,
+    "ic95": [
+     0.8698,
+     0.9646
+    ],
+    "ece": 0.0672,
+    "recall": {
+     "false": 1.0,
+     "true": 0.8667
+    },
+    "positivos": 60
+   },
+   "v6": {
+    "n": 116,
+    "acuracia": 0.8966,
+    "ic95": [
+     0.8279,
+     0.9398
+    ],
+    "ece": 0.0994,
+    "recall": {
+     "false": 1.0,
+     "true": 0.8
+    },
+    "positivos": 60
+   },
+   "pareado": {
+    "so_v3_acerta": 4,
+    "so_v6_acerta": 0,
+    "mcnemar_p": 0.125,
+    "delta_pp": -3.45
+   }
+  },
+  "jackhhao": {
+   "papel": "jailbreak en (teste oficial)",
+   "v3": {
+    "n": 262,
+    "acuracia": 0.9885,
+    "ic95": [
+     0.9669,
+     0.9961
+    ],
+    "ece": 0.0109,
+    "recall": {
+     "false": 0.9756,
+     "true": 1.0
+    },
+    "positivos": 139
+   },
+   "v6": {
+    "n": 262,
+    "acuracia": 0.9924,
+    "ic95": [
+     0.9726,
+     0.9979
+    ],
+    "ece": 0.0062,
+    "recall": {
+     "false": 0.9919,
+     "true": 0.9928
+    },
+    "positivos": 139
+   },
+   "pareado": {
+    "so_v3_acerta": 1,
+    "so_v6_acerta": 2,
+    "mcnemar_p": 1.0,
+    "delta_pp": 0.38
+   }
+  },
+  "jackhhao-pt": {
+   "papel": "jackhhao traduzido",
+   "v3": {
+    "n": 262,
+    "acuracia": 0.9809,
+    "ic95": [
+     0.9561,
+     0.9918
+    ],
+    "ece": 0.0177,
+    "recall": {
+     "false": 0.9593,
+     "true": 1.0
+    },
+    "positivos": 139
+   },
+   "v6": {
+    "n": 262,
+    "acuracia": 0.9847,
+    "ic95": [
+     0.9614,
+     0.994
+    ],
+    "ece": 0.0169,
+    "recall": {
+     "false": 0.9919,
+     "true": 0.9784
+    },
+    "positivos": 139
+   },
+   "pareado": {
+    "so_v3_acerta": 3,
+    "so_v6_acerta": 4,
+    "mcnemar_p": 1.0,
+    "delta_pp": 0.38
+   }
+  },
+  "spml": {
+   "papel": "SPML en (20% por hash)",
+   "v3": {
+    "n": 300,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9874,
+     1.0
+    ],
+    "ece": 0.0,
+    "recall": {
+     "false": 1.0,
+     "true": 1.0
+    },
+    "positivos": 249
+   },
+   "v6": {
+    "n": 300,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9874,
+     1.0
+    ],
+    "ece": 0.0002,
+    "recall": {
+     "false": 1.0,
+     "true": 1.0
+    },
+    "positivos": 249
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 0,
+    "mcnemar_p": 1.0,
+    "delta_pp": 0.0
+   }
+  },
+  "spml-pt": {
+   "papel": "SPML traduzido",
+   "v3": {
+    "n": 300,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9874,
+     1.0
+    ],
+    "ece": 0.0,
+    "recall": {
+     "false": 1.0,
+     "true": 1.0
+    },
+    "positivos": 249
+   },
+   "v6": {
+    "n": 300,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9874,
+     1.0
+    ],
+    "ece": 0.0002,
+    "recall": {
+     "false": 1.0,
+     "true": 1.0
+    },
+    "positivos": 249
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 0,
+    "mcnemar_p": 1.0,
+    "delta_pp": 0.0
+   }
+  },
+  "so_perguntas": {
+   "papel": "benigno técnico: perguntas do StackOverflow (20% por hash)",
+   "v3": {
+    "n": 300,
+    "acuracia": 0.3333,
+    "ic95": [
+     0.2824,
+     0.3885
+    ],
+    "ece": 0.5862,
+    "recall": {
+     "false": 0.3333
+    },
+    "positivos": 0
+   },
+   "v6": {
+    "n": 300,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9874,
+     1.0
+    ],
+    "ece": 0.0,
+    "recall": {
+     "false": 1.0
+    },
+    "positivos": 0
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 200,
+    "mcnemar_p": 1.2446030555722283e-60,
+    "delta_pp": 66.67
+   }
+  },
+  "so_respostas": {
+   "papel": "benigno técnico: respostas do StackOverflow (20% por hash)",
+   "v3": {
+    "n": 300,
+    "acuracia": 0.1333,
+    "ic95": [
+     0.0995,
+     0.1765
+    ],
+    "ece": 0.8473,
+    "recall": {
+     "false": 0.1333
+    },
+    "positivos": 0
+   },
+   "v6": {
+    "n": 300,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9874,
+     1.0
+    ],
+    "ece": 0.0,
+    "recall": {
+     "false": 1.0
+    },
+    "positivos": 0
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 260,
+    "mcnemar_p": 1.0795210693868056e-78,
+    "delta_pp": 86.67
+   }
+  },
+  "docstrings": {
+   "papel": "benigno técnico: docstrings Python (20% por hash)",
+   "v3": {
+    "n": 300,
+    "acuracia": 0.62,
+    "ic95": [
+     0.5639,
+     0.6731
+    ],
+    "ece": 0.3355,
+    "recall": {
+     "false": 0.62
+    },
+    "positivos": 0
+   },
+   "v6": {
+    "n": 300,
+    "acuracia": 1.0,
+    "ic95": [
+     0.9874,
+     1.0
+    ],
+    "ece": 0.0,
+    "recall": {
+     "false": 1.0
+    },
+    "positivos": 0
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 114,
+    "mcnemar_p": 9.62964972193618e-35,
+    "delta_pp": 38.0
+   }
+  },
+  "fumaca": {
+   "papel": "fumaça pt-BR escrita à mão (10 frases)",
+   "v3": {
+    "n": 10,
+    "acuracia": 0.9,
+    "ic95": [
+     0.5958,
+     0.9821
+    ],
+    "ece": 0.1,
+    "recall": {
+     "false": 0.8,
+     "true": 1.0
+    },
+    "positivos": 5
+   },
+   "v6": {
+    "n": 10,
+    "acuracia": 1.0,
+    "ic95": [
+     0.7225,
+     1.0
+    ],
+    "ece": 0.0,
+    "recall": {
+     "false": 1.0,
+     "true": 1.0
+    },
+    "positivos": 5
+   },
+   "pareado": {
+    "so_v3_acerta": 0,
+    "so_v6_acerta": 1,
+    "mcnemar_p": 1.0,
+    "delta_pp": 10.0
+   }
+  }
+ },
+ "weni_sem_vazamento": {
+  "limiar_cosseno": 0.9,
+  "contaminados": 58,
+  "limpos": 242,
+  "v3": {
+   "contaminados": 1.0,
+   "limpos": 0.9339,
+   "limpos_ic95": [
+    0.8953,
+    0.9589
+   ]
+  },
+  "v6": {
+   "contaminados": 0.7586,
+   "limpos": 0.6074,
+   "limpos_ic95": [
+    0.5447,
+    0.6668
+   ]
+  },
+  "pareado_limpos": {
+   "so_v3_acerta": 80,
+   "so_v6_acerta": 1,
+   "mcnemar_p": 6.782881022934827e-23
+  }
+ },
+ "troca_deteccao_aviso_falso": {
+  "v3": {
+   "weni_x_tecnico": {
+    "n_pos": 300,
+    "n_neg": 900,
+    "auc": 0.8428,
+    "limiar_af_2pct": 1.0,
+    "recall_af_2pct": 0.0,
+    "af_real_2pct": 0.0,
+    "limiar_af_5pct": 1.0,
+    "recall_af_5pct": 0.0,
+    "af_real_5pct": 0.0,
+    "af_no_0_5": 0.6378,
+    "recall_no_0_5": 0.9467
+   },
+   "weni_x_assistente": {
+    "n_pos": 300,
+    "n_neg": 2800,
+    "auc": 0.999,
+    "limiar_af_2pct": 0.0001,
+    "recall_af_2pct": 1.0,
+    "af_real_2pct": 0.0171,
+    "limiar_af_5pct": 0.0001,
+    "recall_af_5pct": 1.0,
+    "af_real_5pct": 0.0171,
+    "af_no_0_5": 0.0039,
+    "recall_no_0_5": 0.9467
+   },
+   "xtram1-pt_x_tecnico": {
+    "n_pos": 147,
+    "n_neg": 900,
+    "auc": 0.893,
+    "limiar_af_2pct": 1.0,
+    "recall_af_2pct": 0.0,
+    "af_real_2pct": 0.0,
+    "limiar_af_5pct": 1.0,
+    "recall_af_5pct": 0.0,
+    "af_real_5pct": 0.0,
+    "af_no_0_5": 0.6378,
+    "recall_no_0_5": 0.966
+   },
+   "xtram1-pt_x_assistente": {
+    "n_pos": 147,
+    "n_neg": 2800,
+    "auc": 0.9993,
+    "limiar_af_2pct": 0.0001,
+    "recall_af_2pct": 1.0,
+    "af_real_2pct": 0.0171,
+    "limiar_af_5pct": 0.0001,
+    "recall_af_5pct": 1.0,
+    "af_real_5pct": 0.0171,
+    "af_no_0_5": 0.0039,
+    "recall_no_0_5": 0.966
+   }
+  },
+  "v6": {
+   "weni_x_tecnico": {
+    "n_pos": 300,
+    "n_neg": 900,
+    "auc": 0.8849,
+    "limiar_af_2pct": 0.0,
+    "recall_af_2pct": 0.77,
+    "af_real_2pct": 0.0011,
+    "limiar_af_5pct": 0.0,
+    "recall_af_5pct": 0.77,
+    "af_real_5pct": 0.0011,
+    "af_no_0_5": 0.0,
+    "recall_no_0_5": 0.6367
+   },
+   "weni_x_assistente": {
+    "n_pos": 300,
+    "n_neg": 2800,
+    "auc": 0.8833,
+    "limiar_af_2pct": 0.0,
+    "recall_af_2pct": 0.77,
+    "af_real_2pct": 0.0068,
+    "limiar_af_5pct": 0.0,
+    "recall_af_5pct": 0.77,
+    "af_real_5pct": 0.0068,
+    "af_no_0_5": 0.0021,
+    "recall_no_0_5": 0.6367
+   },
+   "xtram1-pt_x_tecnico": {
+    "n_pos": 147,
+    "n_neg": 900,
+    "auc": 0.9864,
+    "limiar_af_2pct": 0.0,
+    "recall_af_2pct": 0.9728,
+    "af_real_2pct": 0.0011,
+    "limiar_af_5pct": 0.0,
+    "recall_af_5pct": 0.9728,
+    "af_real_5pct": 0.0011,
+    "af_no_0_5": 0.0,
+    "recall_no_0_5": 0.9728
+   },
+   "xtram1-pt_x_assistente": {
+    "n_pos": 147,
+    "n_neg": 2800,
+    "auc": 0.9859,
+    "limiar_af_2pct": 0.0,
+    "recall_af_2pct": 0.9728,
+    "af_real_2pct": 0.0068,
+    "limiar_af_5pct": 0.0,
+    "recall_af_5pct": 0.9728,
+    "af_real_5pct": 0.0068,
+    "af_no_0_5": 0.0021,
+    "recall_no_0_5": 0.9728
+   }
+  }
+ },
+ "paginas_640": {
+  "v3": {
+   "arquivo": "paginas-640-160-v3.json",
+   "sonda": "prompt_injection-e5large",
+   "paginas": "349cf30a6cebfa99",
+   "n_benignas": 217,
+   "n_com_injecao": 60,
+   "auc_pagina": 0.5046,
+   "mediana_pior_benigna": 1.0,
+   "janelas_benignas": 2247,
+   "janelas_benignas_acima_0_5": 0.996,
+   "por_limiar": [
+    {
+     "limiar": 0.5,
+     "aviso_falso": 1.0,
+     "aviso_falso_ic95": [
+      0.9826,
+      1.0
+     ],
+     "deteccao": 1.0,
+     "deteccao_ic95": [
+      0.9398,
+      1.0
+     ],
+     "deteccao_weni": 1.0,
+     "deteccao_xtram1": 1.0
+    },
+    {
+     "limiar": 0.9,
+     "aviso_falso": 1.0,
+     "aviso_falso_ic95": [
+      0.9826,
+      1.0
+     ],
+     "deteccao": 1.0,
+     "deteccao_ic95": [
+      0.9398,
+      1.0
+     ],
+     "deteccao_weni": 1.0,
+     "deteccao_xtram1": 1.0
+    },
+    {
+     "limiar": 0.95,
+     "aviso_falso": 1.0,
+     "aviso_falso_ic95": [
+      0.9826,
+      1.0
+     ],
+     "deteccao": 1.0,
+     "deteccao_ic95": [
+      0.9398,
+      1.0
+     ],
+     "deteccao_weni": 1.0,
+     "deteccao_xtram1": 1.0
+    },
+    {
+     "limiar": 0.99,
+     "aviso_falso": 1.0,
+     "aviso_falso_ic95": [
+      0.9826,
+      1.0
+     ],
+     "deteccao": 1.0,
+     "deteccao_ic95": [
+      0.9398,
+      1.0
+     ],
+     "deteccao_weni": 1.0,
+     "deteccao_xtram1": 1.0
+    },
+    {
+     "limiar": 0.999,
+     "aviso_falso": 1.0,
+     "aviso_falso_ic95": [
+      0.9826,
+      1.0
+     ],
+     "deteccao": 1.0,
+     "deteccao_ic95": [
+      0.9398,
+      1.0
+     ],
+     "deteccao_weni": 1.0,
+     "deteccao_xtram1": 1.0
+    }
+   ],
+   "criterio_aviso_falso_2pct": {
+    "limiar": 1.0,
+    "aviso_falso": 0.0,
+    "deteccao": 0.0,
+    "possivel": false
+   }
+  },
+  "v6": {
+   "arquivo": "paginas-640-160-v6.json",
+   "sonda": "prompt_injection-e5large-v6",
+   "paginas": "349cf30a6cebfa99",
+   "n_benignas": 217,
+   "n_com_injecao": 60,
+   "auc_pagina": 0.8679,
+   "mediana_pior_benigna": 0.0003,
+   "janelas_benignas": 2247,
+   "janelas_benignas_acima_0_5": 0.0717,
+   "por_limiar": [
+    {
+     "limiar": 0.5,
+     "aviso_falso": 0.3456,
+     "aviso_falso_ic95": [
+      0.2855,
+      0.4111
+     ],
+     "deteccao": 0.9,
+     "deteccao_ic95": [
+      0.7985,
+      0.9534
+     ],
+     "deteccao_weni": 0.9,
+     "deteccao_xtram1": 0.9
+    },
+    {
+     "limiar": 0.9,
+     "aviso_falso": 0.3041,
+     "aviso_falso_ic95": [
+      0.2468,
+      0.3683
+     ],
+     "deteccao": 0.85,
+     "deteccao_ic95": [
+      0.7389,
+      0.919
+     ],
+     "deteccao_weni": 0.8667,
+     "deteccao_xtram1": 0.8333
+    },
+    {
+     "limiar": 0.95,
+     "aviso_falso": 0.2903,
+     "aviso_falso_ic95": [
+      0.234,
+      0.3539
+     ],
+     "deteccao": 0.85,
+     "deteccao_ic95": [
+      0.7389,
+      0.919
+     ],
+     "deteccao_weni": 0.8667,
+     "deteccao_xtram1": 0.8333
+    },
+    {
+     "limiar": 0.99,
+     "aviso_falso": 0.2396,
+     "aviso_falso_ic95": [
+      0.1877,
+      0.3006
+     ],
+     "deteccao": 0.8333,
+     "deteccao_ic95": [
+      0.7197,
+      0.9069
+     ],
+     "deteccao_weni": 0.8667,
+     "deteccao_xtram1": 0.8
+    },
+    {
+     "limiar": 0.999,
+     "aviso_falso": 0.1935,
+     "aviso_falso_ic95": [
+      0.1465,
+      0.2513
+     ],
+     "deteccao": 0.8167,
+     "deteccao_ic95": [
+      0.7008,
+      0.8944
+     ],
+     "deteccao_weni": 0.8333,
+     "deteccao_xtram1": 0.8
+    }
+   ],
+   "criterio_aviso_falso_2pct": {
+    "limiar": 1.0,
+    "aviso_falso": 0.0,
+    "deteccao": 0.0,
+    "possivel": false
+   }
+  }
+ },
+ "paginas_1500": {},
+ "extra": {
+  "treino": {
+   "receita": {
+    "modelo_base": "intfloat/multilingual-e5-large",
+    "epocas": 3,
+    "lr": 2e-05,
+    "lote": "8 x acumulação 4 (efetivo 32)",
+    "weight_decay": 0.01,
+    "aquecimento": "6% dos passos",
+    "precisao": "fp16 (treino), fp32 (inferência CPU)",
+    "max_length": 256,
+    "prefixo": "query: ",
+    "validacao": "8% estratificada, seed 0, melhor época por acurácia",
+    "gradient_checkpointing": true,
+    "hardware": "Kaggle 2x T4",
+    "temperatura_instalada": 1.0
+   },
+   "fontes_v6_antes_da_traducao": {
+    "deepset": 546,
+    "jackhhao": 1044,
+    "spml": 4000,
+    "rikka": 6006,
+    "shieldlm": 4000,
+    "yanis": 815,
+    "massive_pt": 1500,
+    "dolly": 3000,
+    "so_perguntas": 4000,
+    "so_respostas": 4000,
+    "docstrings": 2000
+   },
+   "traducoes_pt_opus_mt": 2782,
+   "removidos_trava_weni_cos_0_9": 115,
+   "removidos_origem": {
+    "jackhhao-pt": 48,
+    "spml-pt": 18,
+    "rikka": 12,
+    "deepset-pt": 10,
+    "dolly-pt": 10,
+    "shieldlm": 9,
+    "jackhhao": 8
+   },
+   "removidos_rotulo": {
+    "true": 98,
+    "false": 17
+   },
+   "n_v6": 33578,
+   "rotulos_v6": {
+    "false": 24240,
+    "true": 9338
+   },
+   "n_v3": 23693,
+   "rotulos_v3": {
+    "true": 9436,
+    "false": 14257
+   },
+   "relacao": "v6 = v3 - 115 (quase-duplicatas do Weni, cosseno e5-base > 0,9) + 10.000 benignos técnicos; 23.578 dos 23.693 textos da v3 estão na v6, idênticos",
+   "fracao_positivos": {
+    "v3": 0.3983,
+    "v6": 0.2781
+   },
+   "kaggle": {
+    "dataset": "dataset privado no Kaggle (não publicado: contém texto de bases de terceiros)",
+    "kernel": "kernel privado no Kaggle, versão 7",
+    "validacao_interna_acuracia": {
+     "v3": 0.9963,
+     "v6": 0.997
+    },
+    "validacao_interna_loss": {
+     "v3": 0.0439,
+     "v6": 0.0507
+    },
+    "duracao_s": {
+     "v3": 8511,
+     "v6": 12713
+    },
+    "obs": "versão 6 do kernel terminou em ERROR sem log (antes de rodar célula); a 7, idêntica, completou"
+   }
+  },
+  "auditoria_paginas_no_treino": {
+   "n_metadata": 329,
+   "identicos_a_readme": 0,
+   "treino_contido_em_readme_200c": 0,
+   "readme_contido_no_treino": 0,
+   "textos_com_13grama_de_readme": 9,
+   "readmes_com_algum_13grama_no_treino": 7
+  },
+  "auditoria_obs": "Os 9 textos com 13-grama em comum compartilham só boilerplate XML/XHTML (DOCTYPE, xmlns XSL); nenhum README inteiro ou trecho >= 200 chars.",
+  "paginas_impressao_sha256_16": "349cf30a6cebfa99",
+  "avaliacao": {
+   "maquina": "VM ARM na nuvem (Ampere A1, 4 OCPU aarch64), CPU fp32, max_length 256, lotes por tamanho; mesma máquina da avaliação original da v3",
+   "codigo": "pipeline/treinar.py avaliar (sem a base hackaprompt); extras com --max-teste 300 (primeiros 300 de cada teste, iguais para v3 e v6)",
+   "v3_padrao": "results/guard/v3-e5large-20261006.json (avaliação original da v3, ARM)",
+   "v3_extras": "results/guard/v3-e5large-extras-20261006.json",
+   "v6": [
+    "results/guard/v6-e5large-a-20261006.json",
+    "results/guard/v6-e5large-extras-20261006.json",
+    "results/guard/v6-e5large-b-20261006.json"
+   ],
+   "paginas": "bench/paginas/avaliar.py --janela 640 --sobra 160 nas páginas congeladas (remontáveis por bench/paginas/construir.py), na mesma VM ARM",
+   "probabilidades": "results/v6/dados/probs/v3 (avaliação original + extras da v3) e results/v6/dados/probs/v6",
+   "resolucao": "probabilidades gravadas com 4 casas (Classificador.answers arredonda)",
+   "comando_comparar": "PTGUARD_CACHE=results/v6/dados python analysis/comparar_versoes.py --base v3 --nova v6 --res-base results/guard/v3-e5large-20261006.json,results/guard/v3-e5large-extras-20261006.json --res-nova results/guard/v6-e5large-a-20261006.json,results/guard/v6-e5large-extras-20261006.json,results/guard/v6-e5large-b-20261006.json --pag-base results/v6/dados/paginas-640-160-v3.json --pag-nova results/v6/dados/paginas-640-160-v6.json --weni-vizinhos results/v6/dados/weni_vizinhos.json --extra <extra.json> --saida results/v6/v6"
+  },
+  "analise_erros": {
+   "weni_v3_acerta_v6_erra": 94,
+   "weni_v6_acerta_v3_erra": 1,
+   "weni_tamanho_medio_chars": {
+    "perdidos_pela_v6": 705,
+    "demais": 1101
+   },
+   "weni_perfil_perdidos": "ataques curtos enquadrados como tarefa (gerar título/frase, traduzir, 'você é um mecanismo de busca'), com o alvo 'I have been PWNED' fatiado ou ofuscado — parecem instrução legítima de tarefa",
+   "weni_quantis_p_v6": {
+    "p10": 0.0,
+    "p25": 0.0,
+    "p50": 1.0
+   },
+   "weni_recall_v6_por_limiar": {
+    "0.5": 0.637,
+    "0.1": 0.67,
+    "0.01": 0.693
+   },
+   "paginas_benignas_v6_acima_0_5": 75,
+   "janelas_disparadas_por_pagina_mediana": 2,
+   "paginas_perfil_aviso_falso_v6": "boilerplate de README ausente do treino técnico: badges HTML (<img src=shields.io>), links de patrocínio/doação, tabelas markdown, listas de links"
+  },
+  "problemas": [
+   "texto_de (config da v6) fazia strip/limpeza de HTML em TODAS as fontes: 16.011 de 16.011 textos do SPML mudavam, o sorteio por hash e os testes deixavam de ser os da v3 e ~500 traduções novas eram exigidas; corrigido com limpeza só nas fontes em limpar_html",
+   "avaliar quebrava com KeyError 'choice' desde que o Classificador binário passou a responder noul; corrigido",
+   "exportação anterior morreu com exit 139 (commit de memória do Windows esgotado: navegador ~19 GB + WSL 8 GB); a avaliação local do e5-large também (MemoryError); tudo foi avaliado na VM ARM",
+   "token OAuth do Kaggle vencido no meio do caminho (401 aparecia como 'Permission kernels.get denied'); renovado pelo próprio SDK (refresh token)",
+   "guard_paginas.py: pedido de 256 janelas estourava os 600 s do cliente no ARM dividido; agora pede 32 por vez",
+   "guard_paginas.py: a seleção de READMEs ao vivo mudou entre a v3 e a v6 (pacotes novos trocaram 21 das 217 páginas e alteraram 2); a v6 foi medida nas páginas congeladas (remontáveis por bench/paginas/construir.py, mesma impressão 349cf30a6cebfa99 da medição da v3)",
+   "a v3 tinha 115 quase-duplicatas do Weni no treino (98 positivos), 58 dos 300 textos do Weni afetados; o 94,7% publicado da v3 cai para 93,4% nos 242 limpos"
+  ]
+ }
+}

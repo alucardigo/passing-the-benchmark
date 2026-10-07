@@ -1,0 +1,175 @@
+{
+ "arquivo_original": "guard-guard-e5base-20261006-041535.json",
+ "rodada": "v4 (e5-base + HackAPrompt)",
+ "sha256_pesos": "14ada6af4c9ce2c8d158b95a792bb470488872897ca6ba6c237b503381d25988",
+ "skill": "guard",
+ "modelo": "guard-e5base",
+ "data": "2026-10-06",
+ "teste": {
+  "deepset": {
+   "n": 116,
+   "acuracia": 0.931,
+   "ece": 0.0627,
+   "recall": {
+    "false": 1.0,
+    "true": 0.8667
+   }
+  },
+  "jackhhao": {
+   "n": 262,
+   "acuracia": 0.9885,
+   "ece": 0.0125,
+   "recall": {
+    "false": 0.9919,
+    "true": 0.9856
+   }
+  },
+  "spml": {
+   "n": 1000,
+   "acuracia": 0.993,
+   "ece": 0.0072,
+   "recall": {
+    "false": 0.995,
+    "true": 0.9925
+   }
+  },
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.99,
+   "ece": 0.0065,
+   "recall": {
+    "false": 0.9923,
+    "true": 0.9849
+   }
+  },
+  "rikka": {
+   "n": 1276,
+   "acuracia": 0.9451,
+   "ece": 0.0503,
+   "recall": {
+    "false": 0.9968,
+    "true": 0.897
+   }
+  },
+  "shieldlm": {
+   "n": 4000,
+   "acuracia": 0.9878,
+   "ece": 0.0096,
+   "recall": {
+    "false": 0.9947,
+    "true": 0.9744
+   }
+  },
+  "yanis": {
+   "n": 219,
+   "acuracia": 0.9909,
+   "ece": 0.0108,
+   "recall": {
+    "true": 0.9909
+   }
+  },
+  "massive_pt": {
+   "n": 1500,
+   "acuracia": 0.998,
+   "ece": 0.0014,
+   "recall": {
+    "false": 0.998
+   }
+  },
+  "weni": {
+   "n": 300,
+   "acuracia": 0.6667,
+   "ece": 0.3106,
+   "recall": {
+    "true": 0.6667
+   }
+  },
+  "dolly": {
+   "n": 1000,
+   "acuracia": 0.997,
+   "ece": 0.0023,
+   "recall": {
+    "false": 0.997
+   }
+  },
+  "hackaprompt": {
+   "n": 1000,
+   "acuracia": 0.998,
+   "ece": 0.0011,
+   "recall": {
+    "true": 0.998
+   }
+  },
+  "deepset-pt": {
+   "n": 116,
+   "acuracia": 0.9224,
+   "ece": 0.0784,
+   "recall": {
+    "false": 1.0,
+    "true": 0.85
+   }
+  },
+  "jackhhao-pt": {
+   "n": 262,
+   "acuracia": 0.9733,
+   "ece": 0.0304,
+   "recall": {
+    "false": 0.9756,
+    "true": 0.9712
+   }
+  },
+  "spml-pt": {
+   "n": 300,
+   "acuracia": 0.9867,
+   "ece": 0.0113,
+   "recall": {
+    "false": 1.0,
+    "true": 0.9839
+   }
+  },
+  "xtram1-pt": {
+   "n": 500,
+   "acuracia": 0.96,
+   "ece": 0.0351,
+   "recall": {
+    "false": 0.9745,
+    "true": 0.9252
+   }
+  },
+  "dolly-pt": {
+   "n": 1000,
+   "acuracia": 0.999,
+   "ece": 0.0008,
+   "recall": {
+    "false": 0.999
+   }
+  },
+  "hackaprompt-pt": {
+   "n": 1000,
+   "acuracia": 0.999,
+   "ece": 0.0005,
+   "recall": {
+    "true": 0.999
+   }
+  },
+  "pt-nativo": {
+   "n": 1800,
+   "acuracia": 0.9428,
+   "ece": 0.0526,
+   "recall": {
+    "false": 0.998,
+    "true": 0.6667
+   }
+  },
+  "fumaca": {
+   "n": 10,
+   "acuracia": 0.9,
+   "ece": 0.0996,
+   "recall": {
+    "false": 0.8,
+    "true": 1.0
+   }
+  }
+ },
+ "sha256_pesos_nota": "sha256 do model.safetensors (fp16) baixado do Kaggle"
+}

@@ -1,0 +1,58 @@
+{
+ "skill": "guard",
+ "modelo": "mistura v3 + v5 (e5-large; e5-large + HackAPrompt)",
+ "data": "2026-10-06",
+ "regra": "média dos log-odds com peso fixo a priori 0,5/0,5 (pipeline/misturar.py)",
+ "peso_v3": 0.5,
+ "teste": {
+  "dolly-pt": {
+   "n": 1000,
+   "acuracia": 0.995,
+   "recall": {
+    "false": 0.995
+   }
+  },
+  "fumaca": {
+   "n": 10,
+   "acuracia": 0.9,
+   "recall": {
+    "true": 1.0,
+    "false": 0.8
+   }
+  },
+  "massive_pt": {
+   "n": 1500,
+   "acuracia": 0.9993,
+   "recall": {
+    "false": 0.9993
+   }
+  },
+  "weni": {
+   "n": 300,
+   "acuracia": 0.9133,
+   "recall": {
+    "true": 0.9133
+   }
+  },
+  "xtram1-pt": {
+   "n": 500,
+   "acuracia": 0.968,
+   "recall": {
+    "true": 0.966,
+    "false": 0.9688
+   }
+  },
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.99,
+   "recall": {
+    "true": 0.9935,
+    "false": 0.9884
+   }
+  }
+ },
+ "sha256_pesos": {
+  "v3": "58a5d3faa22788f3f15c74566df158a0cc4d1572a509dbc1d855dcb8cb64625b",
+  "v5": "eba38b65490d61c7c2155e8304c621d7836e06213df17fa0a9995558755bae02"
+ }
+}

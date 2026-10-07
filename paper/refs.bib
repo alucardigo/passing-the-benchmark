@@ -1,0 +1,978 @@
+% refs.bib -- verified bibliography for the pt-BR prompt-injection guard study.
+% Rule: every entry below was opened on 2026-10-06 (arXiv abstract page or arXiv API,
+% ACL Anthology, PMLR, ICLR/NeurIPS proceedings, USENIX, Crossref DOI metadata, Hugging Face
+% card/API, GitHub README, or the blog post itself). Entries whose venue is known only from the
+% arXiv "comments" field are kept as misc entries with the venue in `note`
+% (no at-sign in these comment lines: BibTeX reads one as the start of an entry).
+% Accents are written as LaTeX escapes so the file works with BibTeX and biber alike.
+% Adversarial citation review, 2026-10-06: all 86 entries re-opened (arXiv API for the 43 eprints,
+% Crossref for the 21 DOIs, ACL Anthology/PMLR/USENIX/ICLR/NeurIPS pages, Hugging Face API for the
+% 30 model/dataset/space ids, GitHub API for the 6 repositories, the 7 blog/doc pages, and Open
+% Library for the Kahneman ISBN). None was
+% fabricated; corrections made: ModernBERT ACL author list, Clef blog authors, AgentDojo pages,
+% TypeSafe "update" date (it was page build metadata, not a visible update), PINT note.
+
+% =====================================================================================
+% 1. Prompt injection: attacks, benchmarks, defenses
+% =====================================================================================
+
+@misc{perez2022ignore,
+  author        = {P{\'e}rez, F{\'a}bio and Ribeiro, Ian},
+  title         = {Ignore Previous Prompt: Attack Techniques For Language Models},
+  year          = {2022},
+  eprint        = {2211.09527},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.CL},
+  note          = {ML Safety Workshop, NeurIPS 2022},
+  url           = {https://arxiv.org/abs/2211.09527}
+}
+
+@inproceedings{greshake2023indirect,
+  author    = {Greshake, Kai and Abdelnabi, Sahar and Mishra, Shailesh and Endres, Christoph and Holz, Thorsten and Fritz, Mario},
+  title     = {Not What You've Signed Up For: Compromising Real-World {LLM}-Integrated Applications with Indirect Prompt Injection},
+  booktitle = {Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security (AISec '23)},
+  pages     = {79--90},
+  year      = {2023},
+  publisher = {ACM},
+  doi       = {10.1145/3605764.3623985},
+  eprint    = {2302.12173},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{liu2024formalizing,
+  author    = {Liu, Yupei and Jia, Yuqi and Geng, Runpeng and Jia, Jinyuan and Gong, Neil Zhenqiang},
+  title     = {Formalizing and Benchmarking Prompt Injection Attacks and Defenses},
+  booktitle = {33rd USENIX Security Symposium (USENIX Security 24)},
+  pages     = {1831--1847},
+  year      = {2024},
+  month     = aug,
+  publisher = {USENIX Association},
+  isbn      = {978-1-939133-44-1},
+  url       = {https://www.usenix.org/conference/usenixsecurity24/presentation/liu-yupei},
+  eprint    = {2310.12815},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{schulhoff2023hackaprompt,
+  author    = {Schulhoff, Sander and Pinto, Jeremy and Khan, Anaum and Bouchard, Louis-Fran{\c{c}}ois and Si, Chenglei and Anati, Svetlina and Tagliabue, Valen and Kost, Anson and Carnahan, Christopher and Boyd-Graber, Jordan},
+  title     = {Ignore This Title and {HackAPrompt}: Exposing Systemic Vulnerabilities of {LLMs} Through a Global Prompt Hacking Competition},
+  booktitle = {Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing},
+  editor    = {Bouamor, Houda and Pino, Juan and Bali, Kalika},
+  pages     = {4945--4977},
+  year      = {2023},
+  month     = dec,
+  address   = {Singapore},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2023.emnlp-main.302},
+  url       = {https://aclanthology.org/2023.emnlp-main.302/},
+  eprint    = {2311.16119},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{toyer2024tensortrust,
+  author    = {Toyer, Sam and Watkins, Olivia and Mendes, Ethan Adrian and Svegliato, Justin and Bailey, Luke and Wang, Tiffany and Ong, Isaac and Elmaaroufi, Karim and Abbeel, Pieter and Darrell, Trevor and Ritter, Alan and Russell, Stuart},
+  title     = {Tensor Trust: Interpretable Prompt Injection Attacks from an Online Game},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2024},
+  url       = {https://proceedings.iclr.cc/paper_files/paper/2024/hash/519c51529c3544b3430bd8b17d400365-Abstract-Conference.html},
+  eprint    = {2311.01011},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{yi2023bipia,
+  author    = {Yi, Jingwei and Xie, Yueqi and Zhu, Bin and Kiciman, Emre and Sun, Guangzhong and Xie, Xing and Wu, Fangzhao},
+  title     = {Benchmarking and Defending against Indirect Prompt Injection Attacks on Large Language Models},
+  booktitle = {Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining, V.1},
+  pages     = {1809--1820},
+  year      = {2025},
+  publisher = {ACM},
+  doi       = {10.1145/3690624.3709179},
+  eprint    = {2312.14197},
+  archiveprefix = {arXiv},
+  note      = {Preprint first posted December 2023 (BIPIA)}
+}
+
+@inproceedings{zhan2024injecagent,
+  author    = {Zhan, Qiusi and Liang, Zhixiang and Ying, Zifan and Kang, Daniel},
+  title     = {{InjecAgent}: Benchmarking Indirect Prompt Injections in Tool-Integrated Large Language Model Agents},
+  booktitle = {Findings of the Association for Computational Linguistics: ACL 2024},
+  pages     = {10471--10506},
+  year      = {2024},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2024.findings-acl.624},
+  eprint    = {2403.02691},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{debenedetti2024agentdojo,
+  author    = {Debenedetti, Edoardo and Zhang, Jie and Balunovi{\'c}, Mislav and Beurer-Kellner, Luca and Fischer, Marc and Tram{\`e}r, Florian},
+  title     = {{AgentDojo}: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for {LLM} Agents},
+  booktitle = {Advances in Neural Information Processing Systems 37 (NeurIPS 2024), Datasets and Benchmarks Track},
+  pages     = {82895--82920},
+  year      = {2024},
+  doi       = {10.52202/079017-2636},
+  url       = {https://proceedings.neurips.cc/paper_files/paper/2024/hash/97091a5177d8dc64b1da8bf3e1f6fb54-Abstract-Datasets_and_Benchmarks_Track.html},
+  eprint    = {2406.13352},
+  archiveprefix = {arXiv}
+}
+
+@misc{debenedetti2025camel,
+  author        = {Debenedetti, Edoardo and Shumailov, Ilia and Fan, Tianqi and Hayes, Jamie and Carlini, Nicholas and Fabian, Daniel and Kern, Christoph and Shi, Chongyang and Terzis, Andreas and Tram{\`e}r, Florian},
+  title         = {Defeating Prompt Injections by Design},
+  year          = {2025},
+  eprint        = {2503.18813},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2503.18813}
+}
+
+@misc{hines2024spotlighting,
+  author        = {Hines, Keegan and Lopez, Gary and Hall, Matthew and Zarfati, Federico and Zunger, Yonatan and Kiciman, Emre},
+  title         = {Defending Against Indirect Prompt Injection Attacks With Spotlighting},
+  year          = {2024},
+  eprint        = {2403.14720},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2403.14720}
+}
+
+@inproceedings{chen2024struq,
+  author    = {Chen, Sizhe and Piet, Julien and Sitawarin, Chawin and Wagner, David},
+  title     = {{StruQ}: Defending Against Prompt Injection with Structured Queries},
+  booktitle = {34th USENIX Security Symposium (USENIX Security 25)},
+  pages     = {2383--2400},
+  year      = {2025},
+  publisher = {USENIX Association},
+  isbn      = {978-1-939133-52-6},
+  url       = {https://www.usenix.org/conference/usenixsecurity25/presentation/chen-sizhe},
+  eprint    = {2402.06363},
+  archiveprefix = {arXiv},
+  note      = {Preprint first posted February 2024}
+}
+
+@inproceedings{shen2024dan,
+  author    = {Shen, Xinyue and Chen, Zeyuan and Backes, Michael and Shen, Yun and Zhang, Yang},
+  title     = {``{Do Anything Now}'': Characterizing and Evaluating In-The-Wild Jailbreak Prompts on Large Language Models},
+  booktitle = {Proceedings of the 2024 ACM SIGSAC Conference on Computer and Communications Security (CCS '24)},
+  pages     = {1671--1685},
+  year      = {2024},
+  publisher = {ACM},
+  doi       = {10.1145/3658644.3670388},
+  eprint    = {2308.03825},
+  archiveprefix = {arXiv}
+}
+
+@misc{chao2024jailbreakbench,
+  author        = {Chao, Patrick and Debenedetti, Edoardo and Robey, Alexander and Andriushchenko, Maksym and Croce, Francesco and Sehwag, Vikash and Dobriban, Edgar and Flammarion, Nicolas and Pappas, George J. and Tram{\`e}r, Florian and Hassani, Hamed and Wong, Eric},
+  title         = {{JailbreakBench}: An Open Robustness Benchmark for Jailbreaking Large Language Models},
+  year          = {2024},
+  eprint        = {2404.01318},
+  archiveprefix = {arXiv},
+  note          = {NeurIPS 2024 Datasets and Benchmarks Track (per arXiv comments)},
+  url           = {https://arxiv.org/abs/2404.01318}
+}
+
+@misc{sharma2024spml,
+  author        = {Sharma, Reshabh K. and Gupta, Vinayak and Grossman, Dan},
+  title         = {{SPML}: A {DSL} for Defending Language Models Against Prompt Attacks},
+  year          = {2024},
+  eprint        = {2402.11755},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2402.11755}
+}
+
+@misc{pfister2025gandalf,
+  author        = {Pfister, Niklas and Volhejn, V{\'a}clav and Knott, Manuel and Arias, Santiago and Bazi{\'n}ska, Julia and Bichurin, Mykhailo and Commike, Alan and Darling, Janet and Dienes, Peter and Fiedler, Matthew and Haber, David and Kraft, Matthias and Lancini, Marco and Mathys, Max and Pascual-Ortiz, Dami{\'a}n and Podolak, Jakub and Romero-L{\'o}pez, Adri{\`a} and Shiarlis, Kyriacos and Signer, Andreas and Terek, Zsolt and Theocharis, Athanasios and Timbrell, Daniel and Trautwein, Samuel and Watts, Samuel and Wu, Yun-Han and Rojas-Carulla, Mateo},
+  title         = {Gandalf the Red: Adaptive Security for {LLMs}},
+  year          = {2025},
+  eprint        = {2501.07927},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2501.07927}
+}
+
+@misc{lakera2025pint,
+  author       = {{Lakera}},
+  title        = {{PINT} Benchmark: Prompt Injection Test},
+  year         = {2025},
+  howpublished = {GitHub repository \url{https://github.com/lakeraai/pint-benchmark}},
+  note         = {4{,}314 inputs mixing public and proprietary data; the repository ships only an example dataset; most recent leaderboard test date 2025-08-27},
+  url          = {https://github.com/lakeraai/pint-benchmark},
+  urldate      = {2026-10-06}
+}
+
+@misc{chennabasappa2025llamafirewall,
+  author        = {Chennabasappa, Sahana and Nikolaidis, Cyrus and Song, Daniel and Molnar, David and Ding, Stephanie and Wan, Shengye and Whitman, Spencer and Deason, Lauren and Doucette, Nicholas and Montilla, Abraham and Gampa, Alekhya and de Paola, Beto and Gabi, Dominik and Crnkovich, James and Testud, Jean-Christophe and He, Kat and Chaturvedi, Rashnil and Zhou, Wu and Saxe, Joshua},
+  title         = {{LlamaFirewall}: An open source guardrail system for building secure {AI} agents},
+  year          = {2025},
+  eprint        = {2505.03574},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2505.03574}
+}
+
+% -------------------------------------------------------------------------------------
+% 1b. Public classifiers used as baselines (model cards; no paper exists for these)
+% -------------------------------------------------------------------------------------
+
+@misc{protectai2024deberta,
+  author       = {{ProtectAI.com}},
+  title        = {Fine-Tuned {DeBERTa-v3-base} for Prompt Injection Detection},
+  year         = {2024},
+  howpublished = {Hugging Face model \texttt{protectai/deberta-v3-base-prompt-injection-v2}},
+  note         = {Apache-2.0; English only; revision 90c9989b; citation as given on the model card},
+  url          = {https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2},
+  urldate      = {2026-10-06}
+}
+
+@misc{deepset2023deberta,
+  author       = {{deepset}},
+  title        = {deberta-v3-base-injection},
+  year         = {2023},
+  howpublished = {Hugging Face model \texttt{deepset/deberta-v3-base-injection}},
+  note         = {MIT; fine-tuned from microsoft/deberta-v3-base on deepset/prompt-injections; revision 80dda00d},
+  url          = {https://huggingface.co/deepset/deberta-v3-base-injection},
+  urldate      = {2026-10-06}
+}
+
+@misc{proventra2025mdeberta,
+  author       = {{Proventra}},
+  title        = {mdeberta-v3-base-prompt-injection},
+  year         = {2025},
+  howpublished = {Hugging Face model \texttt{proventra/mdeberta-v3-base-prompt-injection}},
+  note         = {MIT; fine-tuned from microsoft/mdeberta-v3-base; revision b8a89d30 on 2026-10-06},
+  url          = {https://huggingface.co/proventra/mdeberta-v3-base-prompt-injection},
+  urldate      = {2026-10-06}
+}
+
+@misc{meta2025promptguard2,
+  author       = {{Meta}},
+  title        = {Llama Prompt Guard 2},
+  year         = {2025},
+  howpublished = {Hugging Face models \texttt{meta-llama/Llama-Prompt-Guard-2-86M} and \texttt{-22M}; model card in \url{https://github.com/meta-llama/PurpleLlama}},
+  note         = {Llama 4 Community License; 86M on mDeBERTa-base, 22M on DeBERTa-xsmall; 512-token window},
+  url          = {https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M},
+  urldate      = {2026-10-06}
+}
+
+@misc{meta2024promptguard,
+  author       = {{Meta}},
+  title        = {Prompt Guard 86M},
+  year         = {2024},
+  howpublished = {Hugging Face model \texttt{meta-llama/Prompt-Guard-86M}},
+  note         = {Llama 3.1 license; first released July 2024},
+  url          = {https://huggingface.co/meta-llama/Prompt-Guard-86M},
+  urldate      = {2026-10-06}
+}
+
+% -------------------------------------------------------------------------------------
+% 1c. Datasets (Hugging Face; none of these has an accompanying paper unless noted)
+% -------------------------------------------------------------------------------------
+
+@misc{deepset2023promptinjections,
+  author       = {{deepset}},
+  title        = {prompt-injections},
+  year         = {2023},
+  howpublished = {Hugging Face dataset \texttt{deepset/prompt-injections}},
+  note         = {Apache-2.0; 546 train / 116 test; English and German; revision 4f61ecb0},
+  url          = {https://huggingface.co/datasets/deepset/prompt-injections},
+  urldate      = {2026-10-06}
+}
+
+@misc{jackhhao2024jailbreak,
+  author       = {{jackhhao}},
+  title        = {jailbreak-classification},
+  year         = {2023},
+  howpublished = {Hugging Face dataset \texttt{jackhhao/jailbreak-classification}},
+  note         = {Apache-2.0; revision 2f2ceeb3},
+  url          = {https://huggingface.co/datasets/jackhhao/jailbreak-classification},
+  urldate      = {2026-10-06}
+}
+
+@misc{reshabhs2024spmldata,
+  author       = {Sharma, Reshabh K.},
+  title        = {{SPML\_Chatbot\_Prompt\_Injection}},
+  year         = {2024},
+  howpublished = {Hugging Face dataset \texttt{reshabhs/SPML\_Chatbot\_Prompt\_Injection}},
+  note         = {MIT; revision 02ce8084; accompanies the SPML paper (sharma2024spml)},
+  url          = {https://huggingface.co/datasets/reshabhs/SPML_Chatbot_Prompt_Injection},
+  urldate      = {2026-10-06}
+}
+
+@misc{rikka2025multilingual,
+  author       = {{rikka-snow}},
+  title        = {prompt-injection-multilingual},
+  year         = {2024},
+  howpublished = {Hugging Face dataset \texttt{rikka-snow/prompt-injection-multilingual}},
+  note         = {MIT; 11 languages incl. Portuguese; revision f1ad1f3d},
+  url          = {https://huggingface.co/datasets/rikka-snow/prompt-injection-multilingual},
+  urldate      = {2026-10-06}
+}
+
+@misc{milush2025shieldlm,
+  author       = {{dmilush}},
+  title        = {shieldlm-prompt-injection},
+  year         = {2026},
+  howpublished = {Hugging Face dataset \texttt{dmilush/shieldlm-prompt-injection}},
+  note         = {MIT (curation; sources keep their own licenses); revision dd660ae7},
+  url          = {https://huggingface.co/datasets/dmilush/shieldlm-prompt-injection},
+  urldate      = {2026-10-06}
+}
+
+@misc{miraoui2023promptinjections,
+  author       = {Miraoui, Yanis},
+  title        = {prompt\_injections},
+  year         = {2023},
+  howpublished = {Hugging Face dataset \texttt{yanismiraoui/prompt\_injections}},
+  note         = {Apache-2.0; 7 languages incl. Portuguese; revision bd55359f},
+  url          = {https://huggingface.co/datasets/yanismiraoui/prompt_injections},
+  urldate      = {2026-10-06}
+}
+
+@misc{xtram12024safeguard,
+  author       = {{xTRam1}},
+  title        = {safe-guard-prompt-injection},
+  year         = {2024},
+  howpublished = {Hugging Face dataset \texttt{xTRam1/safe-guard-prompt-injection}},
+  note         = {No license declared; synthetic, generated with GPT-3.5-turbo; 8{,}240 train / 2{,}060 test; revision a3a877d6},
+  url          = {https://huggingface.co/datasets/xTRam1/safe-guard-prompt-injection},
+  urldate      = {2026-10-06}
+}
+
+@misc{weni2024promptinjections,
+  author       = {{Weni}},
+  title        = {prompt-injections-1.0.0},
+  year         = {2024},
+  howpublished = {Hugging Face dataset \texttt{Weni/prompt-injections-1.0.0}},
+  note         = {No license declared; 300 Portuguese attack prompts; revision 9707fa47},
+  url          = {https://huggingface.co/datasets/Weni/prompt-injections-1.0.0},
+  urldate      = {2026-10-06}
+}
+
+@misc{hackaprompt2023dataset,
+  author       = {{HackAPrompt}},
+  title        = {hackaprompt-dataset},
+  year         = {2023},
+  howpublished = {Hugging Face dataset \texttt{hackaprompt/hackaprompt-dataset}},
+  note         = {MIT; gated; revision 25b87fbe; accompanies the HackAPrompt paper (schulhoff2023hackaprompt)},
+  url          = {https://huggingface.co/datasets/hackaprompt/hackaprompt-dataset},
+  urldate      = {2026-10-06}
+}
+
+@misc{imoxto2023hackapromptgpt35,
+  author       = {{imoxto}},
+  title        = {prompt\_injection\_hackaprompt\_gpt35},
+  year         = {2023},
+  howpublished = {Hugging Face dataset \texttt{imoxto/prompt\_injection\_hackaprompt\_gpt35}},
+  note         = {Mirror of HackAPrompt (gpt-3.5-turbo); no license field in the card metadata; revision efc8f438},
+  url          = {https://huggingface.co/datasets/imoxto/prompt_injection_hackaprompt_gpt35},
+  urldate      = {2026-10-06}
+}
+
+% =====================================================================================
+% 1d. Over-defense / false positives of prompt-injection guards (closest to our thesis)
+% =====================================================================================
+
+@inproceedings{li2025piguard,
+  author    = {Li, Hao and Liu, Xiaogeng and Zhang, Ning and Xiao, Chaowei},
+  title     = {{PIGuard}: Prompt Injection Guardrail via Mitigating Overdefense for Free},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  editor    = {Che, Wanxiang and Nabende, Joyce and Shutova, Ekaterina and Pilehvar, Mohammad Taher},
+  pages     = {30420--30437},
+  year      = {2025},
+  month     = jul,
+  address   = {Vienna, Austria},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2025.acl-long.1468},
+  url       = {https://aclanthology.org/2025.acl-long.1468/}
+}
+
+@misc{li2024injecguard,
+  author        = {Li, Hao and Liu, Xiaogeng},
+  title         = {{InjecGuard}: Benchmarking and Mitigating Over-defense in Prompt Injection Guardrail Models},
+  year          = {2024},
+  eprint        = {2410.22770},
+  archiveprefix = {arXiv},
+  note          = {Preprint of PIGuard (li2025piguard); introduces the NotInject benchmark (339 benign sentences with trigger words)},
+  url           = {https://arxiv.org/abs/2410.22770}
+}
+
+@inproceedings{kholkar2025capture,
+  author    = {Kholkar, Gauri and Ahuja, Ratinder},
+  title     = {{CAPTURE}: Context-Aware Prompt Injection Testing and Robustness Enhancement},
+  booktitle = {Proceedings of the First Workshop on LLM Security (LLMSEC)},
+  editor    = {Derczynski, Leon and Novikova, Jekaterina and Chen, Muhao},
+  pages     = {176--188},
+  year      = {2025},
+  month     = aug,
+  address   = {Vienna, Austria},
+  publisher = {Association for Computational Linguistics},
+  url       = {https://aclanthology.org/2025.llmsec-1.13/},
+  eprint    = {2505.12368},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{chen2025indirect,
+  author    = {Chen, Yulin and Li, Haoran and Sui, Yuan and He, Yufei and Liu, Yue and Song, Yangqiu and Hooi, Bryan},
+  title     = {Can Indirect Prompt Injection Attacks Be Detected and Removed?},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  pages     = {18189--18206},
+  year      = {2025},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2025.acl-long.890},
+  eprint    = {2502.16580},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{jacob2025promptshield,
+  author    = {Jacob, Dennis and Alzahrani, Hend and Hu, Zhanhao and Alomair, Basel and Wagner, David},
+  title     = {{PromptShield}: Deployable Detection for Prompt Injection Attacks},
+  booktitle = {Proceedings of the Fifteenth ACM Conference on Data and Application Security and Privacy (CODASPY '25)},
+  pages     = {341--352},
+  year      = {2025},
+  publisher = {ACM},
+  doi       = {10.1145/3714393.3726501},
+  eprint    = {2501.15145},
+  archiveprefix = {arXiv}
+}
+
+@misc{jia2025critical,
+  author        = {Jia, Yuqi and Shao, Zedian and Liu, Yupei and Jia, Jinyuan and Song, Dawn and Gong, Neil Zhenqiang},
+  title         = {A Critical Evaluation of Defenses against Prompt Injection Attacks},
+  year          = {2025},
+  eprint        = {2505.18333},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2505.18333}
+}
+
+@article{shire2026pidsbench,
+  author  = {Shire, Yusuf Khalid and Kim, Sang-Chul},
+  title   = {{PIDS-Bench}: Evaluating Prompt-Injection Detectors Under Over-Defense, Obfuscation, and Distribution Shift},
+  journal = {IEEE Access},
+  volume  = {14},
+  pages   = {134184--134205},
+  year    = {2026},
+  doi     = {10.1109/ACCESS.2026.3728186},
+  eprint  = {2609.15017},
+  archiveprefix = {arXiv}
+}
+
+@misc{liu2026passing,
+  author        = {Liu, Zhuowen},
+  title         = {Passing the Test You Trained On: Re-evaluating Prompt-Injection Detectors for {LLM} Agents},
+  year          = {2026},
+  eprint        = {2610.03448},
+  archiveprefix = {arXiv},
+  primaryclass  = {cs.CR},
+  note          = {Submitted 2026-10-02; code: \url{https://github.com/lzwhehe/benign-instruction-bench}},
+  url           = {https://arxiv.org/abs/2610.03448}
+}
+
+@misc{chen2026aegis,
+  author        = {Chen, Jiahao and Yin, Rui and Li, Xinfeng and Ma, Qianli and Du, Tianyu and Fu, Zhihui and Wang, Jun and Wang, Zhaoxiang and Ji, Shouling},
+  title         = {Beyond Over-Refusal: Defending Indirect Prompt Injection via Latent Instruction Manifolds},
+  year          = {2026},
+  eprint        = {2608.22248},
+  archiveprefix = {arXiv},
+  note          = {Extended version of an EMNLP 2026 Findings paper (per arXiv comments)},
+  url           = {https://arxiv.org/abs/2608.22248}
+}
+
+@misc{biswas2026confidently,
+  author        = {Biswas, Md Anas},
+  title         = {Confidently Wrong: Severity-Aware Calibration of Prompt-Injection Detectors under Attack Shift},
+  year          = {2026},
+  eprint        = {2606.22659},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2606.22659}
+}
+
+@inproceedings{rottger2024xstest,
+  author    = {R{\"o}ttger, Paul and Kirk, Hannah Rose and Vidgen, Bertie and Attanasio, Giuseppe and Bianchi, Federico and Hovy, Dirk},
+  title     = {{XSTest}: A Test Suite for Identifying Exaggerated Safety Behaviours in Large Language Models},
+  booktitle = {Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers)},
+  pages     = {5377--5400},
+  year      = {2024},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2024.naacl-long.301},
+  eprint    = {2308.01263},
+  archiveprefix = {arXiv}
+}
+
+@misc{cui2024orbench,
+  author        = {Cui, Justin and Chiang, Wei-Lin and Stoica, Ion and Hsieh, Cho-Jui},
+  title         = {{OR-Bench}: An Over-Refusal Benchmark for Large Language Models},
+  year          = {2024},
+  eprint        = {2405.20947},
+  archiveprefix = {arXiv},
+  note          = {ICML 2025 (per arXiv comments)},
+  url           = {https://arxiv.org/abs/2405.20947}
+}
+
+% -------------------------------------------------------------------------------------
+% 1e. Multilingual safety and embedding-based detectors
+% -------------------------------------------------------------------------------------
+
+@misc{deng2024multilingual,
+  author        = {Deng, Yue and Zhang, Wenxuan and Pan, Sinno Jialin and Bing, Lidong},
+  title         = {Multilingual Jailbreak Challenges in Large Language Models},
+  year          = {2023},
+  eprint        = {2310.06474},
+  archiveprefix = {arXiv},
+  note          = {ICLR 2024 (per arXiv comments)},
+  url           = {https://arxiv.org/abs/2310.06474}
+}
+
+@misc{yong2023lowresource,
+  author        = {Yong, Zheng-Xin and Menghini, Cristina and Bach, Stephen H.},
+  title         = {Low-Resource Languages Jailbreak {GPT-4}},
+  year          = {2023},
+  eprint        = {2310.02446},
+  archiveprefix = {arXiv},
+  note          = {NeurIPS 2023 Workshop on Socially Responsible Language Modelling Research (SoLaR), per arXiv comments},
+  url           = {https://arxiv.org/abs/2310.02446}
+}
+
+@misc{ayub2024embedding,
+  author        = {Ayub, Md. Ahsan and Majumdar, Subhabrata},
+  title         = {Embedding-based classifiers can detect prompt injection attacks},
+  year          = {2024},
+  eprint        = {2410.22284},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2410.22284}
+}
+
+@misc{rahman2024mbert,
+  author        = {Rahman, Md Abdur and Shahriar, Hossain and Wu, Fan and Cuzzocrea, Alfredo},
+  title         = {Applying Pre-trained Multilingual {BERT} in Embeddings for Improved Malicious Prompt Injection Attacks Detection},
+  year          = {2024},
+  eprint        = {2409.13331},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2409.13331}
+}
+
+% =====================================================================================
+% 2. Shortcut learning, dataset shift, benchmark vs. use
+% =====================================================================================
+
+@article{geirhos2020shortcut,
+  author  = {Geirhos, Robert and Jacobsen, J{\"o}rn-Henrik and Michaelis, Claudio and Zemel, Richard and Brendel, Wieland and Bethge, Matthias and Wichmann, Felix A.},
+  title   = {Shortcut learning in deep neural networks},
+  journal = {Nature Machine Intelligence},
+  volume  = {2},
+  number  = {11},
+  pages   = {665--673},
+  year    = {2020},
+  doi     = {10.1038/s42256-020-00257-z},
+  eprint  = {2004.07780},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{mccoy2019right,
+  author    = {McCoy, R. Thomas and Pavlick, Ellie and Linzen, Tal},
+  title     = {Right for the Wrong Reasons: Diagnosing Syntactic Heuristics in Natural Language Inference},
+  booktitle = {Proceedings of the 57th Annual Meeting of the Association for Computational Linguistics},
+  editor    = {Korhonen, Anna and Traum, David and M{\`a}rquez, Llu{\'\i}s},
+  pages     = {3428--3448},
+  year      = {2019},
+  month     = jul,
+  address   = {Florence, Italy},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/P19-1334},
+  url       = {https://aclanthology.org/P19-1334/}
+}
+
+@inproceedings{gururangan2018annotation,
+  author    = {Gururangan, Suchin and Swayamdipta, Swabha and Levy, Omer and Schwartz, Roy and Bowman, Samuel R. and Smith, Noah A.},
+  title     = {Annotation Artifacts in Natural Language Inference Data},
+  booktitle = {Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 2 (Short Papers)},
+  editor    = {Walker, Marilyn and Ji, Heng and Stent, Amanda},
+  pages     = {107--112},
+  year      = {2018},
+  month     = jun,
+  address   = {New Orleans, Louisiana},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/N18-2017},
+  url       = {https://aclanthology.org/N18-2017/}
+}
+
+@book{quinonero2009datasetshift,
+  editor    = {Qui{\~n}onero-Candela, Joaquin and Sugiyama, Masashi and Schwaighofer, Anton and Lawrence, Neil D.},
+  title     = {Dataset Shift in Machine Learning},
+  series    = {Neural Information Processing series},
+  publisher = {The MIT Press},
+  address   = {Cambridge, MA},
+  year      = {2009},
+  doi       = {10.7551/mitpress/9780262170055.001.0001},
+  isbn      = {978-0-262-17005-5},
+  note      = {Crossref dates the online edition 2008-12-12}
+}
+
+@inproceedings{koh2021wilds,
+  author    = {Koh, Pang Wei and Sagawa, Shiori and Marklund, Henrik and Xie, Sang Michael and Zhang, Marvin and Balsubramani, Akshay and Hu, Weihua and Yasunaga, Michihiro and Phillips, Richard Lanas and Gao, Irena and Lee, Tony and David, Etienne and Stavness, Ian and Guo, Wei and Earnshaw, Berton and Haque, Imran and Beery, Sara M. and Leskovec, Jure and Kundaje, Anshul and Pierson, Emma and Levine, Sergey and Finn, Chelsea and Liang, Percy},
+  title     = {{WILDS}: A Benchmark of in-the-Wild Distribution Shifts},
+  booktitle = {Proceedings of the 38th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {139},
+  editor    = {Meila, Marina and Zhang, Tong},
+  pages     = {5637--5664},
+  year      = {2021},
+  publisher = {PMLR},
+  url       = {https://proceedings.mlr.press/v139/koh21a.html},
+  eprint    = {2012.07421},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{recht2019imagenet,
+  author    = {Recht, Benjamin and Roelofs, Rebecca and Schmidt, Ludwig and Shankar, Vaishaal},
+  title     = {Do {ImageNet} Classifiers Generalize to {ImageNet}?},
+  booktitle = {Proceedings of the 36th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {97},
+  editor    = {Chaudhuri, Kamalika and Salakhutdinov, Ruslan},
+  pages     = {5389--5400},
+  year      = {2019},
+  publisher = {PMLR},
+  url       = {https://proceedings.mlr.press/v97/recht19a.html},
+  eprint    = {1902.10811},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{ribeiro2020checklist,
+  author    = {Ribeiro, Marco Tulio and Wu, Tongshuang and Guestrin, Carlos and Singh, Sameer},
+  title     = {Beyond Accuracy: Behavioral Testing of {NLP} Models with {CheckList}},
+  booktitle = {Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics},
+  editor    = {Jurafsky, Dan and Chai, Joyce and Schluter, Natalie and Tetreault, Joel},
+  pages     = {4902--4912},
+  year      = {2020},
+  month     = jul,
+  address   = {Online},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2020.acl-main.442},
+  url       = {https://aclanthology.org/2020.acl-main.442/}
+}
+
+% Statistics used in the evaluation section
+@article{wilson1927probable,
+  author  = {Wilson, Edwin B.},
+  title   = {Probable Inference, the Law of Succession, and Statistical Inference},
+  journal = {Journal of the American Statistical Association},
+  volume  = {22},
+  number  = {158},
+  pages   = {209--212},
+  year    = {1927},
+  doi     = {10.1080/01621459.1927.10502953}
+}
+
+@article{mcnemar1947note,
+  author  = {McNemar, Quinn},
+  title   = {Note on the Sampling Error of the Difference Between Correlated Proportions or Percentages},
+  journal = {Psychometrika},
+  volume  = {12},
+  number  = {2},
+  pages   = {153--157},
+  year    = {1947},
+  doi     = {10.1007/BF02295996}
+}
+
+% =====================================================================================
+% 3. Typed decision models ("System One"): Jev, Clef, Laya, Arbiter, Kev, Decision Index
+% =====================================================================================
+
+@book{kahneman2011thinking,
+  author    = {Kahneman, Daniel},
+  title     = {Thinking, Fast and Slow},
+  publisher = {Farrar, Straus and Giroux},
+  address   = {New York},
+  year      = {2011},
+  isbn      = {978-0-374-27563-1}
+}
+
+@misc{typesafe2026jev,
+  author       = {Almeida, Diogo},
+  title        = {Introducing System One Models \& {Jev}},
+  year         = {2026},
+  month        = sep,
+  howpublished = {TypeSafe AI blog, 2026-09-15},
+  note         = {The FAQ states that the ``System One'' name draws on Kahneman's System 1 / System 2 distinction},
+  url          = {https://typesafe.ai/blog/introducing-system-one-models-and-jev},
+  urldate      = {2026-10-06}
+}
+
+@misc{guo2026justaskjev,
+  author        = {Guo, Ruoqi and Liu, Yi and Deng, Gelei and Li, Yuekang and Zhao, Lida and Wu, Yutao and Chen, Simin and Zhang, Ying and Zhang, Leo Yu},
+  title         = {Just Ask {Jev}: Reinforcement Learning for Calibrated Decisions as a Zero-Shot Detector of {AI} Alignment Failures},
+  year          = {2026},
+  eprint        = {2609.29429},
+  archiveprefix = {arXiv},
+  note          = {RLCDAlignBench: 44 benchmarks over ten failure types, prompt injection among them},
+  url           = {https://arxiv.org/abs/2609.29429}
+}
+
+@misc{gao2026openjevrlcd,
+  author        = {Gao, Zhimin and Wang, Pichao},
+  title         = {{OpenJev-RLCD}: A Working {RLCD} Implementation},
+  year          = {2026},
+  eprint        = {2609.38850},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2609.38850}
+}
+
+@misc{typesafe2026docs,
+  author       = {{TypeSafe}},
+  title        = {Models -- {TypeSafe} documentation},
+  year         = {2026},
+  howpublished = {Documentation (current model jev-1.13.0)},
+  url          = {https://docs.typesafe.ai/models},
+  urldate      = {2026-10-06}
+}
+
+@misc{typesafe2026evals,
+  author       = {{TypeSafe}},
+  title        = {Workflow evals},
+  year         = {2026},
+  howpublished = {Web page (undated)},
+  note         = {Four business workflows; no prompt-injection workflow},
+  url          = {https://evals.typesafe.ai/},
+  urldate      = {2026-10-06}
+}
+
+@misc{cloudflare2026clef,
+  author       = {Chen, Michelle and Reneau, Alex and Flansburg, Kevin},
+  title        = {Introducing {Clef}: our open-source decision models, and new {RL} fine-tuning platform},
+  year         = {2026},
+  month        = oct,
+  howpublished = {Cloudflare blog, 2026-10-01},
+  note         = {Clef (frozen Qwen3.8-27B) and Clef-flash (frozen Qwen3.5-9B) with LoRA adapters and a scoring head; weights on Hugging Face under Apache-2.0},
+  url          = {https://blog.cloudflare.com/clef-decision-models/},
+  urldate      = {2026-10-06}
+}
+
+@misc{cloudflare2026clefflash,
+  author       = {{Cloudflare}},
+  title        = {Clef-Flash},
+  year         = {2026},
+  howpublished = {Hugging Face model \texttt{Cloudflare/clef-flash}},
+  note         = {Apache-2.0; based on Qwen/Qwen3.5-9B; revision 17f0b0ad},
+  url          = {https://huggingface.co/Cloudflare/clef-flash},
+  urldate      = {2026-10-06}
+}
+
+@misc{convai2026laya,
+  author       = {{Convai Innovations}},
+  title        = {Laya: a non-autoregressive typed-decision engine},
+  year         = {2026},
+  howpublished = {GitHub repository \url{https://github.com/NandhaKishorM/laya}; Hugging Face models \texttt{convaiinnovations/laya} and \texttt{convaiinnovations/laya-multilingual}},
+  note         = {Apache-2.0; English checkpoint on ModernBERT-large (421M), multilingual checkpoint on mmBERT-base (322M); PyPI package \texttt{laya}},
+  url          = {https://github.com/NandhaKishorM/laya},
+  urldate      = {2026-10-06}
+}
+
+@misc{bakeer2026arbiter,
+  author       = {{0xBakeer}},
+  title        = {Arbiter: a serving layer for typed-decision models},
+  year         = {2026},
+  howpublished = {GitHub repository \url{https://github.com/0xBakeer/arbiter}},
+  note         = {MIT; serves Laya behind a Jev-compatible HTTP API},
+  url          = {https://github.com/0xBakeer/arbiter},
+  urldate      = {2026-10-06}
+}
+
+@misc{palmer2026kev9b,
+  author       = {Palmer, Jared},
+  title        = {Kev-9B},
+  year         = {2026},
+  howpublished = {Hugging Face model \texttt{jaredpalmer/kev-9b}},
+  note         = {Apache-2.0; LoRA adapter and head over Qwen/Qwen3.5-9B-Base; revision db029f08},
+  url          = {https://huggingface.co/jaredpalmer/kev-9b},
+  urldate      = {2026-10-06}
+}
+
+@misc{decisionindex2026,
+  author       = {{apolinario}},
+  title        = {Decision Index: reproduction kit for the typed-decision benchmark suite},
+  year         = {2026},
+  howpublished = {GitHub repository \url{https://github.com/apolinario/decision-index}; leaderboard data in the Hugging Face Space \texttt{multimodalart/jev-decision-index} (file \texttt{data/index-v0.2.1.json}, generated 2026-09-28)},
+  note         = {Version 0.2.1 (2026-09-27); MIT (code); chance-corrected skill score, unanswered requests count as wrong},
+  url          = {https://github.com/apolinario/decision-index},
+  urldate      = {2026-10-06}
+}
+
+@misc{akita2026jev,
+  author       = {Akita, Fabio},
+  title        = {Entendendo o Hype do {Jev}: pra que serve?},
+  year         = {2026},
+  month        = oct,
+  howpublished = {AkitaOnRails blog, 2026-10-03},
+  note         = {In Portuguese; includes an essay by Paulo C{\^a}mara written for the post (he discloses that he co-founded a company competing in the same market)},
+  url          = {https://akitaonrails.com/2026/10/03/entendendo-o-hype-do-jev-pra-que-serve/},
+  urldate      = {2026-10-06}
+}
+
+@misc{akita2026typesafe,
+  author       = {Akita, Fabio},
+  title        = {Por que coisas como {TypeSafe IA} n{\~a}o me interessam},
+  year         = {2026},
+  month        = sep,
+  howpublished = {AkitaOnRails blog, 2026-09-16},
+  note         = {In Portuguese},
+  url          = {https://akitaonrails.com/2026/09/16/por-que-coisas-como-typesafe-ia-nao-me-interessam/},
+  urldate      = {2026-10-06}
+}
+
+% =====================================================================================
+% 4. Encoders, translation, and benign data sources
+% =====================================================================================
+
+@misc{wang2024multilinguale5,
+  author        = {Wang, Liang and Yang, Nan and Huang, Xiaolong and Yang, Linjun and Majumder, Rangan and Wei, Furu},
+  title         = {Multilingual {E5} Text Embeddings: A Technical Report},
+  year          = {2024},
+  eprint        = {2402.05672},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2402.05672}
+}
+
+@misc{wang2022e5,
+  author        = {Wang, Liang and Yang, Nan and Huang, Xiaolong and Jiao, Binxing and Yang, Linjun and Jiang, Daxin and Majumder, Rangan and Wei, Furu},
+  title         = {Text Embeddings by Weakly-Supervised Contrastive Pre-training},
+  year          = {2022},
+  eprint        = {2212.03533},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2212.03533}
+}
+
+@misc{intfloat2023me5large,
+  author       = {{intfloat}},
+  title        = {multilingual-e5-large},
+  year         = {2023},
+  howpublished = {Hugging Face model \texttt{intfloat/multilingual-e5-large} (and \texttt{multilingual-e5-base})},
+  note         = {MIT; revisions 3d7cfbda (large) and d1287505 (base); 559{,}890{,}946 and 278{,}044{,}162 parameters per safetensors metadata},
+  url          = {https://huggingface.co/intfloat/multilingual-e5-large},
+  urldate      = {2026-10-06}
+}
+
+@inproceedings{he2023debertav3,
+  author    = {He, Pengcheng and Gao, Jianfeng and Chen, Weizhu},
+  title     = {{DeBERTaV3}: Improving {DeBERTa} using {ELECTRA}-Style Pre-Training with Gradient-Disentangled Embedding Sharing},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2023},
+  url       = {https://iclr.cc/virtual/2023/poster/11295},
+  eprint    = {2111.09543},
+  archiveprefix = {arXiv}
+}
+
+@inproceedings{warner2025modernbert,
+  author    = {Warner, Benjamin and Chaffin, Antoine and Clavi{\'e}, Benjamin and Weller, Orion and Hallstr{\"o}m, Oskar and Taghadouini, Said and Gallagher, Alexis and Biswas, Raja and Ladhak, Faisal and Aarsen, Tom and Adams, Griffin Thomas and Howard, Jeremy and Poli, Iacopo},
+  title     = {Smarter, Better, Faster, Longer: A Modern Bidirectional Encoder for Fast, Memory Efficient, and Long Context Finetuning and Inference},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  pages     = {2526--2547},
+  year      = {2025},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2025.acl-long.127},
+  eprint    = {2412.13663},
+  archiveprefix = {arXiv}
+}
+
+@misc{marone2025mmbert,
+  author        = {Marone, Marc and Weller, Orion and Fleshman, William and Yang, Eugene and Lawrie, Dawn and Van Durme, Benjamin},
+  title         = {{mmBERT}: A Modern Multilingual Encoder with Annealed Language Learning},
+  year          = {2025},
+  eprint        = {2509.06888},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/2509.06888}
+}
+
+@inproceedings{tiedemann2020opusmt,
+  author    = {Tiedemann, J{\"o}rg and Thottingal, Santhosh},
+  title     = {{OPUS-MT} -- Building open translation services for the World},
+  booktitle = {Proceedings of the 22nd Annual Conference of the European Association for Machine Translation},
+  pages     = {479--480},
+  year      = {2020},
+  month     = nov,
+  address   = {Lisboa, Portugal},
+  publisher = {European Association for Machine Translation},
+  url       = {https://aclanthology.org/2020.eamt-1.61/}
+}
+
+@inproceedings{tiedemann2020tatoeba,
+  author    = {Tiedemann, J{\"o}rg},
+  title     = {The {Tatoeba} Translation Challenge -- Realistic Data Sets for Low Resource and Multilingual {MT}},
+  booktitle = {Proceedings of the Fifth Conference on Machine Translation},
+  pages     = {1174--1182},
+  year      = {2020},
+  month     = nov,
+  address   = {Online},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2020.wmt-1.139},
+  url       = {https://aclanthology.org/2020.wmt-1.139/}
+}
+
+@misc{helsinki2022opusmtenpt,
+  author       = {{Helsinki-NLP}},
+  title        = {opus-mt-tc-big-en-pt},
+  year         = {2022},
+  howpublished = {Hugging Face model \texttt{Helsinki-NLP/opus-mt-tc-big-en-pt}},
+  note         = {CC-BY-4.0; transformer-big, target tokens \texttt{>>por<<} and \texttt{>>pob<<}; revision 9f2863d8},
+  url          = {https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-pt},
+  urldate      = {2026-10-06}
+}
+
+@inproceedings{fitzgerald2022massive,
+  author    = {FitzGerald, Jack and Hench, Christopher and Peris, Charith and Mackie, Scott and Rottmann, Kay and Sanchez, Ana and Nash, Aaron and Urbach, Liam and Kakarala, Vishesh and Singh, Richa and Ranganath, Swetha and Crist, Laurie and Britan, Misha and Leeuwis, Wouter and Tur, Gokhan and Natarajan, Prem},
+  title     = {{MASSIVE}: A 1{M}-Example Multilingual Natural Language Understanding Dataset with 51 Typologically-Diverse Languages},
+  booktitle = {Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  pages     = {4277--4302},
+  year      = {2023},
+  publisher = {Association for Computational Linguistics},
+  doi       = {10.18653/v1/2023.acl-long.235},
+  eprint    = {2204.08582},
+  archiveprefix = {arXiv},
+  note      = {Preprint posted April 2022; data: \url{https://huggingface.co/datasets/AmazonScience/massive} (CC-BY-4.0), used via the mirror \texttt{mteb/amazon\_massive\_intent} revision 940fd47a}
+}
+
+@misc{conover2023dolly,
+  author       = {Conover, Mike and Hayes, Matt and Mathur, Ankit and Xie, Jianwei and Wan, Jun and Shah, Sam and Ghodsi, Ali and Wendell, Patrick and Zaharia, Matei and Xin, Reynold},
+  title        = {Free {Dolly}: Introducing the World's First Truly Open Instruction-Tuned {LLM}},
+  year         = {2023},
+  month        = apr,
+  howpublished = {Databricks blog, 2023-04-12},
+  note         = {Dataset \texttt{databricks/databricks-dolly-15k}, CC-BY-SA-3.0, revision bdd27f4d},
+  url          = {https://www.databricks.com/blog/2023/04/12/dolly-first-open-commercially-viable-instruction-tuned-llm},
+  urldate      = {2026-10-06}
+}
+
+@misc{husain2019codesearchnet,
+  author        = {Husain, Hamel and Wu, Ho-Hsiang and Gazit, Tiferet and Allamanis, Miltiadis and Brockschmidt, Marc},
+  title         = {{CodeSearchNet} Challenge: Evaluating the State of Semantic Code Search},
+  year          = {2019},
+  eprint        = {1909.09436},
+  archiveprefix = {arXiv},
+  url           = {https://arxiv.org/abs/1909.09436}
+}
+
+@misc{nando2023codesearchnetpython,
+  author       = {{Nan-Do}},
+  title        = {code-search-net-python},
+  year         = {2023},
+  howpublished = {Hugging Face dataset \texttt{Nan-Do/code-search-net-python}},
+  note         = {Python subset of CodeSearchNet (husain2019codesearchnet); revision 39db9186},
+  url          = {https://huggingface.co/datasets/Nan-Do/code-search-net-python},
+  urldate      = {2026-10-06}
+}
+
+@misc{pacovaldez2022soquestions,
+  author       = {{pacovaldez}},
+  title        = {stackoverflow-questions},
+  year         = {2022},
+  howpublished = {Hugging Face dataset \texttt{pacovaldez/stackoverflow-questions}},
+  note         = {Stack Overflow content, CC-BY-SA (card metadata says Apache-2.0); revision 869802e5},
+  url          = {https://huggingface.co/datasets/pacovaldez/stackoverflow-questions},
+  urldate      = {2026-10-06}
+}
+
+@misc{koutch2023sopython,
+  author       = {{koutch}},
+  title        = {stackoverflow\_python},
+  year         = {2023},
+  howpublished = {Hugging Face dataset \texttt{koutch/stackoverflow\_python}},
+  note         = {Stack Overflow content, CC-BY-SA; no license field in the card metadata; revision ee6f3955},
+  url          = {https://huggingface.co/datasets/koutch/stackoverflow_python},
+  urldate      = {2026-10-06}
+}

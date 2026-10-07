@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this code, the page-level benchmark or the results, please cite the paper below."
+title: "passing-the-benchmark: code, results and page-level benchmark of a pt-BR prompt-injection classifier study"
+type: software
+authors:
+  - family-names: Faria
+    given-names: Rodrigo
+    affiliation: Independent Researcher
+repository-code: "https://github.com/alucardigo/passing-the-benchmark"
+url: "https://github.com/alucardigo/passing-the-benchmark"
+license: Apache-2.0
+version: 0.1.0
+keywords:
+  - prompt injection
+  - LLM agents
+  - Brazilian Portuguese
+  - text classification
+  - evaluation
+  - negative result
+preferred-citation:
+  type: article
+  title: "Passing the Benchmark, Failing the README: A Negative Result on Deploying a Brazilian Portuguese Prompt-Injection Classifier"
+  authors:
+    - family-names: Faria
+      given-names: Rodrigo
+      affiliation: Independent Researcher
+  year: 2026
+  url: "https://github.com/alucardigo/passing-the-benchmark"
+  notes: "Preprint. The arXiv identifier will be added after submission."

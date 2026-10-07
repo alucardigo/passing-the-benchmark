@@ -1,0 +1,550 @@
+\begin{thebibliography}{58}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Akita(2026{\natexlab{a}})]{akita2026jev}
+Fabio Akita.
+\newblock Entendendo o hype do {Jev}: pra que serve?
+\newblock AkitaOnRails blog, 2026-10-03, October 2026{\natexlab{a}}.
+\newblock URL
+  \url{https://akitaonrails.com/2026/10/03/entendendo-o-hype-do-jev-pra-que-serve/}.
+\newblock In Portuguese; includes an essay by Paulo C{\^a}mara written for the
+  post (he discloses that he co-founded a company competing in the same
+  market).
+
+\bibitem[Akita(2026{\natexlab{b}})]{akita2026typesafe}
+Fabio Akita.
+\newblock Por que coisas como {TypeSafe IA} n{\~a}o me interessam.
+\newblock AkitaOnRails blog, 2026-09-16, September 2026{\natexlab{b}}.
+\newblock URL
+  \url{https://akitaonrails.com/2026/09/16/por-que-coisas-como-typesafe-ia-nao-me-interessam/}.
+\newblock In Portuguese.
+
+\bibitem[Almeida(2026)]{typesafe2026jev}
+Diogo Almeida.
+\newblock Introducing system one models \& {Jev}.
+\newblock TypeSafe AI blog, 2026-09-15, September 2026.
+\newblock URL
+  \url{https://typesafe.ai/blog/introducing-system-one-models-and-jev}.
+\newblock The FAQ states that the ``System One'' name draws on Kahneman's
+  System 1 / System 2 distinction.
+
+\bibitem[{apolinario}(2026)]{decisionindex2026}
+{apolinario}.
+\newblock Decision index: reproduction kit for the typed-decision benchmark
+  suite.
+\newblock GitHub repository \url{https://github.com/apolinario/decision-index};
+  leaderboard data in the Hugging Face Space
+  \texttt{multimodalart/jev-decision-index} (file
+  \texttt{data/index-v0.2.1.json}, generated 2026-09-28), 2026.
+\newblock URL \url{https://github.com/apolinario/decision-index}.
+\newblock Version 0.2.1 (2026-09-27); MIT (code); chance-corrected skill score,
+  unanswered requests count as wrong.
+
+\bibitem[Chen et~al.(2026)Chen, Reneau, and Flansburg]{cloudflare2026clef}
+Michelle Chen, Alex Reneau, and Kevin Flansburg.
+\newblock Introducing {Clef}: our open-source decision models, and new {RL}
+  fine-tuning platform.
+\newblock Cloudflare blog, 2026-10-01, October 2026.
+\newblock URL \url{https://blog.cloudflare.com/clef-decision-models/}.
+\newblock Clef (frozen Qwen3.8-27B) and Clef-flash (frozen Qwen3.5-9B) with
+  LoRA adapters and a scoring head; weights on Hugging Face under Apache-2.0.
+
+\bibitem[Chen et~al.(2025)Chen, Piet, Sitawarin, and Wagner]{chen2024struq}
+Sizhe Chen, Julien Piet, Chawin Sitawarin, and David Wagner.
+\newblock {StruQ}: Defending against prompt injection with structured queries.
+\newblock In \emph{34th USENIX Security Symposium (USENIX Security 25)}, pages
+  2383--2400. USENIX Association, 2025.
+\newblock ISBN 978-1-939133-52-6.
+\newblock URL
+  \url{https://www.usenix.org/conference/usenixsecurity25/presentation/chen-sizhe}.
+\newblock Preprint first posted February 2024.
+
+\bibitem[{Cloudflare}(2026)]{cloudflare2026clefflash}
+{Cloudflare}.
+\newblock Clef-flash.
+\newblock Hugging Face model \texttt{Cloudflare/clef-flash}, 2026.
+\newblock URL \url{https://huggingface.co/Cloudflare/clef-flash}.
+\newblock Apache-2.0; based on Qwen/Qwen3.5-9B; revision 17f0b0ad.
+
+\bibitem[Conover et~al.(2023)Conover, Hayes, Mathur, Xie, Wan, Shah, Ghodsi,
+  Wendell, Zaharia, and Xin]{conover2023dolly}
+Mike Conover, Matt Hayes, Ankit Mathur, Jianwei Xie, Jun Wan, Sam Shah, Ali
+  Ghodsi, Patrick Wendell, Matei Zaharia, and Reynold Xin.
+\newblock Free {Dolly}: Introducing the world's first truly open
+  instruction-tuned {LLM}.
+\newblock Databricks blog, 2023-04-12, April 2023.
+\newblock URL
+  \url{https://www.databricks.com/blog/2023/04/12/dolly-first-open-commercially-viable-instruction-tuned-llm}.
+\newblock Dataset \texttt{databricks/databricks-dolly-15k}, CC-BY-SA-3.0,
+  revision bdd27f4d.
+
+\bibitem[{Convai Innovations}(2026)]{convai2026laya}
+{Convai Innovations}.
+\newblock Laya: a non-autoregressive typed-decision engine.
+\newblock GitHub repository \url{https://github.com/NandhaKishorM/laya};
+  Hugging Face models \texttt{convaiinnovations/laya} and
+  \texttt{convaiinnovations/laya-multilingual}, 2026.
+\newblock URL \url{https://github.com/NandhaKishorM/laya}.
+\newblock Apache-2.0; English checkpoint on ModernBERT-large (421M),
+  multilingual checkpoint on mmBERT-base (322M); PyPI package \texttt{laya}.
+
+\bibitem[Debenedetti et~al.(2024)Debenedetti, Zhang, Balunovi{\'c},
+  Beurer-Kellner, Fischer, and Tram{\`e}r]{debenedetti2024agentdojo}
+Edoardo Debenedetti, Jie Zhang, Mislav Balunovi{\'c}, Luca Beurer-Kellner, Marc
+  Fischer, and Florian Tram{\`e}r.
+\newblock {AgentDojo}: A dynamic environment to evaluate prompt injection
+  attacks and defenses for {LLM} agents.
+\newblock In \emph{Advances in Neural Information Processing Systems 37
+  (NeurIPS 2024), Datasets and Benchmarks Track}, pages 82895--82920, 2024.
+\newblock \doi{10.52202/079017-2636}.
+\newblock URL
+  \url{https://proceedings.neurips.cc/paper_files/paper/2024/hash/97091a5177d8dc64b1da8bf3e1f6fb54-Abstract-Datasets_and_Benchmarks_Track.html}.
+
+\bibitem[Debenedetti et~al.(2025)Debenedetti, Shumailov, Fan, Hayes, Carlini,
+  Fabian, Kern, Shi, Terzis, and Tram{\`e}r]{debenedetti2025camel}
+Edoardo Debenedetti, Ilia Shumailov, Tianqi Fan, Jamie Hayes, Nicholas Carlini,
+  Daniel Fabian, Christoph Kern, Chongyang Shi, Andreas Terzis, and Florian
+  Tram{\`e}r.
+\newblock Defeating prompt injections by design, 2025.
+\newblock URL \url{https://arxiv.org/abs/2503.18813}.
+
+\bibitem[{deepset}(2023{\natexlab{a}})]{deepset2023deberta}
+{deepset}.
+\newblock deberta-v3-base-injection.
+\newblock Hugging Face model \texttt{deepset/deberta-v3-base-injection},
+  2023{\natexlab{a}}.
+\newblock URL \url{https://huggingface.co/deepset/deberta-v3-base-injection}.
+\newblock MIT; fine-tuned from microsoft/deberta-v3-base on
+  deepset/prompt-injections; revision 80dda00d.
+
+\bibitem[{deepset}(2023{\natexlab{b}})]{deepset2023promptinjections}
+{deepset}.
+\newblock prompt-injections.
+\newblock Hugging Face dataset \texttt{deepset/prompt-injections},
+  2023{\natexlab{b}}.
+\newblock URL \url{https://huggingface.co/datasets/deepset/prompt-injections}.
+\newblock Apache-2.0; 546 train / 116 test; English and German; revision
+  4f61ecb0.
+
+\bibitem[{dmilush}(2026)]{milush2025shieldlm}
+{dmilush}.
+\newblock shieldlm-prompt-injection.
+\newblock Hugging Face dataset \texttt{dmilush/shieldlm-prompt-injection},
+  2026.
+\newblock URL
+  \url{https://huggingface.co/datasets/dmilush/shieldlm-prompt-injection}.
+\newblock MIT (curation; sources keep their own licenses); revision dd660ae7.
+
+\bibitem[FitzGerald et~al.(2023)FitzGerald, Hench, Peris, Mackie, Rottmann,
+  Sanchez, Nash, Urbach, Kakarala, Singh, Ranganath, Crist, Britan, Leeuwis,
+  Tur, and Natarajan]{fitzgerald2022massive}
+Jack FitzGerald, Christopher Hench, Charith Peris, Scott Mackie, Kay Rottmann,
+  Ana Sanchez, Aaron Nash, Liam Urbach, Vishesh Kakarala, Richa Singh, Swetha
+  Ranganath, Laurie Crist, Misha Britan, Wouter Leeuwis, Gokhan Tur, and Prem
+  Natarajan.
+\newblock {MASSIVE}: A 1{M}-example multilingual natural language understanding
+  dataset with 51 typologically-diverse languages.
+\newblock In \emph{Proceedings of the 61st Annual Meeting of the Association
+  for Computational Linguistics (Volume 1: Long Papers)}, pages 4277--4302.
+  Association for Computational Linguistics, 2023.
+\newblock \doi{10.18653/v1/2023.acl-long.235}.
+\newblock Preprint posted April 2022; data:
+  \url{https://huggingface.co/datasets/AmazonScience/massive} (CC-BY-4.0), used
+  via the mirror \texttt{mteb/amazon\_massive\_intent} revision 940fd47a.
+
+\bibitem[Geirhos et~al.(2020)Geirhos, Jacobsen, Michaelis, Zemel, Brendel,
+  Bethge, and Wichmann]{geirhos2020shortcut}
+Robert Geirhos, J{\"o}rn-Henrik Jacobsen, Claudio Michaelis, Richard Zemel,
+  Wieland Brendel, Matthias Bethge, and Felix~A. Wichmann.
+\newblock Shortcut learning in deep neural networks.
+\newblock \emph{Nature Machine Intelligence}, 2\penalty0 (11):\penalty0
+  665--673, 2020.
+\newblock \doi{10.1038/s42256-020-00257-z}.
+
+\bibitem[Greshake et~al.(2023)Greshake, Abdelnabi, Mishra, Endres, Holz, and
+  Fritz]{greshake2023indirect}
+Kai Greshake, Sahar Abdelnabi, Shailesh Mishra, Christoph Endres, Thorsten
+  Holz, and Mario Fritz.
+\newblock Not what you've signed up for: Compromising real-world
+  {LLM}-integrated applications with indirect prompt injection.
+\newblock In \emph{Proceedings of the 16th ACM Workshop on Artificial
+  Intelligence and Security (AISec '23)}, pages 79--90. ACM, 2023.
+\newblock \doi{10.1145/3605764.3623985}.
+
+\bibitem[Gururangan et~al.(2018)Gururangan, Swayamdipta, Levy, Schwartz,
+  Bowman, and Smith]{gururangan2018annotation}
+Suchin Gururangan, Swabha Swayamdipta, Omer Levy, Roy Schwartz, Samuel~R.
+  Bowman, and Noah~A. Smith.
+\newblock Annotation artifacts in natural language inference data.
+\newblock In Marilyn Walker, Heng Ji, and Amanda Stent, editors,
+  \emph{Proceedings of the 2018 Conference of the North American Chapter of the
+  Association for Computational Linguistics: Human Language Technologies,
+  Volume 2 (Short Papers)}, pages 107--112, New Orleans, Louisiana, June 2018.
+  Association for Computational Linguistics.
+\newblock \doi{10.18653/v1/N18-2017}.
+\newblock URL \url{https://aclanthology.org/N18-2017/}.
+
+\bibitem[{Helsinki-NLP}(2022)]{helsinki2022opusmtenpt}
+{Helsinki-NLP}.
+\newblock opus-mt-tc-big-en-pt.
+\newblock Hugging Face model \texttt{Helsinki-NLP/opus-mt-tc-big-en-pt}, 2022.
+\newblock URL \url{https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-pt}.
+\newblock CC-BY-4.0; transformer-big, target tokens \texttt{>>por<<} and
+  \texttt{>>pob<<}; revision 9f2863d8.
+
+\bibitem[Hines et~al.(2024)Hines, Lopez, Hall, Zarfati, Zunger, and
+  Kiciman]{hines2024spotlighting}
+Keegan Hines, Gary Lopez, Matthew Hall, Federico Zarfati, Yonatan Zunger, and
+  Emre Kiciman.
+\newblock Defending against indirect prompt injection attacks with
+  spotlighting, 2024.
+\newblock URL \url{https://arxiv.org/abs/2403.14720}.
+
+\bibitem[Husain et~al.(2019)Husain, Wu, Gazit, Allamanis, and
+  Brockschmidt]{husain2019codesearchnet}
+Hamel Husain, Ho-Hsiang Wu, Tiferet Gazit, Miltiadis Allamanis, and Marc
+  Brockschmidt.
+\newblock {CodeSearchNet} challenge: Evaluating the state of semantic code
+  search, 2019.
+\newblock URL \url{https://arxiv.org/abs/1909.09436}.
+
+\bibitem[{imoxto}(2023)]{imoxto2023hackapromptgpt35}
+{imoxto}.
+\newblock prompt\_injection\_hackaprompt\_gpt35.
+\newblock Hugging Face dataset
+  \texttt{imoxto/prompt\_injection\_hackaprompt\_gpt35}, 2023.
+\newblock URL
+  \url{https://huggingface.co/datasets/imoxto/prompt_injection_hackaprompt_gpt35}.
+\newblock Mirror of HackAPrompt (gpt-3.5-turbo); no license field in the card
+  metadata; revision efc8f438.
+
+\bibitem[{intfloat}(2023)]{intfloat2023me5large}
+{intfloat}.
+\newblock multilingual-e5-large.
+\newblock Hugging Face model \texttt{intfloat/multilingual-e5-large} (and
+  \texttt{multilingual-e5-base}), 2023.
+\newblock URL \url{https://huggingface.co/intfloat/multilingual-e5-large}.
+\newblock MIT; revisions 3d7cfbda (large) and d1287505 (base); 559{,}890{,}946
+  and 278{,}044{,}162 parameters per safetensors metadata.
+
+\bibitem[{jackhhao}(2023)]{jackhhao2024jailbreak}
+{jackhhao}.
+\newblock jailbreak-classification.
+\newblock Hugging Face dataset \texttt{jackhhao/jailbreak-classification},
+  2023.
+\newblock URL
+  \url{https://huggingface.co/datasets/jackhhao/jailbreak-classification}.
+\newblock Apache-2.0; revision 2f2ceeb3.
+
+\bibitem[Jacob et~al.(2025)Jacob, Alzahrani, Hu, Alomair, and
+  Wagner]{jacob2025promptshield}
+Dennis Jacob, Hend Alzahrani, Zhanhao Hu, Basel Alomair, and David Wagner.
+\newblock {PromptShield}: Deployable detection for prompt injection attacks.
+\newblock In \emph{Proceedings of the Fifteenth ACM Conference on Data and
+  Application Security and Privacy (CODASPY '25)}, pages 341--352. ACM, 2025.
+\newblock \doi{10.1145/3714393.3726501}.
+
+\bibitem[Kahneman(2011)]{kahneman2011thinking}
+Daniel Kahneman.
+\newblock \emph{Thinking, Fast and Slow}.
+\newblock Farrar, Straus and Giroux, New York, 2011.
+\newblock ISBN 978-0-374-27563-1.
+
+\bibitem[Koh et~al.(2021)Koh, Sagawa, Marklund, Xie, Zhang, Balsubramani, Hu,
+  Yasunaga, Phillips, Gao, Lee, David, Stavness, Guo, Earnshaw, Haque, Beery,
+  Leskovec, Kundaje, Pierson, Levine, Finn, and Liang]{koh2021wilds}
+Pang~Wei Koh, Shiori Sagawa, Henrik Marklund, Sang~Michael Xie, Marvin Zhang,
+  Akshay Balsubramani, Weihua Hu, Michihiro Yasunaga, Richard~Lanas Phillips,
+  Irena Gao, Tony Lee, Etienne David, Ian Stavness, Wei Guo, Berton Earnshaw,
+  Imran Haque, Sara~M. Beery, Jure Leskovec, Anshul Kundaje, Emma Pierson,
+  Sergey Levine, Chelsea Finn, and Percy Liang.
+\newblock {WILDS}: A benchmark of in-the-wild distribution shifts.
+\newblock In Marina Meila and Tong Zhang, editors, \emph{Proceedings of the
+  38th International Conference on Machine Learning}, volume 139 of
+  \emph{Proceedings of Machine Learning Research}, pages 5637--5664. PMLR,
+  2021.
+\newblock URL \url{https://proceedings.mlr.press/v139/koh21a.html}.
+
+\bibitem[{koutch}(2023)]{koutch2023sopython}
+{koutch}.
+\newblock stackoverflow\_python.
+\newblock Hugging Face dataset \texttt{koutch/stackoverflow\_python}, 2023.
+\newblock URL
+  \url{https://huggingface.co/datasets/koutch/stackoverflow_python}.
+\newblock Stack Overflow content, CC-BY-SA; no license field in the card
+  metadata; revision ee6f3955.
+
+\bibitem[Li and Liu(2024)]{li2024injecguard}
+Hao Li and Xiaogeng Liu.
+\newblock {InjecGuard}: Benchmarking and mitigating over-defense in prompt
+  injection guardrail models, 2024.
+\newblock URL \url{https://arxiv.org/abs/2410.22770}.
+\newblock Preprint of PIGuard (li2025piguard); introduces the NotInject
+  benchmark (339 benign sentences with trigger words).
+
+\bibitem[Li et~al.(2025)Li, Liu, Zhang, and Xiao]{li2025piguard}
+Hao Li, Xiaogeng Liu, Ning Zhang, and Chaowei Xiao.
+\newblock {PIGuard}: Prompt injection guardrail via mitigating overdefense for
+  free.
+\newblock In Wanxiang Che, Joyce Nabende, Ekaterina Shutova, and Mohammad~Taher
+  Pilehvar, editors, \emph{Proceedings of the 63rd Annual Meeting of the
+  Association for Computational Linguistics (Volume 1: Long Papers)}, pages
+  30420--30437, Vienna, Austria, July 2025. Association for Computational
+  Linguistics.
+\newblock \doi{10.18653/v1/2025.acl-long.1468}.
+\newblock URL \url{https://aclanthology.org/2025.acl-long.1468/}.
+
+\bibitem[Liu et~al.(2024)Liu, Jia, Geng, Jia, and Gong]{liu2024formalizing}
+Yupei Liu, Yuqi Jia, Runpeng Geng, Jinyuan Jia, and Neil~Zhenqiang Gong.
+\newblock Formalizing and benchmarking prompt injection attacks and defenses.
+\newblock In \emph{33rd USENIX Security Symposium (USENIX Security 24)}, pages
+  1831--1847. USENIX Association, August 2024.
+\newblock ISBN 978-1-939133-44-1.
+\newblock URL
+  \url{https://www.usenix.org/conference/usenixsecurity24/presentation/liu-yupei}.
+
+\bibitem[Liu(2026)]{liu2026passing}
+Zhuowen Liu.
+\newblock Passing the test you trained on: Re-evaluating prompt-injection
+  detectors for {LLM} agents, 2026.
+\newblock URL \url{https://arxiv.org/abs/2610.03448}.
+\newblock Submitted 2026-10-02; code:
+  \url{https://github.com/lzwhehe/benign-instruction-bench}.
+
+\bibitem[McCoy et~al.(2019)McCoy, Pavlick, and Linzen]{mccoy2019right}
+R.~Thomas McCoy, Ellie Pavlick, and Tal Linzen.
+\newblock Right for the wrong reasons: Diagnosing syntactic heuristics in
+  natural language inference.
+\newblock In Anna Korhonen, David Traum, and Llu{\'\i}s M{\`a}rquez, editors,
+  \emph{Proceedings of the 57th Annual Meeting of the Association for
+  Computational Linguistics}, pages 3428--3448, Florence, Italy, July 2019.
+  Association for Computational Linguistics.
+\newblock \doi{10.18653/v1/P19-1334}.
+\newblock URL \url{https://aclanthology.org/P19-1334/}.
+
+\bibitem[McNemar(1947)]{mcnemar1947note}
+Quinn McNemar.
+\newblock Note on the sampling error of the difference between correlated
+  proportions or percentages.
+\newblock \emph{Psychometrika}, 12\penalty0 (2):\penalty0 153--157, 1947.
+\newblock \doi{10.1007/BF02295996}.
+
+\bibitem[{Meta}(2024)]{meta2024promptguard}
+{Meta}.
+\newblock Prompt guard 86m.
+\newblock Hugging Face model \texttt{meta-llama/Prompt-Guard-86M}, 2024.
+\newblock URL \url{https://huggingface.co/meta-llama/Prompt-Guard-86M}.
+\newblock Llama 3.1 license; first released July 2024.
+
+\bibitem[{Meta}(2025)]{meta2025promptguard2}
+{Meta}.
+\newblock Llama prompt guard 2.
+\newblock Hugging Face models \texttt{meta-llama/Llama-Prompt-Guard-2-86M} and
+  \texttt{-22M}; model card in \url{https://github.com/meta-llama/PurpleLlama},
+  2025.
+\newblock URL \url{https://huggingface.co/meta-llama/Llama-Prompt-Guard-2-86M}.
+\newblock Llama 4 Community License; 86M on mDeBERTa-base, 22M on
+  DeBERTa-xsmall; 512-token window.
+
+\bibitem[Miraoui(2023)]{miraoui2023promptinjections}
+Yanis Miraoui.
+\newblock prompt\_injections.
+\newblock Hugging Face dataset \texttt{yanismiraoui/prompt\_injections}, 2023.
+\newblock URL
+  \url{https://huggingface.co/datasets/yanismiraoui/prompt_injections}.
+\newblock Apache-2.0; 7 languages incl. Portuguese; revision bd55359f.
+
+\bibitem[{Nan-Do}(2023)]{nando2023codesearchnetpython}
+{Nan-Do}.
+\newblock code-search-net-python.
+\newblock Hugging Face dataset \texttt{Nan-Do/code-search-net-python}, 2023.
+\newblock URL
+  \url{https://huggingface.co/datasets/Nan-Do/code-search-net-python}.
+\newblock Python subset of CodeSearchNet (husain2019codesearchnet); revision
+  39db9186.
+
+\bibitem[{pacovaldez}(2022)]{pacovaldez2022soquestions}
+{pacovaldez}.
+\newblock stackoverflow-questions.
+\newblock Hugging Face dataset \texttt{pacovaldez/stackoverflow-questions},
+  2022.
+\newblock URL
+  \url{https://huggingface.co/datasets/pacovaldez/stackoverflow-questions}.
+\newblock Stack Overflow content, CC-BY-SA (card metadata says Apache-2.0);
+  revision 869802e5.
+
+\bibitem[Palmer(2026)]{palmer2026kev9b}
+Jared Palmer.
+\newblock Kev-9b.
+\newblock Hugging Face model \texttt{jaredpalmer/kev-9b}, 2026.
+\newblock URL \url{https://huggingface.co/jaredpalmer/kev-9b}.
+\newblock Apache-2.0; LoRA adapter and head over Qwen/Qwen3.5-9B-Base; revision
+  db029f08.
+
+\bibitem[P{\'e}rez and Ribeiro(2022)]{perez2022ignore}
+F{\'a}bio P{\'e}rez and Ian Ribeiro.
+\newblock Ignore previous prompt: Attack techniques for language models, 2022.
+\newblock URL \url{https://arxiv.org/abs/2211.09527}.
+\newblock ML Safety Workshop, NeurIPS 2022.
+
+\bibitem[{ProtectAI.com}(2024)]{protectai2024deberta}
+{ProtectAI.com}.
+\newblock Fine-tuned {DeBERTa-v3-base} for prompt injection detection.
+\newblock Hugging Face model
+  \texttt{protectai/deberta-v3-base-prompt-injection-v2}, 2024.
+\newblock URL
+  \url{https://huggingface.co/protectai/deberta-v3-base-prompt-injection-v2}.
+\newblock Apache-2.0; English only; revision 90c9989b; citation as given on the
+  model card.
+
+\bibitem[{Proventra}(2025)]{proventra2025mdeberta}
+{Proventra}.
+\newblock mdeberta-v3-base-prompt-injection.
+\newblock Hugging Face model
+  \texttt{proventra/mdeberta-v3-base-prompt-injection}, 2025.
+\newblock URL
+  \url{https://huggingface.co/proventra/mdeberta-v3-base-prompt-injection}.
+\newblock MIT; fine-tuned from microsoft/mdeberta-v3-base; revision b8a89d30 on
+  2026-10-06.
+
+\bibitem[Recht et~al.(2019)Recht, Roelofs, Schmidt, and
+  Shankar]{recht2019imagenet}
+Benjamin Recht, Rebecca Roelofs, Ludwig Schmidt, and Vaishaal Shankar.
+\newblock Do {ImageNet} classifiers generalize to {ImageNet}?
+\newblock In Kamalika Chaudhuri and Ruslan Salakhutdinov, editors,
+  \emph{Proceedings of the 36th International Conference on Machine Learning},
+  volume~97 of \emph{Proceedings of Machine Learning Research}, pages
+  5389--5400. PMLR, 2019.
+\newblock URL \url{https://proceedings.mlr.press/v97/recht19a.html}.
+
+\bibitem[Ribeiro et~al.(2020)Ribeiro, Wu, Guestrin, and
+  Singh]{ribeiro2020checklist}
+Marco~Tulio Ribeiro, Tongshuang Wu, Carlos Guestrin, and Sameer Singh.
+\newblock Beyond accuracy: Behavioral testing of {NLP} models with {CheckList}.
+\newblock In Dan Jurafsky, Joyce Chai, Natalie Schluter, and Joel Tetreault,
+  editors, \emph{Proceedings of the 58th Annual Meeting of the Association for
+  Computational Linguistics}, pages 4902--4912, Online, July 2020. Association
+  for Computational Linguistics.
+\newblock \doi{10.18653/v1/2020.acl-main.442}.
+\newblock URL \url{https://aclanthology.org/2020.acl-main.442/}.
+
+\bibitem[{rikka-snow}(2024)]{rikka2025multilingual}
+{rikka-snow}.
+\newblock prompt-injection-multilingual.
+\newblock Hugging Face dataset
+  \texttt{rikka-snow/prompt-injection-multilingual}, 2024.
+\newblock URL
+  \url{https://huggingface.co/datasets/rikka-snow/prompt-injection-multilingual}.
+\newblock MIT; 11 languages incl. Portuguese; revision f1ad1f3d.
+
+\bibitem[Schulhoff et~al.(2023)Schulhoff, Pinto, Khan, Bouchard, Si, Anati,
+  Tagliabue, Kost, Carnahan, and Boyd-Graber]{schulhoff2023hackaprompt}
+Sander Schulhoff, Jeremy Pinto, Anaum Khan, Louis-Fran{\c{c}}ois Bouchard,
+  Chenglei Si, Svetlina Anati, Valen Tagliabue, Anson Kost, Christopher
+  Carnahan, and Jordan Boyd-Graber.
+\newblock Ignore this title and {HackAPrompt}: Exposing systemic
+  vulnerabilities of {LLMs} through a global prompt hacking competition.
+\newblock In Houda Bouamor, Juan Pino, and Kalika Bali, editors,
+  \emph{Proceedings of the 2023 Conference on Empirical Methods in Natural
+  Language Processing}, pages 4945--4977, Singapore, December 2023. Association
+  for Computational Linguistics.
+\newblock \doi{10.18653/v1/2023.emnlp-main.302}.
+\newblock URL \url{https://aclanthology.org/2023.emnlp-main.302/}.
+
+\bibitem[Sharma(2024)]{reshabhs2024spmldata}
+Reshabh~K. Sharma.
+\newblock {SPML\_Chatbot\_Prompt\_Injection}.
+\newblock Hugging Face dataset
+  \texttt{reshabhs/SPML\_Chatbot\_Prompt\_Injection}, 2024.
+\newblock URL
+  \url{https://huggingface.co/datasets/reshabhs/SPML_Chatbot_Prompt_Injection}.
+\newblock MIT; revision 02ce8084; accompanies the SPML paper (sharma2024spml).
+
+\bibitem[Sharma et~al.(2024)Sharma, Gupta, and Grossman]{sharma2024spml}
+Reshabh~K. Sharma, Vinayak Gupta, and Dan Grossman.
+\newblock {SPML}: A {DSL} for defending language models against prompt attacks,
+  2024.
+\newblock URL \url{https://arxiv.org/abs/2402.11755}.
+
+\bibitem[Shire and Kim(2026)]{shire2026pidsbench}
+Yusuf~Khalid Shire and Sang-Chul Kim.
+\newblock {PIDS-Bench}: Evaluating prompt-injection detectors under
+  over-defense, obfuscation, and distribution shift.
+\newblock \emph{IEEE Access}, 14:\penalty0 134184--134205, 2026.
+\newblock \doi{10.1109/ACCESS.2026.3728186}.
+
+\bibitem[Tiedemann(2020)]{tiedemann2020tatoeba}
+J{\"o}rg Tiedemann.
+\newblock The {Tatoeba} translation challenge -- realistic data sets for low
+  resource and multilingual {MT}.
+\newblock In \emph{Proceedings of the Fifth Conference on Machine Translation},
+  pages 1174--1182, Online, November 2020. Association for Computational
+  Linguistics.
+\newblock \doi{10.18653/v1/2020.wmt-1.139}.
+\newblock URL \url{https://aclanthology.org/2020.wmt-1.139/}.
+
+\bibitem[Tiedemann and Thottingal(2020)]{tiedemann2020opusmt}
+J{\"o}rg Tiedemann and Santhosh Thottingal.
+\newblock {OPUS-MT} -- building open translation services for the world.
+\newblock In \emph{Proceedings of the 22nd Annual Conference of the European
+  Association for Machine Translation}, pages 479--480, Lisboa, Portugal,
+  November 2020. European Association for Machine Translation.
+\newblock URL \url{https://aclanthology.org/2020.eamt-1.61/}.
+
+\bibitem[Wang et~al.(2024)Wang, Yang, Huang, Yang, Majumder, and
+  Wei]{wang2024multilinguale5}
+Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Majumder, and Furu
+  Wei.
+\newblock Multilingual {E5} text embeddings: A technical report, 2024.
+\newblock URL \url{https://arxiv.org/abs/2402.05672}.
+
+\bibitem[{Weni}(2024)]{weni2024promptinjections}
+{Weni}.
+\newblock prompt-injections-1.0.0.
+\newblock Hugging Face dataset \texttt{Weni/prompt-injections-1.0.0}, 2024.
+\newblock URL
+  \url{https://huggingface.co/datasets/Weni/prompt-injections-1.0.0}.
+\newblock No license declared; 300 Portuguese attack prompts; revision
+  9707fa47.
+
+\bibitem[Wilson(1927)]{wilson1927probable}
+Edwin~B. Wilson.
+\newblock Probable inference, the law of succession, and statistical inference.
+\newblock \emph{Journal of the American Statistical Association}, 22\penalty0
+  (158):\penalty0 209--212, 1927.
+\newblock \doi{10.1080/01621459.1927.10502953}.
+
+\bibitem[{xTRam1}(2024)]{xtram12024safeguard}
+{xTRam1}.
+\newblock safe-guard-prompt-injection.
+\newblock Hugging Face dataset \texttt{xTRam1/safe-guard-prompt-injection},
+  2024.
+\newblock URL
+  \url{https://huggingface.co/datasets/xTRam1/safe-guard-prompt-injection}.
+\newblock No license declared; synthetic, generated with GPT-3.5-turbo; 8{,}240
+  train / 2{,}060 test; revision a3a877d6.
+
+\bibitem[Yi et~al.(2025)Yi, Xie, Zhu, Kiciman, Sun, Xie, and Wu]{yi2023bipia}
+Jingwei Yi, Yueqi Xie, Bin Zhu, Emre Kiciman, Guangzhong Sun, Xing Xie, and
+  Fangzhao Wu.
+\newblock Benchmarking and defending against indirect prompt injection attacks
+  on large language models.
+\newblock In \emph{Proceedings of the 31st ACM SIGKDD Conference on Knowledge
+  Discovery and Data Mining, V.1}, pages 1809--1820. ACM, 2025.
+\newblock \doi{10.1145/3690624.3709179}.
+\newblock Preprint first posted December 2023 (BIPIA).
+
+\bibitem[Zhan et~al.(2024)Zhan, Liang, Ying, and Kang]{zhan2024injecagent}
+Qiusi Zhan, Zhixiang Liang, Zifan Ying, and Daniel Kang.
+\newblock {InjecAgent}: Benchmarking indirect prompt injections in
+  tool-integrated large language model agents.
+\newblock In \emph{Findings of the Association for Computational Linguistics:
+  ACL 2024}, pages 10471--10506. Association for Computational Linguistics,
+  2024.
+\newblock \doi{10.18653/v1/2024.findings-acl.624}.
+
+\end{thebibliography}

@@ -1,0 +1,131 @@
+{
+ "sonda": "prompt_injection-e5",
+ "encoder": "intfloat/multilingual-e5-base",
+ "temperatura": 1.1286060470485015,
+ "teste": {
+  "deepset": {
+   "n": 116,
+   "acuracia": 0.8448,
+   "ece": 0.0809,
+   "recall": {
+    "false": 0.9464,
+    "true": 0.75
+   }
+  },
+  "jackhhao": {
+   "n": 262,
+   "acuracia": 0.9313,
+   "ece": 0.0277,
+   "recall": {
+    "false": 0.878,
+    "true": 0.9784
+   }
+  },
+  "spml": {
+   "n": 1000,
+   "acuracia": 0.988,
+   "ece": 0.0084,
+   "recall": {
+    "false": 0.9851,
+    "true": 0.9887
+   }
+  },
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.9433,
+   "ece": 0.0168,
+   "recall": {
+    "false": 0.947,
+    "true": 0.9352
+   }
+  },
+  "rikka": {
+   "n": 1276,
+   "acuracia": 0.8879,
+   "ece": 0.0419,
+   "recall": {
+    "false": 0.9545,
+    "true": 0.8258
+   }
+  },
+  "shieldlm": {
+   "n": 4000,
+   "acuracia": 0.967,
+   "ece": 0.0038,
+   "recall": {
+    "false": 0.9666,
+    "true": 0.9679
+   }
+  },
+  "yanis": {
+   "n": 219,
+   "acuracia": 0.9863,
+   "ece": 0.0181,
+   "recall": {
+    "true": 0.9863
+   }
+  },
+  "massive_pt": {
+   "n": 1500,
+   "acuracia": 0.9927,
+   "ece": 0.0096,
+   "recall": {
+    "false": 0.9927
+   }
+  },
+  "weni": {
+   "n": 300,
+   "acuracia": 0.7233,
+   "ece": 0.1742,
+   "recall": {
+    "true": 0.7233
+   }
+  },
+  "deepset-pt": {
+   "n": 116,
+   "acuracia": 0.8534,
+   "ece": 0.0709,
+   "recall": {
+    "false": 0.9821,
+    "true": 0.7333
+   }
+  },
+  "jackhhao-pt": {
+   "n": 262,
+   "acuracia": 0.9122,
+   "ece": 0.0554,
+   "recall": {
+    "false": 0.8374,
+    "true": 0.9784
+   }
+  },
+  "spml-pt": {
+   "n": 300,
+   "acuracia": 0.9833,
+   "ece": 0.0271,
+   "recall": {
+    "false": 0.9608,
+    "true": 0.988
+   }
+  },
+  "xtram1-pt": {
+   "n": 500,
+   "acuracia": 0.828,
+   "ece": 0.0749,
+   "recall": {
+    "false": 0.7875,
+    "true": 0.9252
+   }
+  },
+  "pt-nativo": {
+   "n": 1800,
+   "acuracia": 0.9478,
+   "ece": 0.0225,
+   "recall": {
+    "false": 0.9927,
+    "true": 0.7233
+   }
+  }
+ },
+ "treinado_em": "2026-10-05"
+}

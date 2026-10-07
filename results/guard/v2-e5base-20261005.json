@@ -1,0 +1,159 @@
+{
+ "arquivo_original": "guard-guard-e5base-20261005-152804.json",
+ "rodada": "v2 (e5-base ajustado)",
+ "sha256_pesos": "8578ff68c4a24a741f321c7826a3492e73d05eae4e04487148270ac4cb6ddcbb",
+ "skill": "guard",
+ "modelo": "guard-e5base",
+ "data": "2026-10-05",
+ "teste": {
+  "deepset": {
+   "n": 116,
+   "acuracia": 0.9397,
+   "ece": 0.0634,
+   "recall": {
+    "false": 1.0,
+    "true": 0.8833
+   }
+  },
+  "jackhhao": {
+   "n": 262,
+   "acuracia": 0.9924,
+   "ece": 0.0058,
+   "recall": {
+    "false": 0.9919,
+    "true": 0.9928
+   }
+  },
+  "spml": {
+   "n": 1000,
+   "acuracia": 0.994,
+   "ece": 0.0058,
+   "recall": {
+    "false": 1.0,
+    "true": 0.9925
+   }
+  },
+  "xtram1": {
+   "n": 1500,
+   "acuracia": 0.9893,
+   "ece": 0.0095,
+   "recall": {
+    "false": 0.9884,
+    "true": 0.9914
+   }
+  },
+  "rikka": {
+   "n": 1276,
+   "acuracia": 0.9561,
+   "ece": 0.0422,
+   "recall": {
+    "false": 0.9919,
+    "true": 0.9227
+   }
+  },
+  "shieldlm": {
+   "n": 4000,
+   "acuracia": 0.9865,
+   "ece": 0.0113,
+   "recall": {
+    "false": 0.9928,
+    "true": 0.9744
+   }
+  },
+  "yanis": {
+   "n": 219,
+   "acuracia": 1.0,
+   "ece": 0.0028,
+   "recall": {
+    "true": 1.0
+   }
+  },
+  "massive_pt": {
+   "n": 1500,
+   "acuracia": 0.9973,
+   "ece": 0.0023,
+   "recall": {
+    "false": 0.9973
+   }
+  },
+  "weni": {
+   "n": 300,
+   "acuracia": 0.7433,
+   "ece": 0.2404,
+   "recall": {
+    "true": 0.7433
+   }
+  },
+  "dolly": {
+   "n": 1000,
+   "acuracia": 0.997,
+   "ece": 0.0026,
+   "recall": {
+    "false": 0.997
+   }
+  },
+  "deepset-pt": {
+   "n": 116,
+   "acuracia": 0.9483,
+   "ece": 0.0545,
+   "recall": {
+    "false": 1.0,
+    "true": 0.9
+   }
+  },
+  "jackhhao-pt": {
+   "n": 262,
+   "acuracia": 0.9847,
+   "ece": 0.0171,
+   "recall": {
+    "false": 0.9837,
+    "true": 0.9856
+   }
+  },
+  "spml-pt": {
+   "n": 300,
+   "acuracia": 0.9933,
+   "ece": 0.0054,
+   "recall": {
+    "false": 1.0,
+    "true": 0.992
+   }
+  },
+  "xtram1-pt": {
+   "n": 500,
+   "acuracia": 0.954,
+   "ece": 0.0404,
+   "recall": {
+    "false": 0.966,
+    "true": 0.9252
+   }
+  },
+  "dolly-pt": {
+   "n": 1000,
+   "acuracia": 0.996,
+   "ece": 0.0034,
+   "recall": {
+    "false": 0.996
+   }
+  },
+  "pt-nativo": {
+   "n": 1800,
+   "acuracia": 0.955,
+   "ece": 0.042,
+   "recall": {
+    "false": 0.9973,
+    "true": 0.7433
+   }
+  },
+  "fumaca": {
+   "n": 10,
+   "acuracia": 0.9,
+   "ece": 0.0998,
+   "recall": {
+    "false": 0.8,
+    "true": 1.0
+   }
+  }
+ },
+ "sha256_pesos_nota": "sha256 do model.safetensors (fp16) baixado do Kaggle"
+}

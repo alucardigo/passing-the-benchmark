@@ -1,0 +1,927 @@
+\pdfoutput=1
+\documentclass[11pt]{article}
+\PassOptionsToPackage{english,main=brazilian}{babel}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{lmodern}
+  \usepackage{textcomp}
+\else
+  \usepackage{fontspec}
+\fi
+\usepackage{babel}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,tabularx,array}
+\usepackage{enumitem}
+\usepackage[font=small,labelfont=bf,skip=4pt]{caption}
+\usepackage{xcolor}
+\usepackage[round,sort]{natbib}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=green!35!black,
+            urlcolor=blue!60!black,pdfencoding=auto]{hyperref}
+
+\newcommand{\PENDENTE}[1]{\textcolor{red}{[PENDING:~#1]}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\bibfont}{\small\raggedright}
+\setlength{\bibsep}{3pt}
+
+\begin{document}
+
+\title{Aprovado no benchmark, reprovado no README: um resultado negativo na implantação de um classificador de prompt injection em português do Brasil}
+\author{Rodrigo Faria\\ \normalsize Pesquisador independente\\ \normalsize \url{https://github.com/alucardigo} \ensuremath{\cdot} \url{https://www.linkedin.com/in/faria-rodrigo}}
+\hypersetup{pdfauthor={Rodrigo Faria}}
+\date{\today}
+\hypersetup{pdftitle={Aprovado no benchmark, reprovado no README: um resultado negativo na implantação de um classificador de prompt injection em português do Brasil}}
+\maketitle
+
+\begin{abstract}
+Classificadores de prompt injection são cada vez mais colocados entre agentes de LLM e o conteúdo que eles buscam. Relatamos um estudo de caso de uma semana, totalmente rastreado, da construção de um classificador desse tipo para o português do Brasil (pt-BR) apenas com dados abertos. Nosso melhor modelo, um multilingual-e5-large com fine-tuning, detecta 94,7\% %
+das injeções do Weni, um conjunto nativo em pt-BR nunca usado em treino, e marca 0,13–0,7\% %
+das frases benignas conversacionais. Pontuando página a página pelo caminho de código de um hook de agente, porém, ele deu aviso falso em todas as 217 %
+páginas de documentação técnica, em todo limiar de 0,5 a 0,999%
+. Sob o mesmo protocolo, um de três classificadores públicos também avisou em toda página, nenhum detectou mais de 55\% das páginas com injeção com 2\% de avisos falsos, e os benchmarks por frase e por página ordenaram os modelos em sentidos opostos%
+. Um retreino com 10.000 textos benignos técnicos sustentou o nosso diagnóstico, um atalho que equipara prosa técnica a injeção: os avisos falsos sumiram nas frases técnicas e caíram para 19–35\% das páginas, mas a detecção no Weni caiu para 63,7\%%
+. Nenhuma versão que treinamos atende aos dois critérios de aceitação. Contribuímos com o estudo de caso, com um critério de aceitação fixado antes da medição; um protocolo de avaliação por página; lições de integração para hooks de agentes; e artefatos abertos planejados%
+.
+
+\end{abstract}
+
+\section{Introdução}\label{sec:1}
+
+Agentes de LLM leem texto não confiável: páginas web, saídas de ferramentas, arquivos de repositório, e-mails. Qualquer parte disso pode carregar instruções endereçadas ao modelo, e não ao usuário. A prompt injection foi demonstrada primeiro por entrada direta do usuário \citep{perez2022ignore}; quando as instruções chegam dentro de conteúdo que a aplicação recupera, ela é conhecida como prompt injection indireta \citep{greshake2023indirect, liu2024formalizing}. Uma mitigação comum é um classificador pequeno que pontua o conteúdo buscado e avisa, ou bloqueia, quando ele parece uma injeção \citep{protectai2024deberta, meta2025promptguard2, jacob2025promptshield}. Esses classificadores costumam ser relatados com acurácia por frase em benchmarks públicos, quase todos em inglês.
+
+Este artigo documenta o que aconteceu quando construímos um para o português do Brasil, usando apenas dados abertos, e tentamos ligá-lo como hook de aviso na frente da ferramenta de web fetch de um agente de programação baseado em LLM. O estudo levou uma semana (30 de setembro a 6 de outubro de 2026)%
+, e cada número abaixo é rastreado até uma linha de log, um arquivo de resultado ou um commit em um dossiê de evidências.
+
+O resultado principal é negativo. O melhor modelo passou nos testes de benchmark com folga, errou por um único texto o próprio critério de aceitação, fixado de antemão, no conjunto ouro nativo em pt-BR (284/300 contra 285 exigidos)%
+, e depois, avaliado página a página em documentação técnica comum, deu aviso falso em 217 de 217 páginas %
+em todo limiar que testamos. Uma frase de teste de fumaça escrita à mão vinha sinalizando o modo de falha desde a segunda rodada de treino, e não a lemos como o sinal que ela era (Seção~\ref{sec:6}).
+
+Duas medições posteriores tornam o resultado mais nítido. Sob o mesmo protocolo de página, a falha não é exclusiva do nosso modelo: um de três classificadores públicos também avisou em toda página, e os dois melhores avisaram em cerca de 15\% das páginas benignas no limiar 0,5, detectando 63–70\% das páginas com injeção (Seção~\ref{sec:5.4})%
+. E o retreino com texto benigno técnico (v6, Seção~\ref{sec:7}) eliminou os avisos falsos em frases técnicas e reduziu os avisos falsos por página para 19–35\%, mas baixou a detecção no Weni de 94,7\% para 63,7\%: parte da acurácia do modelo original no conjunto ouro se apoiava no mesmo atalho que o fez falhar em uso%
+. Nenhum dos nossos dois modelos candidatos atende aos dois critérios de aceitação, e nenhum modelo que testamos atende ao critério por página.
+
+Achamos que o caso é útil além do pt-BR porque a falha não é exótica. O lado benigno dos dados de treino era em grande parte conversacional (comandos a assistentes e prompts de seguimento de instruções)%
+; a distribuição de implantação é sobretudo prosa técnica cheia de imperativos (instale, rode, configure, ignore este aviso). Um classificador pode separar injeções de conversa com acurácia quase perfeita e, ainda assim, não ter aprendido nada que separe injeções de documentação.
+
+Um estudo concorrente de \citet{liu2026passing}, publicado enquanto este trabalho estava em andamento, reavalia quinze detectores em inglês sobre saídas de ferramentas de agentes e sobre trechos benignos de READMEs do GitHub, e chega às mesmas conclusões práticas. Lemos o nosso estudo como uma replicação independente dessa lacuna em outra língua e com um detector treinado por nós, o que permite rastrear a causa até a receita de treino e testá-la por retreino; ele acrescenta a agregação por página inteira, lições de integração para hooks de agentes e a perspectiva dos modelos de decisão tipados (Seção~\ref{sec:9.3}).
+
+\textbf{Contribuições.}
+
+\begin{enumerate}
+\item \textbf{Um estudo de caso documentado de uma lacuna entre benchmark e uso em pt-BR.} Oito rodadas de treino (sondas sobre embeddings congelados; e5-base e e5-large com fine-tuning, com e sem dados de ataque adicionais; e um retreino com texto benigno técnico que testa o diagnóstico) mais um ensemble de pesos fixos, avaliados em até 19 conjuntos de teste%
+, com um critério de aceitação fixado no controle de versão antes da primeira medição no conjunto ouro%
+, e uma auditoria de vazamento a posteriori que atribui cerca de 1,3 dos 94,7 pontos do melhor modelo a quase duplicatas nos seus dados de treino%
+.
+\item \textbf{Um protocolo de avaliação por página para classificadores de injeção} que reutiliza exatamente o caminho de código do hook de implantação, pontua páginas pelo máximo sobre janelas sobrepostas e relata avisos falsos em páginas técnicas benignas ao lado da detecção em páginas com uma injeção inserida. Aplicado a três classificadores públicos, ele mostra que as avaliações por frase e por página podem ordenar os modelos em sentidos opostos%
+. O benchmark foi desenhado para ser distribuído como um manifesto fixado por hash mais um construtor, de modo que nenhum texto de terceiros é redistribuído; a lista de hashes das 217 páginas benignas existe, enquanto o construtor e as entradas de inserção ainda precisam ser escritos%
+.
+\item \textbf{Lições de engenharia para integrar classificadores a agentes}: um bug de encoding que fazia texto benigno parecer injeção, uma incompatibilidade de versão do servidor engolida em silêncio por um hook fail-open, uma janela deslizante mais longa que o contexto do modelo %
+e uma lista de entradas de avaliação que mudou entre execuções%
+.
+\item \textbf{Artefatos abertos (planejados; nada foi publicado ainda)}: código (Apache-2.0), pesos do modelo (MIT), todos os arquivos de métricas e o construtor do benchmark de páginas (Seção~\ref{sec:13})%
+.
+\end{enumerate}
+
+O restante do artigo está organizado assim. A Seção~\ref{sec:2} apresenta a fundamentação sobre modelos de decisão tipados e sobre prompt injection. A Seção~\ref{sec:3} descreve dados, tradução, controle de vazamento e treino. As Seções~\ref{sec:4} e~\ref{sec:5} relatam os resultados por frase e por página, esta última com baselines públicos. A Seção~\ref{sec:6} diagnostica a lacuna, a Seção~\ref{sec:7} testa o diagnóstico por retreino, a Seção~\ref{sec:8} lista as lições de integração, a Seção~\ref{sec:9} discute o que isso diz sobre a acurácia de benchmark, sobre o uso de modelos de decisão com agentes e sobre trabalhos concorrentes, a Seção~\ref{sec:10} lista as limitações e a Seção~\ref{sec:11} conclui.
+
+\section{Fundamentação}\label{sec:2}
+
+\subsection{Modelos de decisão tipados (``System One'')}\label{sec:2.1}
+
+Uma linha recente de produtos e modelos abertos responde a perguntas \emph{fechadas} sobre texto: quem chama fornece um texto e um conjunto fixo de opções, e o modelo devolve a opção escolhida com uma probabilidade, sem gerar prosa. A TypeSafe divulga assim o seu modelo hospedado Jev, como um modelo ``System One'', nome que o post de lançamento atribui à distinção de Kahneman entre o pensamento rápido e intuitivo e o pensamento lento e deliberado \citep{typesafe2026jev, kahneman2011thinking}. Em 1º de outubro de 2026 a Cloudflare lançou o Clef e o Clef-flash, modelos de decisão de pesos abertos (Apache-2.0) que aceitam a mesma API \citep{cloudflare2026clef, cloudflare2026clefflash}. %
+O Kev-9B é outro modelo de decisão de pesos abertos, um adaptador LoRA e uma cabeça de decisão sobre um modelo base de 9B \citep{palmer2026kev9b}. O Laya, da Convai Innovations, é uma implementação local aberta (Apache-2.0) de decisões tipadas (escolha única, nota e saídas binárias) que roda em CPU e foi feita para receber fine-tuning no domínio do próprio usuário \citep{convai2026laya}. %
+O Decision Index é uma suíte pública de benchmarks para essa família de modelos; ele não redistribui seus dados de teste e, em vez disso, distribui construtores que reproduzem os arquivos byte a byte e recusam qualquer arquivo cujo hash não confira %
+\citep{decisionindex2026}. Nesse placar, o checkpoint zero-shot do Laya aparece muito abaixo do Kev-9B, da classe de 9B \citep{decisionindex2026}. %
+
+Um post em português de Fabio Akita, escrito para desenvolvedores, discute esses modelos e compara o Jev com o Clef e o Laya \citep{akita2026jev}. Segue a nossa paráfrase dos pontos relevantes aqui. Akita trata o Jev como um serviço de classificação na nuvem, competente e de baixo custo, e não como uma nova categoria de modelo, e sustenta que o ganho de velocidade anunciado chama atenção apenas porque a base de comparação são modelos de chat, que redigem um texto antes que se possa extrair o rótulo. Boa parte do post é um ensaio escrito para ele por Paulo Câmara, que declara ter cofundado uma empresa que concorre no mesmo mercado. Refazendo as contas de testes públicos de terceiros, o ensaio relata que o Jev fica com a opção que vem em primeiro lugar, e com confiança alta, quando não há nada no texto que permita decidir, e que suas decisões variam com atributos que não têm relação com o caso. Na visão de Akita, a ferramenta convém a decisões que se repetem sobre texto, com desfechos conhecidos de antemão, em que o código determinístico em volta do modelo garante as regras rígidas e um erro tem como ser flagrado ou passar por conferência. Entre os conselhos de uso do ensaio estão ajustar de novo a calibração sobre uma amostra modesta de casos rotulados pelo próprio usuário, e só então definir o limiar, e não confiar só ao modelo a liberação de operações destrutivas. %
+Um post anterior do mesmo autor argumentou que o remédio, para equipes que pedem rótulos a modelos de chat, não passa obrigatoriamente pela contratação de um serviço desses: pedir ao modelo já adotado uma resposta em formato estruturado, ou treinar um classificador dedicado àquela tarefa, também atende \citep{akita2026typesafe}. %
+
+Este estudo é um exemplo da segunda opção: um classificador binário dedicado (``este conteúdo buscado é uma injeção?'') treinado para um único trabalho. Ele foi implantado como um \emph{pack} de decisão em um kit de ferramentas local construído em torno do servidor aberto do Laya; o classificador em si é um modelo multilingual-e5 com fine-tuning e não deriva dos pesos do Laya%
+.
+
+\subsection{Prompt injection e seus detectores}\label{sec:2.2}
+
+A prompt injection foi descrita primeiro para entrada direta do usuário \citep{perez2022ignore} e depois para conteúdo que uma aplicação recupera em nome do usuário \citep{greshake2023indirect}; seguiram-se tratamentos formais e benchmarks \citep{liu2024formalizing, yi2023bipia, zhan2024injecagent, debenedetti2024agentdojo}. A competição HackAPrompt produziu um grande corpus público de prompts adversariais escritos por humanos, rotulados conforme tiveram sucesso ou não \citep{schulhoff2023hackaprompt}. As defesas vão da separação entre instruções e dados, seja marcando a entrada não confiável dentro do prompt \citep{hines2024spotlighting}, seja treinando o modelo em um formato de consulta estruturado \citep{chen2024struq}, a desenhos de sistema que não deixam dados não confiáveis dirigirem o fluxo de controle \citep{debenedetti2025camel}, e a detectores: classificadores DeBERTa com fine-tuning \citep{protectai2024deberta, deepset2023deberta}, a família Prompt Guard da Meta \citep{meta2024promptguard, meta2025promptguard2}, entre outros. O excesso de defesa (over-defence), isto é, entradas benignas marcadas porque compartilham traços de superfície com ataques, foi documentado em modelos de guarda em inglês e atribuído a um viés em direção a palavras-gatilho \citep{li2024injecguard, li2025piguard}. Dois estudos recentes são próximos do nosso: um benchmark multieixo conclui que o aumento de dados com negativos difíceis elimina o excesso de defesa em entradas benignas curadas, mas o deixa em grande parte intacto nas obtidas de fontes externas \citep{shire2026pidsbench}, e uma reavaliação de quinze detectores públicos sobre saídas de ferramentas de agentes relata que dois deles marcaram todos os trechos benignos de README do GitHub que pontuaram \citep{liu2026passing} (comparamos com ele na Seção~\ref{sec:9.3}). A avaliação em taxas baixas de falso positivo tem sido defendida como o regime relevante para a implantação \citep{jacob2025promptshield, liu2026passing}. %
+
+A nossa falha é conhecida em aprendizado de máquina sob outro nome: aprendizado por atalho (shortcut learning) \citep{geirhos2020shortcut}, em que um modelo explora um traço que separa as classes na distribuição de treino, mas não na de implantação, como nos artefatos de anotação e nas heurísticas sintáticas em NLI \citep{gururangan2018annotation, mccoy2019right}, e nas quedas de acurácia observadas em conjuntos de teste recém-coletados e sob mudança de distribuição no mundo real \citep{recht2019imagenet, koh2021wilds}. O teste comportamental além da acurácia em dados separados \citep{ribeiro2020checklist} é o remédio geral; a Seção~\ref{sec:5} o aplica, para detectores de injeção, na unidade de uso.
+
+Recursos para pt-BR são escassos. O único conjunto nativo de injeções em pt-BR de tamanho utilizável que encontramos é o do Weni \citep{weni2024promptinjections}; existe um conjunto multilíngue com itens em português \citep{rikka2025multilingual}. A maior parte dos nossos dados é em inglês, o que motivou o pipeline de tradução automática descrito abaixo.
+
+\section{Método}\label{sec:3}
+
+\subsection{Dados}\label{sec:3.1}
+
+A Tabela~\ref{tab:1} lista cada fonte de dados, sua licença declarada, seu papel e seu tamanho. Os tamanhos por fonte são diferenças entre contagens acumuladas consecutivas nos logs de treino%
+. Quando um conjunto tem split \code{test} oficial, nós o usamos; caso contrário, o conjunto de teste é o bucket de hash \ensuremath{\geq} 80 de uma partição por md5, limitado a 1.000 itens%
+.
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Fontes de dados. ``MT'' = cópias traduzidas por máquina acrescentadas por cima (Seção~\ref{sec:3.2}).}\label{tab:1}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=2.22\hsize}X>{\raggedright\arraybackslash\hsize=0.70\hsize}X>{\raggedright\arraybackslash\hsize=0.73\hsize}X>{\raggedright\arraybackslash\hsize=0.35\hsize}Xl@{}}
+\toprule
+Fonte (id no Hugging Face) & Licença declarada & Papel & Treino & Teste \\
+\midrule
+\code{deepset/\allowbreak{}prompt-\allowbreak{}injections} (en/de) & Apache-2.0 & treino & 546 & 116 %
+ \\
+\code{jackhhao/\allowbreak{}jailbreak-\allowbreak{}classification} & Apache-2.0 & treino & 1.044 & 262 %
+ \\
+\code{reshabhs/\allowbreak{}SPML\_\allowbreak{}Chatbot\_\allowbreak{}Prompt\_\allowbreak{}Injection} & MIT & treino (subamostra) & 4.000 & 1.000 %
+ \\
+\code{xTRam1/\allowbreak{}safe-\allowbreak{}guard-\allowbreak{}prompt-\allowbreak{}injection} & nenhuma declarada & só teste & 0 & 1.500 %
+ \\
+\code{rikka-\allowbreak{}snow/\allowbreak{}prompt-\allowbreak{}injection-\allowbreak{}multilingual} (pt) & MIT & treino (a partir da rodada B) & 6.006 & 1.276 %
+ \\
+\code{dmilush/\allowbreak{}shieldlm-\allowbreak{}prompt-\allowbreak{}injection} & MIT (curadoria) & treino (a partir da B) & 4.000 & 4.000 %
+ \\
+\code{yanismiraoui/\allowbreak{}prompt\_\allowbreak{}injections} (só positivos) & Apache-2.0 + NOTICE & treino (a partir da B) & 815 & 219 %
+ \\
+\code{mteb/\allowbreak{}amazon\_\allowbreak{}massive\_\allowbreak{}intent} (pt), benigno & CC-BY-4.0 (origem) & treino (a partir da B) & 1.500 & 1.500 %
+ \\
+\code{Weni/\allowbreak{}prompt-\allowbreak{}injections-\allowbreak{}1.\allowbreak{}0.\allowbreak{}0} (pt-BR, só injeções) & nenhuma declarada & \textbf{só teste ouro} & 0 & 300 %
+ \\
+\code{databricks/\allowbreak{}databricks-\allowbreak{}dolly-\allowbreak{}15k}, benigno & CC-BY-SA-3.0 & treino (a partir da v2) & 3.000 & 1.000 %
+ \\
+HackAPrompt (espelho, só ataques bem-sucedidos) & nenhuma no espelho; origem MIT & treino (v4, v5) & 3.000 & 1.000 %
+ \\
+Perguntas / respostas do Stack Overflow; docstrings do CodeSearchNet, benignos técnicos & CC-BY-SA (SO); por repositório (CSN) & treino (só v6) & 4.000 / 4.000 / 2.000 & 1.000 cada %
+ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Referências dos conjuntos de dados: deepset \citep{deepset2023promptinjections}, jackhhao \citep{jackhhao2024jailbreak}, SPML \citep{sharma2024spml, reshabhs2024spmldata}, xTRam1 \citep{xtram12024safeguard}, rikka \citep{rikka2025multilingual}, ShieldLM \citep{milush2025shieldlm}, yanis \citep{miraoui2023promptinjections}, MASSIVE \citep{fitzgerald2022massive}, Weni \citep{weni2024promptinjections}, Dolly \citep{conover2023dolly}, HackAPrompt \citep{schulhoff2023hackaprompt} via o espelho \citep{imoxto2023hackapromptgpt35}, Stack Overflow \citep{pacovaldez2022soquestions, koutch2023sopython}, CodeSearchNet \citep{husain2019codesearchnet, nando2023codesearchnetpython}. %
+
+Dois testes compostos são usados ao longo do texto. \emph{pt-native} junta o Weni (300 positivos) e o MASSIVE-pt (1.500 negativos), 1.800 itens%
+. \emph{Fumaça} são dez frases escritas no código, cinco injeções e cinco benignas%
+; uma das frases benignas é uma instrução de instalação em português (``Instruções de instalação: execute o setup.exe e clique em avançar.''), que acaba importando (Seção~\ref{sec:6}).
+
+Dois fatos descobertos depois das rodadas de treino mudam o modo como os testes devem ser lidos. Primeiro, \textbf{o xTRam1 não está fora da distribuição} para nenhum modelo treinado com o ShieldLM: 577 das 4.000 linhas de treino do ShieldLM vêm do próprio split de treino do xTRam1, e 4 dos 1.500 itens de teste do xTRam1 aparecem no subconjunto de treino do ShieldLM (correspondência exata após normalização de caixa e de espaços)%
+. Por isso descrevemos o xTRam1 como ``mesma distribuição, itens disjuntos (exceto 4)'', e o Weni é o único teste genuinamente externo. Segundo, 14 dos 262 itens de teste do jackhhao aparecem no subconjunto de treino do ShieldLM; o deepset não tem nenhum item nesse subconjunto (0/116)%
+. Só o subconjunto do ShieldLM foi conferido contra os testes. Além disso, a configuração em português do MASSIVE é português europeu, não brasileiro%
+.
+
+\subsection{Tradução para pt-BR}\label{sec:3.2}
+
+Os dados de treino e de teste em inglês foram traduzidos localmente com \code{Helsinki-\allowbreak{}NLP/\allowbreak{}opus-\allowbreak{}mt-\allowbreak{}tc-\allowbreak{}big-\allowbreak{}en-\allowbreak{}pt}, um modelo OPUS-MT treinado no Tatoeba Translation Challenge \citep{tiedemann2020opusmt, tiedemann2020tatoeba, helsinki2022opusmtenpt}, token de idioma \code{\textgreater{}\textgreater{}por\textless{}\textless{}}, decodificação gulosa (um feixe, sem amostragem), o que torna a tradução determinística%
+. As entradas são truncadas em 512 tokens e 1.500 caracteres%
+. Até 1.000 exemplos por fonte em inglês (os de hash par) são acrescentados ao treino, e os primeiros 300 itens de teste do SPML e 500 do xTRam1 são traduzidos como testes adicionais%
+; os testes do deepset e do jackhhao são traduzidos por inteiro%
+. A rodada A usou uma regra anterior: metade dos dados de treino por hash, com um teto único de 3.000%
+.
+
+O teto de geração foi fixado originalmente em 512 tokens novos; a decodificação gulosa caía em repetição e corria até o teto, cerca de 7 s por instrução curta. Limitar a geração a min(512; 1,6 \ensuremath{\times} tokens de entrada + 16) eliminou o problema%
+; o ganho de velocidade de 5–10\ensuremath{\times} relatado está registrado apenas em uma mensagem de commit e não foi medido de forma independente (Seção~\ref{sec:10}). As traduções ficam em cache pelo SHA-1 do texto-fonte completo e são gravadas em disco a cada lote%
+, e o trabalho foi dividido entre duas máquinas com CPU; a cota de GPU foi reservada para o fine-tuning%
+. A rodada A traduziu 2.723 textos de treino e 1.161 de teste%
+. Nenhum texto traduzido foi revisado por um humano.
+
+\subsection{Partição e protocolo de seleção}\label{sec:3.3}
+
+Todas as partições são funções determinísticas do texto: \code{bucket = int(md5(text)[:8], 16) mod 100}%
+. O conjunto de validação da sonda é bucket \textless{} 15 (15\%)%
+. Para as sondas, a constante de regularização $C \in \{0{,}05;\ 0{,}2;\ 1;\ 4\}$ e o peso de classe \ensuremath{\in} \{nenhum, balanceado\} são escolhidos pela acurácia balanceada na validação%
+, e uma temperatura é ajustada na validação minimizando a log-loss sobre uma grade logarítmica de 60 pontos de 0,1 a cerca de 20%
+. Os conjuntos de teste são usados só para medir. Os conjuntos de teste nunca são enviados ao serviço de fine-tuning: a exportação para o fine-tuning na nuvem contém apenas dados de treino, e a avaliação roda nas máquinas do próprio autor (um laptop e uma VM ARM na nuvem)%
+.
+
+\textbf{Os critérios de aceitação foram fixados antes da medição} (Tabela~\ref{tab:2}). O critério usado na decisão (Weni \ensuremath{\geq} 95\% e xTRam1-pt \ensuremath{\geq} 90\%) foi registrado em commit em 2 de outubro, quase três dias antes da primeira medição no Weni%
+. O critério por página só foi acrescentado depois da falha por página e vale para rodadas futuras%
+.
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Critérios de aceitação.}\label{tab:2}
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash\hsize=1.23\hsize}X>{\raggedright\arraybackslash\hsize=0.77\hsize}X@{}}
+\toprule
+Data & Critério & Situação quando fixado \\
+\midrule
+1 out & \ensuremath{\geq} 95\% no xTRam1, então considerado fora da distribuição (Seção~\ref{sec:3.1}) %
+ & antes dos resultados da rodada 0 \\
+2 out & Weni \ensuremath{\geq} 95\% \textbf{e} xTRam1-pt \ensuremath{\geq} 90\%; se atendido, ligar um hook só de aviso e fail-open %
+ & antes de qualquer medição no Weni \\
+6 out & taxa de aviso falso por página \textless{} 2\% %
+ & depois da falha por página; para rodadas futuras \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Trava anti-vazamento}\label{sec:3.4}
+
+Acredita-se que o conjunto Weni seja uma tradução para o português de material do HackAPrompt; a afirmação aparece no nosso código e no histórico de commits, mas não foi verificada de forma independente na época%
+. Para manter honesto o teste ouro, a partir da rodada v4 é removido todo exemplo de treino cuja similaridade de cosseno máxima com qualquer texto do Weni passe de 0,9 (multilingual-e5-base, vetores normalizados)%
+. Na exportação da v4 isso removeu 4.008 de 27.693 exemplos%
+. O HackAPrompt entra apenas pelas linhas rotuladas como ataques bem-sucedidos; do contrário, um ataque fracassado viraria um exemplo benigno implícito%
+.
+
+A trava não foi aplicada à exportação v2/v3, que é anterior a ela%
+. Aplicar depois a mesma regra aos dados de treino da v3 marca 115 exemplos como quase duplicatas de textos do Weni%
+. Eles são em sua maioria traduções automáticas (98 injeções e 17 exemplos benignos; 48 do jackhhao-pt, 18 do SPML-pt e 10 cada do deepset-pt e do Dolly-pt), e 58 dos 300 textos do Weni têm um deles como vizinho%
+. Voltamos a isso nas Seções~\ref{sec:4},~\ref{sec:7} e~\ref{sec:10}.
+
+\subsection{Modelos e treino}\label{sec:3.5}
+
+\textbf{Sondas (rodadas 0, A, B).} \code{intfloat/\allowbreak{}multilingual-\allowbreak{}e5-\allowbreak{}base} congelado \citep{wang2024multilinguale5, intfloat2023me5large} com o prefixo \code{query:\textvisiblespace{}} e limite de 256 tokens, seguido de uma regressão logística padronizada%
+. Os embeddings foram calculados em uma CPU de laptop (Intel i7-1255U)%
+.
+
+\textbf{Modelos com fine-tuning (v2–v5).} Classificação binária de sequência sobre \code{multilingual-\allowbreak{}e5-\allowbreak{}base} ou \code{multilingual-\allowbreak{}e5-\allowbreak{}large}, entrada \code{query:\textvisiblespace{}} + texto, 256 tokens no treino e na inferência, 3 épocas, taxa de aprendizado 2e-5, weight decay 0,01, aquecimento (warm-up) em 6\% dos passos, fp16, melhor época pela acurácia de validação em um split estratificado de 8\% com semente 0%
+. O e5-base usou batch 32; o e5-large usou batch 8 com 4 passos de acumulação e gradient checkpointing%
+. O treino rodou em um notebook gratuito do Kaggle com duas GPUs NVIDIA T4 (15.360 MiB cada)%
+; se as duas GPUs foram de fato usadas não está verificado (Seção~\ref{sec:10}). \textbf{Na inferência os modelos com fine-tuning usam temperatura 1,0, isto é, logits crus sem calibração}%
+.
+
+\textbf{Ensemble de pesos fixos.} Os logits da v3 e da v5 são combinados por média com pesos 0,5/0,5, escolhidos antes de olhar qualquer resultado de teste, porque não existe um conjunto de validação separado do Weni e ajustar o peso no teste burlaria o critério%
+.
+
+\subsection{Rodadas}\label{sec:3.6}
+
+A Tabela~\ref{tab:3} resume as rodadas. A maioria das rodadas mudou um fator principal em relação a uma rodada de referência; duas não: a v2 passou para fine-tuning e acrescentou o Dolly como dado benigno ao mesmo tempo, e a v4/v5 acrescentam tanto o HackAPrompt quanto a trava anti-vazamento em relação à v2/v3.
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Rodadas de treino.}\label{tab:3}
+\begin{tabularx}{\linewidth}{@{}ll>{\raggedright\arraybackslash\hsize=0.95\hsize}X>{\raggedright\arraybackslash\hsize=1.57\hsize}X>{\raggedright\arraybackslash\hsize=0.69\hsize}X>{\raggedright\arraybackslash\hsize=0.79\hsize}X@{}}
+\toprule
+Rodada & Data & Modelo & Dados de treino & Tamanho & Nota \\
+\midrule
+0 & 1 out & sonda, e5-base & deepset + jackhhao + SPML, só inglês & 5.590 exemplos; 4.622 após o split de validação %
+ & — \\
+A & 2–5 out & sonda, e5-base & rodada 0 + 2.723 MT pt %
+ & n\_train 6.910 %
+ & tradução \\
+B & 5 out & sonda, e5-base & 7 fontes incl. pt nativo, 17.911 + MT %
+ & n\_train 17.580 %
+ & dados pt nativos \\
+v2 & 5 out & e5-base com fine-tuning & 20.911 originais (8 fontes de treino: as 7 da rodada B + Dolly) + 2.782 MT = 23.693 %
+ & val. 1.896 %
+ & sem trava anti-vazamento %
+ \\
+v3 & 5 out & e5-large com fine-tuning & mesma exportação da v2 %
+ & val. 1.896 %
+ & sem trava anti-vazamento \\
+v4 & 6 out & e5-base com fine-tuning & + HackAPrompt; a trava removeu 4.008 \ensuremath{\rightarrow} 23.685 %
+ & val. 1.895 %
+ & trava anti-vazamento \\
+v5 & 6 out & e5-large com fine-tuning & exportação da v4 %
+ & val. 1.895 %
+ & trava anti-vazamento \\
+mistura & 6 out & logits v3 \ensuremath{\oplus} v5, 0,5/0,5 %
+ & — & — & sem ajuste no teste \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+As acurácias de validação no split da nuvem foram 99,42\% (v2), 99,63\% (v3), 99,31\% (v4) e 99,63\% (v5)%
+. Computação: as quatro sessões de fine-tuning usaram 20.476 s, cerca de 5,69 h de tempo de notebook%
+; uma execução do e5-base levou cerca de 31–33 min e uma do e5-large cerca de 2 h 15 min a 2 h 22 min%
+. As três rodadas de sonda gastaram 10.595 s (cerca de 2,94 h) calculando embeddings em CPU%
+. O Apêndice~\ref{app:A} lista todos os custos.
+
+\section{Resultados por frase}\label{sec:4}
+
+A Tabela~\ref{tab:4} relata a acurácia de cada rodada em cada teste em que ela foi rodada. Para o Weni, que contém apenas injeções, a acurácia é igual à taxa de detecção. As fontes são dadas por coluna.
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Acurácia por frase (\%) por rodada. ``—'' = não rodado. Fumaça informa acertos/10.}\label{tab:4}
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+Teste (n) & 0 %
+ & A %
+ & B %
+ & v2 %
+ & v3 %
+ & v4 %
+ & v5 %
+ & mistura %
+ \\
+\midrule
+\textbf{Weni, pt-BR nativo (300)} & — & — & 72,3 & 74,3 & \textbf{94,7} & 66,7 & 89,7 & 91,3 \\
+xTRam1, en (1.500) & 86,3 & 89,1 & 94,3 & 98,9 & 98,7 & 99,0 & 99,1 & 99,0 \\
+xTRam1-pt, MT (500) & — & 81,8 & 82,8 & 95,4 & 96,0 & 96,0 & 98,0 & 96,8 \\
+MASSIVE-pt, benigno (1.500) & — & — & 99,3 & 99,7 & 99,8 & 99,8 & 100 & 99,9 \\
+Dolly, benigno en (1.000) & — & — & — & 99,7 & 99,6 & 99,7 & — & — \\
+Dolly-pt, benigno MT (1.000) & — & — & — & 99,6 & 99,3 & 99,9 & 99,5 & 99,5 \\
+pt-native (1.800) & — & — & 94,8 & 95,5 & 98,9 & 94,3 & — & — \\
+deepset (116) & 81,9 & 81,0 & 84,5 & 94,0 & — & 93,1 & — & — \\
+jackhhao (262) & 95,8 & 96,6 & 93,1 & 99,2 & — & 98,9 & — & — \\
+SPML (1.000) & 98,9 & 98,7 & 98,8 & 99,4 & — & 99,3 & — & — \\
+rikka (1.276) & — & — & 88,8 & 95,6 & — & 94,5 & — & — \\
+ShieldLM (4.000) & — & — & 96,7 & 98,7 & — & 98,8 & — & — \\
+yanis (219) & — & — & 98,6 & 100 & — & 99,1 & — & — \\
+HackAPrompt (1.000) & — & — & — & — & — & 99,8 & — & — \\
+deepset-pt, MT (116) & — & 86,2 & 85,3 & 94,8 & — & 92,2 & — & — \\
+jackhhao-pt, MT (262) & — & 90,1 & 91,2 & 98,5 & — & 97,3 & — & — \\
+SPML-pt, MT (300) & — & 98,7 & 98,3 & 99,3 & — & 98,7 & — & — \\
+HackAPrompt-pt, MT (1.000) & — & — & — & — & — & 99,9 & — & — \\
+Fumaça (10) & 5/10 & 9/10 & 9/10 & 9/10 & 9/10 & 9/10 & 9/10 & 9/10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Os números da v3 se restringem aos testes que decidiram o critério%
+; o deepset, o jackhhao e os primeiros 300 itens do SPML foram medidos depois, na comparação da v6 (Tabela~\ref{tab:9}), e o rikka, o ShieldLM e o yanis nunca%
+. Seguem cinco observações.
+
+\textbf{(a) O backbone maior moveu o teste ouro; o fine-tuning do modelo base mal o moveu.} A sonda sobre embeddings congelados chegou a 72,3\% no Weni depois de acrescentar dados nativos em português (a única rodada de sonda medida no Weni)%
+. O fine-tuning do e5-base em uma combinação maior de dados quase não mudou isso (74,3\%)%
+; o fine-tuning do e5-large na \emph{mesma} exportação e receita chegou a 94,7\%, um ganho de 20,3 pontos vindo da troca de backbone, com uma única execução por modelo%
+. Enquanto isso, o xTRam1, que compartilha distribuição com parte dos dados de treino (Seção~\ref{sec:3.1}), já estava em 98,9\% com o e5-base%
+.
+
+\textbf{(b) O critério foi perdido por um texto, e a diferença não tem significância estatística.} A v3 detectou 284 dos 300 itens do Weni; o critério exigia 285%
+. O intervalo de Wilson de 95\% \citep{wilson1927probable} da v3 é 91,5–96,7\%, que contém 95\%%
+; com n = 300, a distinção entre passar e reprovar não é estatisticamente significativa. Os intervalos das outras rodadas no Weni são 85,7–92,6\% (v5), 87,6–94,0\% (mistura), 69,1–78,9\% (v2) e 61,2–71,8\% (v4)%
+.
+
+\textbf{(c) Acrescentar o HackAPrompt com a trava anti-vazamento piorou os dois backbones no Weni}: \ensuremath{-}7,7 pontos no e5-base (v4 contra v2) e \ensuremath{-}5,0 no e5-large (v5 contra v3)%
+. A nossa contabilidade das exportações sugere por que a trava é a principal diferença entre esses pares. A exportação da v4 é a exportação da v2 mais 4.000 itens do HackAPrompt (3.000 originais e 1.000 traduções) %
+menos 4.008 removidos pela trava%
+. Aplicada só aos dados que não são do HackAPrompt, a mesma trava remove 115 exemplos%
+. Se a trava se comporta de forma idêntica nas duas exportações, cerca de 3.893 dos 4.000 itens do HackAPrompt (97\%) foram removidos%
+, de modo que a v4 e a v5 diferem da v2 e da v3 principalmente por (i) a remoção de 115 quase duplicatas do Weni e (ii) cerca de 107 itens do HackAPrompt que sobreviveram%
+. Se essa contabilidade estiver certa, ela também sustenta, indiretamente, a afirmação de que o Weni deriva do HackAPrompt, pois implicaria que quase todo ataque bem-sucedido do HackAPrompt na exportação tem um vizinho no Weni acima de cosseno 0,9. As duas leituras são inferências entre duas exportações e aguardam uma contagem direta por fonte (lacuna L1, Seção~\ref{sec:10}).
+
+\textbf{(d) O vazamento infla o placar da v3 em cerca de 1,3 ponto.} Se (c) vale, as 115 quase duplicatas presentes nos dados de treino da v3, e ausentes nos da v5, são um contribuinte plausível para a diferença de 5 pontos entre elas (284 contra 269 detectados)%
+. A comparação da v6 mediu esse efeito diretamente: a v3 detecta todos os 58 textos do Weni que têm uma delas como vizinha (cosseno \textgreater{} 0,9) e 226 dos outros 242 (93,4\%, IC de Wilson 95\% 89,5–95,9\%), de modo que cerca de 1,3 dos seus 94,7 pontos vêm de vazamento%
+. Medida sem elas, a v3 fica mais longe do critério, não mais perto. Com uma única semente por configuração, o resto da diferença entre v3 e v5 não pode ser separado da variância entre execuções. Relatamos a v3 como o melhor modelo com essa ressalva; um retreino livre de vazamento está planejado (Seção~\ref{sec:13}).
+
+\textbf{(e) A calibração não foi ajustada para os modelos com fine-tuning.} No limiar de implantação do hook, 0,9%
+, a v3 detecta 91,0\% do Weni e marca 0,13\% das frases do MASSIVE-pt e 0,7\% das do Dolly-pt%
+; a v5 detecta 86,3\% do Weni nesse limiar%
+. Fora o critério perdido por um texto e uma frase do teste de fumaça (Seção~\ref{sec:6}), toda medida por frase fazia o guard parecer pronto.
+
+\section{Avaliação por página}\label{sec:5}
+
+\subsection{Protocolo}\label{sec:5.1}
+
+A implantação pretendida era um hook que roda depois da ferramenta de web fetch do agente, trunca o conteúdo buscado em 6.000 caracteres, divide-o em janelas sobrepostas e avisa o agente quando a probabilidade máxima entre as janelas chega a 0,9; o hook é só de aviso e fail-open%
+. O avaliador por página chama o mesmo caminho de código do hook%
+, portanto mede o que o agente de fato veria.
+
+\textbf{Páginas benignas.} 217 páginas de documentação técnica: a descrição longa (o README renderizado nos metadados do pacote) de pacotes Python instalados nos ambientes de desenvolvimento do autor, uma por pacote, com mais de 1.500 caracteres, excluindo qualquer uma que contenha a palavra ``injection'', truncadas em 6.000 caracteres%
+. As 217 existem no PyPI na versão instalada, e 216 são idênticas byte a byte ao arquivo de core metadata da PEP 658 servido pelo PyPI; a restante é reconstruída a partir da descrição da API JSON, com conferência de hash%
+.
+
+\textbf{Páginas com injeção.} 60 páginas: os mesmos READMEs com uma injeção de teste inserida em uma fronteira de parágrafo determinística, 30 tiradas do Weni e 30 dos positivos do split de teste do xTRam1, amostradas por md5%
+. Nenhum dos dois conjuntos foi carregado como fonte de treino%
+, embora parte do split de treino do xTRam1 tenha chegado ao treino pelo ShieldLM e 4 dos seus itens de teste se sobreponham aos dados de treino (Seção~\ref{sec:3.1}).
+
+\textbf{Decisão.} Nota da página = máximo sobre as janelas; limiares 0,5; 0,9; 0,95; 0,99 e 0,999%
+. Rodamos duas configurações de janela: a original, de 1.500 caracteres com 200 de sobreposição, e 640/160, adotada depois que descobrimos que as janelas originais excediam o contexto de 256 tokens do modelo (Seção~\ref{sec:8})%
+; mesmo assim, 9,2\% das janelas de 640 caracteres ainda o excedem (Seção~\ref{sec:5.4})%
+.
+
+\subsection{Resultados}\label{sec:5.2}
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Resultados por página da v3.}\label{tab:5}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=1.35\hsize}X>{\raggedright\arraybackslash\hsize=0.86\hsize}X>{\raggedright\arraybackslash\hsize=1.14\hsize}X>{\raggedright\arraybackslash\hsize=0.65\hsize}X@{}}
+\toprule
+Janela (caracteres/sobreposição) & Janelas (benignas / com injeção) & Aviso falso em páginas benignas & Detecção (Weni / xTRam1) \\
+\midrule
+1.500 / 200 & 895 / 260 %
+ & \textbf{100,0\% em todo limiar} %
+ & 100\% / 100\% %
+ \\
+640 / 160 & 2.258 / 662 %
+ & \textbf{100,0\% em todo limiar} %
+ & 100\% / 100\% %
+ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Todas as 217 páginas benignas geraram aviso em todo limiar de 0,5 a 0,999, com qualquer das duas janelas%
+; o intervalo de Wilson de 95\% da taxa de aviso falso é 98,3–100\%%
+. O menor máximo por página entre as páginas benignas foi 0,9999 com janelas de 1.500 caracteres e 0,9998 com janelas de 640 caracteres (valores gravados com quatro casas decimais), e a mediana foi 1,0%
+. Só em um limiar de 0,9999, fora da grade avaliada, uma página deixaria de avisar (aviso falso de 99,54\%)%
+. A detecção de 100\% é, portanto, não informativa: toda página dispara, com ou sem injeção%
+.
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Mesmo modelo, duas unidades de avaliação (v3, limiar 0,9).}\label{tab:6}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Unidade & Dados benignos & Aviso falso \\
+\midrule
+frase & MASSIVE-pt (1.500, conversacional) & 0,13\% %
+ \\
+frase & Dolly-pt (1.000, instruções) & 0,7\% %
+ \\
+frase & fumaça: ``execute o setup.exe e clique em avançar'' & P = 1,0 %
+ \\
+página & 217 READMEs técnicos & 100\% %
+ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+O guard foi rejeitado para o hook de web fetch, o hook ficou desligado, e os metadados do pack agora declaram que ele só serve para texto conversacional%
+.
+
+\subsection{O que o protocolo por página acrescenta}\label{sec:5.3}
+
+Um benchmark de frases responde ``este texto, sozinho, parece um ataque?''. Um guard implantado responde ``alguma parte desta página parece um ataque?'', o que agrega muitas janelas (aqui, cerca de 10,4 janelas benignas por página com janelas de 640 caracteres%
+). Com um máximo sobre $k$ janelas, uma taxa de falso positivo por janela $p$ vira uma taxa de aviso falso por página de $1-(1-p)^k$ sob independência, de modo que mesmo uma taxa modesta por janela é amplificada cerca de $k$ vezes. No nosso caso a amplificação é irrelevante, porque as janelas benignas já pontuam perto de 1,0; mas a aritmética explica por que taxas de falso positivo por frase abaixo de 1\% não tranquilizam para uso por página. As taxas de falso positivo por janela não foram gravadas na execução original (lacuna L4); a execução dos baselines da Seção~\ref{sec:5.4} as registrou. Nela, 99,6\% das janelas benignas de 640 caracteres da v3 pontuam pelo menos 0,5, contra 3,5–4,3\% nos dois melhores classificadores públicos, cujos avisos falsos por página são essa amplificação em ação%
+.
+
+\subsection{Baselines públicos sob o mesmo protocolo}\label{sec:5.4}
+
+Rodamos três classificadores públicos sob o mesmo protocolo de página: dois modelos DeBERTa-v3 em inglês \citep{protectai2024deberta, deepset2023deberta} e um modelo mDeBERTa multilíngue \citep{proventra2025mdeberta}, cada um com janelas dimensionadas para o próprio contexto (1.300/200 caracteres com 512 tokens; 640/160 com 256 tokens para o nosso), mais um controle com janelas de 640/160 para os modelos da ProtectAI e mDeBERTa. O controle do deepset não foi rodado, porque a saída desse modelo já satura com janelas de 1.300 caracteres%
+. O Llama Prompt Guard 2 \citep{meta2025promptguard2} e o seu antecessor \citep{meta2024promptguard} não puderam ser avaliados: os seus repositórios têm acesso restrito (gated), e o acesso, que exige aceitar a licença Llama, não tinha sido concedido na época da execução (HTTP 403)%
+. O modelo mDeBERTa, que compartilha o backbone do Prompt Guard e cujo card relata injeções embutidas em sites e artigos entre os seus dados de treino, entra como representante multilíngue%
+. Os quatro modelos leram as mesmas páginas exportadas, e cada página recebe o máximo, sobre as suas janelas, do log-odds do rótulo de ataque, com os limiares aplicados à probabilidade correspondente; o log-odds mantém uma ordenação onde as probabilidades arredondam para 1%
+. Os números por frase usam os 300 itens do Weni e o split de teste completo do xTRam1 em inglês (2.060 frases, 650 ataques)%
+. Todas as execuções usaram a mesma VM ARM de nuvem com 4 núcleos, em CPU e fp32%
+. As Tabelas~\ref{tab:7} e 8 trazem os resultados.
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Classificadores públicos no protocolo de página: aviso falso (AF) nas 217 páginas benignas e detecção (Det.) nas 60 páginas com injeção (30 do Weni, 30 do xTRam1), em \%. ``Janela'' é o limite de tokens do modelo e o comprimento da janela em caracteres; as duas últimas linhas são o controle com 640/160. Modelos: e5-large v3 (o nosso), ProtectAI deberta-v3-base-prompt-injection-v2, Proventra mdeberta-v3-base-prompt-injection, deepset deberta-v3-base-injection. ``Det.@0,9'' é a detecção a 0,9, no total e (entre parênteses) nas inserções do Weni / xTRam1. O ``AUROC'' é calculado sobre páginas. ``Det.@2\%'' é a detecção no menor limiar que deixa no máximo 4 das 217 páginas benignas acima dele (AF \ensuremath{\leq} 2\%). ``Jan.'' é a fração das janelas benignas com P \ensuremath{\geq} 0,5 (não registrada no controle).}\label{tab:7}
+\begin{tabular}{@{}lrrrrrrrr@{}}
+\toprule
+Modelo & Janela & AF@0,5 & AF@0,9 & AF@0,99 & Det.@0,9 & AUROC & Det.@2\% & Jan. \\
+\midrule
+v3 (nosso) & 256/640 & 100,0 & 100,0 & 100,0 & 100 (100/100) & 0,857 & 40 & 99,6 %
+ \\
+ProtectAI & 512/1.300 & 15,7 & 11,1 & 5,5 & 58 (97/20) & 0,813 & 50 & 4,3 %
+ \\
+Proventra & 512/1.300 & 14,7 & 12,4 & 8,3 & 68 (70/67) & 0,883 & 40 & 3,5 %
+ \\
+deepset & 512/1.300 & 100,0 & 100,0 & 100,0 & 100 (100/100) & 0,829 & 32 & 100,0 %
+ \\
+ProtectAI & 512/640 & 30,9 & 21,2 & 8,8 & 77 (97/57) & 0,847 & 55 & — %
+ \\
+Proventra & 512/640 & 38,2 & 33,6 & 26,7 & 85 (90/80) & 0,845 & 38 & — %
+ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Os mesmos classificadores em frases, no limiar 0,5, e o custo por janela cheia na VM ARM de 4 núcleos (uma janela por chamada). Weni: detecção nas 300 injeções nativas em pt-BR. xTRam1: split de teste completo em inglês, 2.060 frases (650 ataques); TPR e FPR em \%.}\label{tab:8}
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Modelo & Weni det. & xTRam1 acur. & TPR & FPR & AUROC & ms/janela \\
+\midrule
+e5-large v3 (nosso) & 94,7 & 98,7 & 98,9 & 1,3 & 0,999 & 1.045 \\
+ProtectAI v2 & 99,3 & 94,9 & 84,2 & 0,1 & 0,992 & 868 \\
+Proventra mDeBERTa & 79,0 & 89,6 & 72,6 & 2,6 & 0,906 & 845 \\
+deepset & 100,0 & 48,3 & 98,9 & 75,0 & 0,666 & 879 %
+ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{A falha não é exclusiva do nosso modelo, nem universal.} O classificador da deepset também avisou nas 217 páginas benignas em todo limiar até 0,99 (IC de Wilson de 95\%: 98,3–100\%) e, em frases, marca 75,0\% dos itens benignos do xTRam1%
+. O ProtectAI v2 e o modelo mDeBERTa da Proventra avisaram em 15,7\% (34/217; IC 11,4–21,1\%) e 14,7\% (32/217; IC 10,6–20,1\%) das páginas benignas no limiar 0,5, e em 5,5\% e 8,3\% no limiar 0,99%
+. Nesses dois modelos a janela benigna mediana pontua 0,00028 e 0,00123, contra 0,99998 no nosso, e o aviso falso por página nasce de poucas janelas (3,5–4,3\% das janelas benignas pontuam pelo menos 0,5) somadas ao longo de cerca de 4,9 janelas por página: a amplificação da Seção~\ref{sec:5.3}%
+. Os cards desses modelos relatam dados de treino mais variados que os nossos: o da ProtectAI lista mais de vinte fontes, incluindo instruções e conversas, e o da Proventra relata injeções embutidas em conteúdo legítimo, como sites e artigos%
+.
+
+\textbf{Nenhum modelo passa no critério de página.} No menor limiar que mantém o aviso falso em até 2\%, a detecção fica entre 32\% e 50\% no protocolo principal e chega no máximo a 55\% no controle. O único ponto da grade avaliada abaixo de 2\% de aviso falso com detecção não trivial é o ProtectAI no limiar 0,999 (0,9\% de aviso falso, 50\% de detecção), e quase toda essa detecção vem das injeções longas do Weni (90\%, contra 10\% do xTRam1)%
+. Com 60 páginas com injeção, o intervalo de 95\% da detecção cobre cerca de \ensuremath{\pm}12 pontos: o ProtectAI detecta 38 de 60 páginas a 0,5 (51–74\%) e o Proventra, 42 de 60 (57–80\%)%
+.
+
+\textbf{Frase e página ordenam os modelos em sentidos opostos.} Nas frases do xTRam1, o nosso modelo tem a maior acurácia (98,7\%) e o maior AUROC (0,999) dos quatro; por página, empata com o da deepset como o pior. O benchmark de frases não previu o comportamento na unidade em que o hook decide%
+.
+
+\textbf{Saturação, não limiar.} 98,2\% das nossas janelas benignas pontuam pelo menos 0,999. No modelo da deepset a saída é quase constante: o log-odds da página vai de 6,41 a 6,79 nas páginas benignas e de 6,65 a 6,88 nas páginas com injeção (percentis 5 a 95), e por isso o limiar 0,999 derruba de uma vez o aviso falso e a detecção (0\% e 0\%). O nosso ainda guarda alguma ordem (AUROC por página de 0,857), mas o limiar que leva o aviso falso a 2\% fica em $P > 1-5\times10^{-6}$, que depende da quinta casa decimal de uma saída saturada e não serve como ponto de operação. Isso é coerente com um defeito de dado de treino, e não de limiar; o retreino v6 (Seção~\ref{sec:7}) testa isso diretamente%
+.
+
+\textbf{O tamanho da janela é um parâmetro de operação.} Com a janela pela metade (640/160), o aviso falso a 0,5 praticamente dobrou (ProtectAI 15,7\% \ensuremath{\rightarrow} 30,9\%, Proventra 14,7\% \ensuremath{\rightarrow} 38,2\%) e a detecção subiu (63\% \ensuremath{\rightarrow} 80\% e 70\% \ensuremath{\rightarrow} 88\%): as injeções curtas do xTRam1 (mediana de 136 caracteres) se diluem menos numa janela pequena (detecção por página do ProtectAI no xTRam1: 30\% \ensuremath{\rightarrow} 63\%), enquanto cada página passa a ter cerca do dobro de janelas para errar. Mesmo com 640 caracteres, 9,2\% das janelas do nosso modelo ainda passam do contexto de 256 tokens, contra 6,7\% (ProtectAI, deepset) e 1,9\% (Proventra) das janelas de 1.300 caracteres com 512 tokens%
+.
+
+\textbf{Custo.} Na VM ARM, uma janela cheia leva cerca de 1,05 s no nosso e5-large (560M parâmetros) e 0,85–0,88 s nos modelos DeBERTa-base (184M); juntar em lote não ajuda nesta CPU. Uma página média (4.736 caracteres) custa, portanto, cerca de 11 s no nosso modelo (10,4 janelas) e cerca de 4 s nos DeBERTa com 1.300 caracteres (4,9 janelas), um atraso relevante para um hook síncrono de busca na web%
+.
+
+\textbf{Ressalvas.} As páginas benignas são de um único gênero, e as injeções são texto colado, não marcação escondida. Os dados de treino dos modelos públicos não estão documentados por inteiro; se o Weni deriva da HackAPrompt (Seção~\ref{sec:3.4}), um modelo treinado com a HackAPrompt pode ter o Weni inflado. Os números do nosso modelo no xTRam1 carregam a ressalva de sobreposição da Seção~\ref{sec:3.1}. O script dos baselines reproduz os 94,7\% de detecção no Weni da Seção~\ref{sec:4}, o que confere que ele usa o mesmo caminho de inferência do kit implantado%
+.
+
+\section{Diagnóstico}\label{sec:6}
+
+\subsection{Hipótese: ``texto técnico imperativo = injeção''}\label{sec:6.1}
+
+A nossa explicação de trabalho, registrada no dia da falha, é que o modelo aprendeu a tratar texto técnico e imperativo como injeção porque os exemplos benignos de treino eram conversacionais (comandos a assistentes do MASSIVE e instruções do Dolly)%
+. Corpora de injeção estão cheios de imperativos dirigidos a um sistema (``ignore'', ``imprima'', ``execute'', ``revele''); os corpora benignos que usamos também contêm imperativos, mas conversacionais, dirigidos a um assistente. A documentação técnica fica do lado da injeção dessa fronteira: imperativos na segunda pessoa, comandos de shell, diretivas de configuração, avisos sobre o que sobrescrever. \textbf{Essa explicação era uma hipótese quando a falha foi encontrada.} Ela é consistente com as evidências abaixo%
+; o retreino v6 (Seção~\ref{sec:7}) a testa, e a sustenta para a prosa técnica, deixando avisos falsos residuais na marcação dos READMEs%
+.
+
+\subsection{Evidências}\label{sec:6.2}
+
+\textbf{O sinal precoce estava no teste de fumaça.} A frase benigna de fumaça ``Instruções de instalação: execute o setup.exe e clique em avançar.'' foi classificada como injeção em toda rodada a partir da A em que a nota por item foi gravada (A, B, v3, v5), com confiança crescente: P = 0,883 na rodada A, 0,967 na rodada B e 1,0 na v3%
+; na v2, na v4 e na mistura, uma das cinco frases benignas de fumaça foi classificada errado, mas qual delas não foi gravado%
+. Na rodada 0 a sonda errou todas as cinco injeções em português (maior P = 0,186) e classificou corretamente as cinco frases benignas%
+, então a frase ainda não estava em questão. Uma frase técnica entre cinco benignas era o único item escrito para representar a distribuição de implantação em toda a suíte de avaliação, e o seu erro foi lido como um erro isolado, e não como uma classe de erros.
+
+\textbf{A documentação estava ausente do treino.} Uma auditoria do conjunto de treino da v6, que contém literalmente 23.578 dos 23.693 textos de treino da v3%
+, contra os 329 textos de metadados de pacotes da máquina não encontrou nenhum texto de treino idêntico a um README, nenhum texto de treino contido em um README (\ensuremath{\geq} 200 caracteres) e nenhum README contido no conjunto de treino; 9 textos de treino compartilhavam um 13-grama com algum README, todos boilerplate XML/XHTML%
+. Nenhum dos READMEs do benchmark, nem qualquer fragmento longo deles, estava entre os exemplos benignos de treino; não medimos quanto texto parecido com README, vindo de outras fontes, os dados de treino continham.
+
+\textbf{A saturação elimina o limiar como controle.} Como os modelos com fine-tuning foram servidos sem calibração de temperatura%
+, suas saídas saturam: a frase de fumaça e quase toda página recebem P = 1,0 com quatro casas decimais%
+. O placar mínimo de página de 0,9998 %
+não deixa limiar utilizável: mesmo em 0,9999 só uma das 217 páginas benignas deixaria de avisar%
+. A calibração em validação dentro da distribuição não repararia isso sozinha: o temperature scaling é monotônico, então pode mover o limiar, mas não mudar a ordem em que as páginas são ranqueadas; o split de validação compartilha a distribuição benigna conversacional; e as rodadas de sonda, que foram calibradas (T = 1,1286 e 1,2346)%
+, ainda deram à frase do setup.exe nota de 0,883–0,967.
+
+\textbf{A falha sobrevive a uma janela correta.} Com janelas de 1.500 caracteres o classificador via apenas os primeiros 256 tokens de cada janela, já que READMEs técnicos têm uma mediana registrada de cerca de 3,04 caracteres por token (Seção~\ref{sec:8}; o script de medição não foi preservado)%
+. Reduzir a janela para 640 caracteres, de modo que a maioria das janelas caiba no contexto (9,2\% ainda passam de 256 tokens; Seção~\ref{sec:5.4})%
+, não mudou o resultado: 100\% de avisos falsos em todo limiar nas duas configurações%
+. O truncamento era um bug real, mas não é a causa.
+
+\subsection{O que o modelo vê}\label{sec:6.3}
+
+Cada janela entra no classificador como \code{query:\textvisiblespace{}} + até 256 tokens de texto de README%
+. Uma janela da página de um pacote típico contém um comando de instalação, um trecho de uso e instruções na segunda pessoa (``defina esta variável'', ``rode este comando'', ``não use X em produção''). Do ponto de vista do classificador, essas são strings imperativas curtas dirigidas a um agente executor, que é a cara da maioria das injeções de treino e a cara de poucos exemplos benignos de treino. O lado benigno dos dados de treino lhe ensinou como é uma \emph{conversa} inofensiva, não como é um \emph{conteúdo} inofensivo. As páginas benignas de nota mais alta na execução dos baselines (Seção~\ref{sec:5.4}) combinam com essa leitura. No nosso modelo, são blocos de instalação e de teste, avisos de depreciação e tabelas com emoji, ou seja, texto técnico no imperativo; os modelos públicos erram em outros lugares: o ProtectAI em código que pede um segredo ou uma senha ao usuário e num link para uma política de segurança, o modelo mDeBERTa em código que lê variáveis de ambiente e numa tabela de técnicas de ataque, e o da deepset em texto de licença e de contribuição%
+. Depois do retreino (Seção~\ref{sec:7}), as janelas que ainda disparam são de outro tipo: badges, links de patrocínio e tabelas markdown%
+.
+
+\section{Tentativa de correção: dados benignos técnicos (v6)}\label{sec:7}
+
+\subsection{Desenho}\label{sec:7.1}
+
+A rodada v6 testa diretamente a hipótese da Seção~\ref{sec:6} acrescentando texto benigno técnico ao treino: perguntas e respostas do Stack Overflow \citep{pacovaldez2022soquestions, koutch2023sopython} e docstrings Python do CodeSearchNet \citep{husain2019codesearchnet, nando2023codesearchnetpython}, 10.000 exemplos de treino no total, com 1.000 exemplos de teste por fonte%
+. Metadados de pacotes \textbf{nunca} são usados no treino, porque são o teste de página%
+. O conjunto de treino da v6 é o conjunto de treino da v3 menos as 115 quase duplicatas do Weni encontradas pela trava anti-vazamento, mais os 10.000 exemplos benignos técnicos, num total de 33.578 (24.240 benignos, 9.338 injeções)%
+; o HackAPrompt não entra%
+. A fração de positivos cai de 39,8\% (v3) para 27,8\% (v6)%
+. A receita é, no mais, idêntica à da v3 (e5-large, 3 épocas, taxa de aprendizado 2e-5, batch 8 \ensuremath{\times} 4, fp16, 256 tokens, temperatura 1,0 na inferência)%
+.
+
+A v6 é comparada com a v3 nos mesmos itens: intervalos de Wilson de 95\% por teste e testes exatos de McNemar \citep{mcnemar1947note} sobre predições pareadas, já que os dois modelos veem exatamente os mesmos textos, na mesma ordem%
+. A avaliação repete a da v3: os mesmos testes, textos, código e máquina ARM. Os testes em que a v3 não tinha sido rodada (deepset, jackhhao, SPML e os três conjuntos técnicos) foram rodados para os dois modelos nos mesmos 300 primeiros itens%
+. As páginas são a lista congelada usada na Seção~\ref{sec:5.4}, com a mesma impressão digital para os dois modelos: entre as duas execuções, pacotes novos nos ambientes do autor tinham trocado 21 das 217 páginas selecionadas ao vivo e alterado outras 2, o que invalidaria a comparação%
+. As probabilidades foram gravadas com quatro casas decimais, o que limita a análise de limiar perto de 0 e de 1%
+. A aceitação exige taxa de aviso falso por página abaixo de 2\%, com a detecção relatada%
+.
+
+\subsection{Resultados}\label{sec:7.2}
+
+A Tabela~\ref{tab:9} compara v3 e v6 em frases e a Tabela~\ref{tab:10}, em páginas.
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{v3 contra v6 em frases no limiar 0,5: acurácia em \% (no Weni, detecção), nos mesmos itens para os dois modelos, com o teste exato de McNemar sobre predições pareadas. Alguns n diferem da Tabela~\ref{tab:4}: os testes deepset, jackhhao, SPML, Dolly e técnicos usam os seus primeiros 300 itens (todos, quando há menos). ``Weni, limpo'' exclui os 58 textos com uma quase duplicata nos dados de treino da v3. Os testes técnicos são separados por hash das novas fontes de treino da v6.}\label{tab:9}
+\begin{tabular}{@{}lrrrrl@{}}
+\toprule
+Teste & n & v3 & v6 & Dif. (p.p.) & McNemar p \\
+\midrule
+Weni, pt-BR nativo & 300 & 94,7 & 63,7 & \ensuremath{-}31,0 & $<10^{-6}$ \\
+Weni, limpo & 242 & 93,4 & 60,7 & \ensuremath{-}32,6 & $<10^{-6}$ %
+ \\
+xTRam1, en & 1.500 & 98,7 & 99,3 & +0,7 & 0,031 \\
+xTRam1-pt, MT & 500 & 96,0 & 98,2 & +2,2 & 0,007 \\
+MASSIVE-pt, benigno & 1.500 & 99,8 & 100,0 & +0,2 & 0,250 \\
+Dolly, benigno en & 300 & 99,7 & 99,3 & \ensuremath{-}0,3 & 1,000 \\
+Dolly-pt, benigno MT & 1.000 & 99,3 & 99,6 & +0,3 & 0,250 \\
+deepset, en & 116 & 94,8 & 88,8 & \ensuremath{-}6,0 & 0,016 \\
+deepset-pt, MT & 116 & 93,1 & 89,7 & \ensuremath{-}3,4 & 0,125 \\
+jackhhao, en & 262 & 98,9 & 99,2 & +0,4 & 1,000 \\
+jackhhao-pt, MT & 262 & 98,1 & 98,5 & +0,4 & 1,000 \\
+SPML, en & 300 & 100,0 & 100,0 & 0,0 & 1,000 \\
+SPML-pt, MT & 300 & 100,0 & 100,0 & 0,0 & 1,000 \\
+Perguntas do SO, benigno técnico & 300 & 33,3 & 100,0 & +66,7 & $<10^{-6}$ \\
+Respostas do SO, benigno técnico & 300 & 13,3 & 100,0 & +86,7 & $<10^{-6}$ \\
+Docstrings, benigno técnico & 300 & 62,0 & 100,0 & +38,0 & $<10^{-6}$ \\
+Fumaça (acertos/10) & 10 & 9/10 & 10/10 & — & 1,000 %
+ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{v3 contra v6 em páginas (janelas de 640/160, lista de páginas congelada): aviso falso (AF) nas 217 páginas benignas e detecção (Det.) nas 60 páginas com injeção, em \%, com intervalos de Wilson de 95\% para a v6. A v3 avisa em toda página benigna e detecta toda página com injeção em todo limiar (intervalos 98,3–100\% e 94,0–100\%).}\label{tab:10}
+\begin{tabular}{@{}rrlrlr@{}}
+\toprule
+Limiar & AF v3 & AF v6 [IC 95\%] & Det. v3 & Det. v6 [IC 95\%] & Det. v6, Weni / xTRam1 \\
+\midrule
+0,5 & 100,0 & 34,6 [28,6–41,1] & 100,0 & 90,0 [79,9–95,3] & 90,0 / 90,0 \\
+0,9 & 100,0 & 30,4 [24,7–36,8] & 100,0 & 85,0 [73,9–91,9] & 86,7 / 83,3 \\
+0,95 & 100,0 & 29,0 [23,4–35,4] & 100,0 & 85,0 [73,9–91,9] & 86,7 / 83,3 \\
+0,99 & 100,0 & 24,0 [18,8–30,1] & 100,0 & 83,3 [72,0–90,7] & 86,7 / 80,0 \\
+0,999 & 100,0 & 19,4 [14,7–25,1] & 100,0 & 81,7 [70,1–89,4] & 83,3 / 80,0 %
+ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{O diagnóstico se sustenta para a prosa técnica.} Em frases técnicas benignas separadas do treino, a v3 marcava 66,7\% das perguntas do Stack Overflow, 86,7\% das respostas e 38,0\% das docstrings; a v6 não marca nenhuma das 900%
+. Esses testes vêm das mesmas fontes dos novos dados de treino da v6, portanto estão dentro da distribuição dela; o teste de página não está, já que nenhum README entrou no treino (Seção~\ref{sec:6.2}). Nos READMEs, a fração de janelas benignas de 640 caracteres com nota de pelo menos 0,5 caiu de 99,6\% para 7,2\%, uma redução de catorze vezes%
+.
+
+\textbf{A correção não basta para o hook.} Os avisos falsos por página caíram de 100\% para 34,6\% no limiar 0,5 e para 19,4\% em 0,999, e a detecção nas páginas com injeção passou a ser informativa (90,0\% e 81,7\%)%
+. O critério de página continua fora de alcance: 26 das 217 páginas benignas (12,0\%) ainda pontuam 1,0000 na resolução gravada, de modo que nenhum limiar leva o aviso falso a 2\%%
+. O AUROC por página é 0,868 na v6; calculado do mesmo modo, sobre probabilidades com quatro casas, a v3 fica com 0,505 porque quase todas as suas páginas empatam em 1,0, enquanto os seus log-odds na execução dos baselines dão 0,857 (Tabela~\ref{tab:7})%
+. A qualidade da ordenação é, portanto, parecida; o que mudou é que a ordenação agora fica numa faixa utilizável da saída. Diante dos baselines públicos, a v6 avisa em mais páginas benignas no limiar 0,5 que o ProtectAI v2 e o modelo mDeBERTa (34,6\% contra 15,7\% e 14,7\%) e detecta mais páginas com injeção (90\% contra 63\% e 70\%): ela ocupa outro ponto da mesma troca, e não um ponto além dela%
+. As janelas que ainda disparam, uma mediana de 2 por página marcada, são boilerplate de README que não existe no Stack Overflow nem em docstrings: badges em HTML, links de patrocínio e de doação, tabelas markdown e listas de links%
+.
+
+\textbf{A correção custou detecção em pt-BR.} No Weni, a v6 detecta 63,7\% contra 94,7\% da v3: a v6 erra 94 textos que a v3 acerta, e o contrário acontece uma vez (McNemar $p<10^{-6}$). Nos 242 textos do Weni sem quase duplicata nos dados de treino da v3, a detecção cai de 93,4\% para 60,7\% (80 textos contra 1; $p<10^{-6}$)%
+. Os outros testes com ataques ficam iguais ou melhoram (xTRam1-pt 96,0\% \ensuremath{\rightarrow} 98,2\%, $p = 0{,}007$; jackhhao e SPML sem mudança), exceto o deepset em inglês (94,8\% \ensuremath{\rightarrow} 88,8\%, $p = 0{,}016$)%
+. A fração menor de positivos no treino da v6 (27,8\% contra 39,8\%) empurra as decisões para benigno, mas não explica a queda no Weni: baixar o limiar quase não a recupera (67,0\% em 0,1; 69,3\% em 0,01), porque 23\% dos textos do Weni recebem P = 0,0000%
+. Os textos perdidos são curtos (705 caracteres em média, contra 1.101 dos demais) e apresentados como tarefas legítimas (``gere um título de filme sobre a frase...'', ``traduza...'', ``você é um mecanismo de busca...''), com a frase-alvo do ataque fatiada ou ofuscada%
+. A troca depende da classe negativa. Pareando as injeções do Weni com os negativos técnicos, a v3 não detecta nenhuma com taxa de falso positivo de 2\% (na resolução gravada) e a v6 detecta 77\% (AUC 0,843 contra 0,885), enquanto, contra negativos do tipo assistente, a v3 é o modelo melhor (AUC 0,999 contra 0,883)%
+.
+
+\textbf{Leitura.} Parte da acurácia da v3 no Weni se apoiava no mesmo atalho que produzia os avisos falsos: texto com cara de instrução é ataque. Quando o modelo aprende que instruções técnicas são benignas, os ataques do Weni apresentados como tarefa também passam a parecer benignos. Nenhuma das duas versões atende aos dois critérios: a v3 reprova no critério de página e a v6, no critério do Weni. A v3 continua no kit apenas para texto conversacional, e o hook continua desligado%
+. A comparação não é uma ablação limpa: além de acrescentar negativos técnicos, a v6 tirou as 115 quase duplicatas do Weni e mudou o equilíbrio de classes, numa única execução, e um controle ``v3 limpa'' (v3 menos as 115, sem os negativos técnicos) não foi rodado%
+.
+
+\section{Lições de engenharia para a integração com agentes}\label{sec:8}
+
+O guard foi testado de ponta a ponta antes de ser ligado, e esse teste encontrou três defeitos no hook (I1–I3) antes mesmo que a falha por página ficasse visível%
+; um defeito relacionado, de formato de resposta, no cliente do classificador (I4) tinha sido corrigido mais cedo no mesmo dia%
+. Listamos os defeitos que se generalizam para qualquer classificador colocado dentro do laço de um agente (Tabela~\ref{tab:11}; o registro completo de incidentes está no Apêndice~\ref{app:B}).
+
+\begin{table}[tbp]
+\centering
+\small
+\caption{Defeitos de integração.}\label{tab:11}
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash\hsize=0.60\hsize}X>{\raggedright\arraybackslash\hsize=1.50\hsize}X>{\raggedright\arraybackslash\hsize=0.90\hsize}X@{}}
+\toprule
+\# & Sintoma & Causa raiz & Correção \\
+\midrule
+I1 & O hook alimentava o modelo com mojibake (``mÃ³dulo'') & No Windows, o Python decodifica o stdin como cp1252; o agente envia UTF-8. Mojibake parece injeção para o classificador & ler \code{sys.\allowbreak{}stdin.\allowbreak{}buffer} e decodificar UTF-8 explicitamente %
+ \\
+I2 & A saída do hook com acentos quebrava & \code{json.\allowbreak{}dumps(.\allowbreak{}.\allowbreak{}.\allowbreak{}, ensure\_\allowbreak{}ascii=False)} em um stdout cp1252 & JSON ASCII com escapes \code{\textbackslash{}u} %
+ \\
+I3 & O hook ficava \textbf{mudo} quando servido pelo servidor remoto & O servidor remoto rodava uma versão mais antiga que respondia decisões binárias em outro formato; a busca de chave do hook levantava uma exceção que o tratador fail-open engolia & ler o campo de probabilidade presente nos dois formatos; reimplantar o servidor %
+ \\
+I4 & O classificador binário respondia como decisão de múltipla escolha & formato de resposta único no cliente do classificador & rótulos binários respondem com o tipo de decisão binária %
+ \\
+I5 & Janela maior que o modelo & 1.500 caracteres excedem 256 tokens a cerca de 3,04 caracteres por token: truncamento silencioso & janelas de 640/160; teste de fronteira%
+; 9,2\% das janelas ainda passam de 256 tokens %
+ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Lição 1: erros de encoding são entradas com cara de ataque.} O I1 é o mais instrutivo. Um guard é treinado para disparar com texto estranho, fora de lugar; mojibake é texto estranho, fora de lugar. Um bug de encoding no código de cola, portanto, não só degrada a acurácia: ele fabrica falsos positivos que parecem o guard fazendo o seu trabalho.
+
+\textbf{Lição 2: fail-open precisa de sinal de vida.} Fail-open é o padrão certo para um guard só de aviso: um guard quebrado não pode quebrar o agente. Mas o I3 mostra o custo: uma incompatibilidade de versão entre cliente e servidor transformou cada chamada em exceção, cada exceção em ``sem aviso'', e o hook em um no-op silencioso com aparência saudável. Um componente fail-open precisa relatar que falhou, por exemplo com um contador ou com um autoteste periódico sobre um positivo conhecido; do contrário, ``nenhum aviso'' é indistinguível de ``tudo limpo''.
+
+\textbf{Lição 3: fixe e teste o contrato, não só o modelo.} I3 e I4 são bugs de contrato entre um cliente e um servidor de decisão em versões diferentes. Um teste de contrato que mande uma injeção conhecida e um texto benigno conhecido pelo caminho real de implantação, contra cada versão de servidor em uso, teria apanhado os dois. O mesmo vale para o ambiente de treino: uma atualização de biblioteca na imagem do notebook na nuvem removeu um argumento de treino e quebrou a primeira execução de fine-tuning%
+, e uma atualização da biblioteca de datasets removeu os scripts de carga%
+.
+
+\textbf{Lição 4: meça a janela em tokens.} O I5 é um caso de uma armadilha geral: a camada de integração mede texto em caracteres, o modelo em tokens, e a razão depende do gênero do texto. READMEs técnicos mediram uma mediana de 3,04 caracteres por token (10º percentil 2,61), então uma janela de 1.500 caracteres tem cerca de 493 tokens e aproximadamente metade de cada janela era descartada%
+. O script de medição não foi preservado (lacuna L5). As janelas de 640 caracteres escolhidas para caber ainda deixaram 9,2\% das janelas acima do limite na execução dos baselines (mediana de 196 tokens, máximo de 646), porque a razão varia dentro de uma página, e não só entre gêneros%
+. As janelas deveriam ser cortadas em tokens, como faz o avaliador planejado (Seção~\ref{sec:13}).
+
+\textbf{Lição 5: avalie pelo caminho de código da implantação.} O avaliador de páginas chama a própria função de pontuação do hook%
+. Todos os defeitos acima seriam invisíveis para um avaliador que chamasse o modelo diretamente.
+
+\textbf{Lição 6: congele as entradas da avaliação e guarde as notas cruas.} As páginas benignas foram selecionadas primeiro ao vivo, a partir dos pacotes instalados. Quando a v6 foi avaliada, pacotes novos tinham trocado 21 das 217 páginas e alterado outras 2, e só uma exportação congelada e com impressão digital manteve válida a comparação entre v3 e v6%
+. As notas foram gravadas como probabilidades arredondadas em quatro casas, o que escondeu a ordenação residual da v3 por página (visível só nos log-odds, Seção~\ref{sec:5.4}) e deixa indefinido o ponto de operação de 2\% da v6 (Seção~\ref{sec:7.2})%
+. Guarde os hashes das entradas e os logits crus.
+
+Depois das correções, o hook tem 9 casos de teste, e as suítes do hook, do classificador e do cache de embeddings (13 testes) passam%
+.
+
+\section{Discussão}\label{sec:9}
+
+\subsection{O que a acurácia de benchmark mediu aqui}\label{sec:9.1}
+
+Os números da Tabela~\ref{tab:4} foram produzidos com partições fixas, um critério registrado em commit antes da medição, uma trava anti-vazamento a partir da v4 e nenhum ajuste nos conjuntos de teste, com as sobreposições da Seção~\ref{sec:3.1} como exceções conhecidas. E, ainda assim, os números responderam a uma pergunta diferente da que importava. Os benchmarks mediram se o modelo separa injeções de texto benigno majoritariamente \emph{conversacional}, porque era disso que o lado benigno dos testes era feito em grande parte: MASSIVE-pt e Dolly-pt são pedidos curtos a um assistente (o Dolly entra só pelo campo de instrução%
+), os conjuntos em inglês pareiam injeções sobretudo com prompts de tipo conversa, e o Weni não contém nenhum item benigno. O único item benigno técnico escrito na suíte foi uma frase de teste de fumaça, e a partir da rodada A ela estava errada em toda rodada em que sua nota foi gravada (Seção~\ref{sec:6.2}). Os baselines públicos mostram o mesmo de fora do nosso pipeline: nas frases do xTRam1 o nosso modelo fica em primeiro entre quatro, e por página empata em último (Seção~\ref{sec:5.4}).
+
+Seguem quatro correções concretas para quem avalia um classificador de injeção para uso por agentes:
+
+\begin{enumerate}
+\item \textbf{O lado benigno do teste precisa ser tirado da distribuição de implantação.} Para um guard de web fetch ou de leitura de arquivos, isso significa documentação, código, configuração, logs e páginas web comuns, não conversa.
+\item \textbf{Avalie na unidade de decisão.} Se a decisão implantada é ``avisar sobre esta página'', a métrica é a taxa de aviso falso por página no limiar implantado, com a detecção medida nas mesmas páginas com um ataque inserido.
+\item \textbf{Relate intervalos e margens.} Com n = 300 o critério de 95\% não podia ser distinguido do resultado (Seção~\ref{sec:4}b); e o efeito de capacidade de 20 pontos entre e5-base e e5-large nos mesmos dados %
+supera a maioria das diferenças entre as receitas de dados que testamos.
+\item \textbf{Rode de novo todo teste de positivos depois de mudar a classe negativa.} Acrescentar os negativos que faltavam consertou a prosa técnica e quebrou os ataques apresentados como tarefa (Seção~\ref{sec:7.2}); uma correção voltada para avisos falsos precisa ser conferida de novo no conjunto ouro antes de ir para produção.
+\end{enumerate}
+
+\subsection{Modelos de decisão tipados com agentes: um diálogo com Akita (2026)}\label{sec:9.2}
+
+O post de Akita \citep{akita2026jev} dá critérios práticos de quando um modelo de decisão tipado é a ferramenta certa. Concordamos com eles, e o nosso guard os satisfaz no papel: um único julgamento repetido (cada página buscada), uma lista fechada de ações (avisar ou não), código em volta aplicando regras rígidas (o hook) e erros que podem seguir para conferência (o agente e, em última instância, o usuário decidem). O guard também seguiu o conselho, dado no ensaio dentro do post, de não confiar só a um modelo desses a liberação de operações destrutivas: ele era só de aviso e fail-open por desenho%
+. Que um desenho que atende a todos esses critérios ainda assim tenha falhado por completo é, achamos, a contribuição útil. Especificamente:
+
+\textbf{Recalibrar com os próprios exemplos é necessário, mas não suficiente.} O ensaio do post mostra um modelo hospedado que se diz muito seguro mesmo sem informação nenhuma, e recomenda refazer a calibração com casos rotulados do próprio usuário. %
+Os nossos modelos com fine-tuning tinham o defeito análogo (saídas não calibradas e saturadas). Mas recalibrar no \emph{nosso próprio split de validação} não teria ajudado, porque esse split vinha da mesma distribuição conversacional. Os exemplos usados na calibração precisam ser tirados das entradas que o modelo verá em uso, e, para um guard de conteúdo, esses não são os exemplos que se tem naturalmente à mão.
+
+\textbf{Treinar um classificador dedicado exige definir a tarefa pela sua distribuição de entrada.} O post anterior aponta um classificador dedicado à tarefa como uma alternativa a uma API de decisão hospedada \citep{akita2026typesafe}. Fizemos exatamente isso, e o classificador era excelente na tarefa tal como definida pelos seus rótulos de treino. A tarefa tal como definida pelas suas entradas (conteúdo buscado arbitrário, em sua maioria técnico e benigno) nunca foi representada. Para modelos de decisão em geral, a pergunta a fazer não é só ``quais são as opções?'', mas também ``como é a classe negativa em uso?''.
+
+\textbf{O escalonamento por confiança colapsa sob saturação.} Um padrão comum de integração encaminha decisões de alta confiança para automação e as de baixa confiança para um modelo mais forte ou para um humano. Com as probabilidades cravadas em 1,0, a faixa de escalonamento fica vazia: toda página é um caso ``fácil'', confiante e errado. A v6 mostra a imagem espelhada: 23\% dos ataques do Weni recebem P = 0,0000, confiantes e errados na outra direção%
+. O roteamento por confiança só é tão bom quanto a calibração \emph{sob a distribuição de implantação}.
+
+\textbf{Corrigir a classe negativa move a fronteira também para a classe positiva.} O conserto óbvio, acrescentar o tipo de exemplo negativo que faltava, funcionou no que mirava e quebrou outra coisa: ataques formulados como tarefas comuns ficaram indistinguíveis de instruções técnicas (Seção~\ref{sec:7.2}). Quando as duas classes compartilham a forma de superfície, mais dados de um lado deslocam a fronteira através do outro. Um conjunto fechado de opções não torna simples o julgamento por trás dele, e uma interface tipada não avisa o integrador quando é esse o caso.
+
+\textbf{Falha silenciosa é propriedade da integração, não do modelo.} As evidências do post dizem respeito ao comportamento do modelo; o nosso bug mais perigoso (I3) não tinha nada a ver com o modelo. Um guard que falha aberto e em silêncio parece exatamente um guard que não encontra nada.
+
+\subsection{Relação com trabalhos concorrentes}\label{sec:9.3}
+
+\citet{liu2026passing} reavalia quinze detectores públicos em benchmarks de agentes (AgentDojo, $\tau$-bench, BIPIA) e em texto benigno que inclui cerca de 2.500 trechos de READMEs do GitHub, de 80 a 220 palavras. O estudo relata que o classificador da deepset marca todos os trechos de README e é inutilizável, que tirar a marcação HTML dos READMEs corta pela metade ou mais a taxa de falso positivo de dois outros detectores, e que os falsos positivos em texto comum não preveem os falsos positivos em saídas de ferramentas. Suas recomendações são medir falsos positivos nas entradas do próprio agente, relatar a detecção numa taxa fixa e baixa de falso positivo, verificar se o detector foi treinado no benchmark e preferir detectores treinados com entradas parecidas com as que vão filtrar%
+. Ele apareceu em 2 de outubro, com o nosso estudo em andamento, e só o encontramos durante a revisão da literatura; os dois foram feitos de forma independente.
+
+Lemos o nosso estudo como uma replicação independente dessa lacuna, com três diferenças. Primeiro, outra língua e um detector treinado por nós. Os seus dados de treino são conhecidos, então a lacuna pôde ser rastreada até a composição do lado benigno e o diagnóstico pôde ser testado por retreino (Seção~\ref{sec:7}), o que um estudo de modelos de terceiros não consegue fazer. Onde os dois estudos se sobrepõem, eles concordam: o modelo da deepset avisa em toda página no nosso protocolo, como em todo trecho no de Liu. Segundo, a unidade de avaliação: pontuamos páginas inteiras pelo caminho de código de um hook implantado, o que expõe a amplificação sobre as janelas (Seção~\ref{sec:5.3}), a troca ligada ao tamanho da janela (Seção~\ref{sec:5.4}) e os defeitos de integração da Seção~\ref{sec:8}. Terceiro, o enquadramento: o nosso classificador foi implantado como uma decisão tipada, e a Seção~\ref{sec:9.2} tira as consequências para essa família de modelos.
+
+O resultado de Liu sobre marcação toca diretamente o nosso. As janelas que a v6 ainda marca são badges, links de patrocínio e tabelas markdown (Seção~\ref{sec:7.2}), o que é coerente com a marcação, e não a prosa imperativa, ser a principal fonte restante de avisos falsos uma vez coberto o texto técnico. Não medimos os nossos modelos com e sem marcação. Fazer isso, e acrescentar como negativos boilerplate de README tirado de uma fonte disjunta do benchmark, é o próximo experimento.
+
+\subsection{Sobre resultados negativos}\label{sec:9.4}
+
+O guard fica fora do hook de web fetch; a v3 continua no kit local apenas para texto conversacional, e o kit segue com outras decisões%
+. Relatamos a falha em detalhe porque o caminho que levou a ela (dados abertos, splits cuidadosos, um critério fixado de antemão, um resultado forte no benchmark) é o caminho que a maioria dos praticantes seguiria, e o passo que apanhou o problema, avaliar na unidade de uso em conteúdo comum, é barato e ainda raramente relatado; uma exceção recente mede detectores em trechos benignos de READMEs em inglês, e não em páginas inteiras \citep{liu2026passing}. A tentativa de correção é relatada pela mesma razão: ela funcionou no que mirava, e o preço só apareceu num teste para o qual ela não estava voltada.
+
+\section{Limitações}\label{sec:10}
+
+\begin{itemize}
+\item \textbf{Uma única execução por configuração.} Não se mediu variância entre sementes; diferenças de poucos pontos entre rodadas (por exemplo, v3 contra v5) podem ser ruído%
+.
+\item \textbf{Vazamento no melhor modelo.} A v3 foi treinada antes da trava anti-vazamento; 115 dos seus exemplos de treino são quase duplicatas de textos do Weni%
+, o que vale cerca de 1,3 ponto dos seus 94,7\% (Seção~\ref{sec:4}d)%
+. A divisão por fonte dos 4.008 exemplos removidos na v4 não foi gravada, e a contabilidade da Seção~\ref{sec:4}(c) é uma inferência entre exportações (lacuna L1)%
+.
+\item \textbf{O xTRam1 não está fora da distribuição}, e 14 itens de teste do jackhhao vazaram para o treino (Seção~\ref{sec:3.1})%
+.
+\item \textbf{Avaliação incompleta da v3.} A v3 só foi medida no deepset, no jackhhao e nos primeiros 300 itens do SPML na comparação da v6, e nunca no rikka, ShieldLM ou yanis; números de alguns desses que aparecem nos metadados do pack implantado não têm origem rastreável e não são usados aqui%
+.
+\item \textbf{Intervalos.} Os intervalos de Wilson são relatados para o Weni, para as taxas por página e para as páginas da comparação entre v3 e v6; os demais testes das Tabelas~\ref{tab:4} e 9 não têm intervalos (lacuna L6)%
+.
+\item \textbf{Idioma.} O conjunto benigno em português (MASSIVE) é português europeu%
+; as traduções automáticas não foram revisadas por um humano.
+\item \textbf{Procedência do Weni.} Que o Weni seja material traduzido do HackAPrompt tem apenas sustentação indireta (Seções~\ref{sec:3.4} e~\ref{sec:4}c)%
+. Uma análise de erros registrada da v2 no Weni existe apenas em uma mensagem de commit, sem script nem contagens (lacuna L7)%
+.
+\item \textbf{Escopo do benchmark de páginas.} As páginas benignas são de um único gênero (READMEs de pacotes Python), selecionadas entre os pacotes instalados em um ambiente; as páginas com injeção reutilizam os mesmos READMEs, então a detecção não é informativa enquanto todo README dispara%
+. As injeções são texto colado, não marcação escondida, e, com 60 páginas com injeção, os intervalos da detecção cobrem cerca de \ensuremath{\pm}12 pontos%
+. A execução original não gravou as taxas por janela (a dos baselines gravou) nem qual instância do servidor respondeu (lacuna L4)%
+.
+\item \textbf{Medições não verificadas.} O número de caracteres por token (lacuna L5), o ganho de velocidade da tradução (só mensagem de commit), o uso efetivo das duas GPUs e o tamanho de batch efetivo (lacuna L10) não foram verificados de forma independente%
+.
+\item \textbf{Revisões dos dados.} Os conjuntos foram carregados sem revisões fixadas; as revisões registradas nos artefatos foram capturadas depois das execuções%
+.
+\item \textbf{Avisos dos data cards.} O card do SPML desaconselha treinar detectores com ele; nós o usamos e apontamos isso como ameaça à validade%
+.
+\item \textbf{Afirmação causal testada só em parte.} A v6 mudou três coisas ao mesmo tempo (negativos técnicos, remoção das 115 quase duplicatas do Weni, equilíbrio de classes) numa única execução, e o controle ``v3 limpa'' não foi rodado; os seus testes técnicos estão dentro da distribuição dela; e não medimos o efeito da marcação (Seções~\ref{sec:7.2} e~\ref{sec:9.3})%
+.
+\item \textbf{Resolução das notas.} A nossa avaliação gravou probabilidades arredondadas em quatro casas, o que limita a análise de limiar e de AUROC perto de 0 e de 1 (Seção~\ref{sec:7.2}); só a execução dos baselines gravou log-odds%
+.
+\item \textbf{Baselines.} O Llama Prompt Guard não foi avaliado (acesso restrito). Os dados de treino dos modelos públicos não estão documentados por inteiro e podem se sobrepor ao Weni (via HackAPrompt) ou ao xTRam1. As latências vêm de uma única VM ARM de 4 núcleos%
+.
+\item \textbf{Truncamento.} Todos os nossos modelos leem no máximo 256 tokens por janela%
+, e 9,2\% das janelas de 640 caracteres passam disso %
+(os baselines públicos da Seção~\ref{sec:5.4} leem 512%
+).
+\end{itemize}
+
+\section{Conclusão}\label{sec:11}
+
+Um classificador de prompt injection em português do Brasil, treinado só com dados abertos, passou nos seus benchmarks de frases, perdeu por um texto o critério do conjunto ouro fixado de antemão e deu aviso falso em toda página de documentação técnica que lhe foi mostrada. A falha não é exclusiva do nosso modelo, já que um classificador público faz o mesmo, e a unidade de avaliação muda o veredito: os benchmarks por frase e por página ordenaram quatro modelos em sentidos opostos, e nenhum modelo que testamos detecta mais de 55\% das páginas com injeção com 2\% de avisos falsos. Acrescentar texto benigno técnico eliminou os avisos falsos em frases técnicas e a maior parte deles nas páginas, ao custo de cerca de um terço da detecção em ataques nativos em pt-BR, de modo que nenhuma versão que treinamos atende aos dois critérios. As conclusões práticas são modestas: tirar o lado benigno do teste da distribuição de implantação, avaliar na unidade de decisão pelo caminho de código da implantação, congelar as entradas e guardar as notas cruas, e esperar que uma correção numa classe mova a fronteira da outra. O hook continua desligado.
+
+\section{Ética e dados}\label{sec:12}
+
+Todos os dados de treino e de avaliação são públicos. As licenças foram lidas da API do Hugging Face Hub, dos dataset cards e dos arquivos LICENSE/NOTICE em 6 de outubro de 2026%
+. Dois conjuntos de avaliação (Weni e xTRam1) não declaram licença; nós os carregamos só para avaliação, baixamos em tempo de execução e não os redistribuímos, nem as suas traduções%
+. Porém, 577 linhas do split de treino do xTRam1 chegaram indiretamente aos nossos dados de treino, pelo ShieldLM (Seção~\ref{sec:3.1}); os pesos ``v3-pub'' planejados as removem%
+. O conteúdo do Dolly e do Stack Overflow é CC-BY-SA; planejamos publicar os pesos sob MIT seguindo o precedente de modelos treinados nos mesmos dados, e declaramos essa posição explicitamente%
+. O Llama Prompt Guard 2 não foi avaliado (Seção~\ref{sec:5.4}); se tivesse sido, serviria só como baseline de avaliação, nunca para treinar, calibrar ou destilar os nossos modelos%
+.
+
+O benchmark de páginas não vai redistribuir nenhum README: ele vai distribuir nomes de pacotes, versões e hashes, e um construtor vai baixar as páginas do PyPI e conferi-las%
+. Nenhum dado pessoal, texto privado ou dado organizacional foi usado neste estudo. O modelo publicado detecta injeções e não é uma ferramenta de ataque; não publicamos texto de ataque além do que os conjuntos públicos citados já contêm.
+
+Um guard com taxa de aviso falso de 100\% é nocivo de um jeito sutil: os usuários aprendem a ignorar seus avisos. O model card vai declarar a falha por página na primeira linha%
+.
+
+\textbf{Uso de assistência de IA.} Boa parte do código experimental, dos logs e do primeiro rascunho deste artigo foi produzida com a ajuda de um agente de programação baseado em LLM. Todo número relatado é rastreado até uma linha de log, um arquivo de resultado ou um commit; as afirmações que não puderam ser rastreadas estão listadas como limitações. %
+
+\section{Artefatos}\label{sec:13}
+
+Até a redação deste texto nada foi publicado; o plano de publicação está fixado, e os artefatos serão publicados em \url{https://github.com/alucardigo/passing-the-benchmark}%
+.
+
+\begin{itemize}
+\item \textbf{Código} (Apache-2.0): pipeline de treino e exportação, tradução determinística com cache, ensemble de pesos fixos, construtor e avaliador do benchmark de páginas, um hook de agente de referência (desligado por padrão), testes. Repositório: \url{https://github.com/alucardigo/passing-the-benchmark}. O repositório público começa sem o histórico de desenvolvimento%
+.
+\item \textbf{Pesos} (MIT): v3 ou, de preferência, uma ``v3-pub'' livre de vazamento, retreinada sem as linhas do ShieldLM derivadas do xTRam1 e sem os itens duplicados do jackhhao. A v6 não atende ao critério por página (Seção~\ref{sec:7.2}) e não é publicada como guard%
+. O model card abre com a falha por página.
+\item \textbf{Resultados} (CC-BY-4.0): um JSON por rodada com o SHA-256 dos pesos e as probabilidades por página indexadas, as probabilidades por item da comparação entre v3 e v6, e os log-odds por página e por frase da execução dos baselines, sem texto de terceiros%
+.
+\item \textbf{Benchmark de páginas}: um manifesto de 217 páginas benignas e 60 inserções (pacote, versão, SHA-256 dos metadados e da página; fonte, revisão, md5 e posição de cada inserção) mais um construtor que recusa hashes divergentes, seguindo o padrão do Decision Index%
+. O avaliador vai aceitar qualquer classificador do Hugging Face, medir janelas em tokens e relatar avisos falsos e detecção por limiar com intervalos de Wilson%
+.
+\item \textbf{Arquivo de atribuição} listando cada conjunto de dados, modelo e revisão com a sua licença%
+.
+\end{itemize}
+
+\bibliographystyle{plainnat}
+\bibliography{../refs}
+
+\appendix
+
+\section{Computação e custo}\label{app:A}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\hsize=0.74\hsize}X>{\raggedright\arraybackslash\hsize=1.26\hsize}X@{}}
+\toprule
+Recurso & Medição \\
+\midrule
+Notebook na nuvem, 2\ensuremath{\times} T4, sessões de fine-tuning & v2 1.995,9 s (inclui uma tentativa fracassada de e5-large) \ensuremath{\cdot} v3 8.511,4 s \ensuremath{\cdot} v4 1.848,3 s \ensuremath{\cdot} v5 8.120,5 s \ensuremath{\cdot} total 20.476 s \ensuremath{\approx} 5,69 h %
+ \\
+Notebook na nuvem, fine-tuning da v6 & 12.713 s \ensuremath{\approx} 3,53 h (a primeira tentativa, idêntica, terminou em erro sem log) %
+ \\
+Cota gratuita de GPU do serviço de notebooks & cerca de 30 h por semana %
+ \\
+Embeddings em CPU para as sondas & 2.901 s (rodada 0) + 2.777 s (A) + 4.917 s (B) = 10.595 s \ensuremath{\approx} 2,94 h %
+ \\
+VM ARM na nuvem (4 OCPU, aarch64), inferência do e5-large & cerca de 19,6 textos por minuto %
+ \\
+VM ARM na nuvem, protocolo de página (ociosa, 4 threads) & por janela cheia: 1.045 ms (e5-large, 256 tokens), 845–879 ms (DeBERTa-base, 512 tokens); cerca de 11 s e 4 s por página média %
+ \\
+Pesos (fp16, zipados) & e5-base 515.813.767 B; e5-large 1.031.696.719 B %
+ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Registro de incidentes}\label{app:B}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash\hsize=0.88\hsize}X>{\raggedright\arraybackslash\hsize=1.10\hsize}X>{\raggedright\arraybackslash\hsize=1.02\hsize}X@{}}
+\toprule
+\# & Incidente & Causa raiz & Correção \\
+\midrule
+I6 & A primeira execução de fine-tuning falhou & a atualização de biblioteca da imagem do notebook removeu \code{warmup\_ratio} & \code{warmup\_steps} = 6\% dos passos %
+ \\
+I7 & e5-large sem memória na T4 & treinado depois do e5-base na mesma sessão; memória fragmentada com batch 16 \ensuremath{\times} 2 & e5-large sozinho, batch 8 \ensuremath{\times} 4, gradient checkpointing, expandable segments %
+ \\
+I8 & Tradução com cerca de 7 s por instrução curta & decodificação gulosa em laço até um teto fixo de 512 tokens & teto em 1,6\ensuremath{\times} o comprimento da entrada %
+ \\
+I9 & Traduções perdidas & o processo morto perdeu o lote em buffer & gravação em disco a cada lote %
+ \\
+I10 & A avaliação local caiu (OpenBLAS, exit 139) & pressão de memória na estação de trabalho & BLAS em thread única no servidor; fallback para a VM ARM %
+ \\
+I11 & A tradução de e-mails na ARM levou mais de uma hora para 16 textos & geração longa em CPU ARM & tetos de caracteres e de exemplos; nada de geração na ARM %
+ \\
+I12 & Cada rodada recalculava todos os embeddings & sem cache & cache SHA-1 \ensuremath{\rightarrow} vetor, só dados públicos %
+ \\
+I13 & Um conjunto com script de carga não abria & o \code{datasets} 4 removeu os scripts de carga & baixar o arquivo de dados diretamente %
+ \\
+I14 & Ataques fracassados virariam benignos & o HackAPrompt só tem ataques; rótulo implícito & manter só os ataques bem-sucedidos %
+ \\
+I15 & Servidor remoto declarado morto & timeout de health check de 2 s sobre uma ida e volta lenta pela VPN & timeout de 10 s para servidores remotos %
+ \\
+I16 & Batches de comprimentos misturados pagavam cerca de 3\ensuremath{\times} em padding & sem ordenação por comprimento & ordenar por comprimento no classificador %
+ \\
+I17 & Script de instalação quebrado na VM Linux & finais de linha CRLF exportados pelo git & \code{.\allowbreak{}gitattributes} com LF para scripts %
+ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Linha do tempo}\label{app:C}
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}l>{\raggedright\arraybackslash\hsize=1.00\hsize}X@{}}
+\toprule
+Data (2026, UTC\ensuremath{-}3) & Evento \\
+\midrule
+1 out & Primeira sonda: xTRam1 86,3\%, 0/5 injeções de fumaça em português detectadas %
+ \\
+2 out & Pipeline de tradução local; critério final registrado em commit (Weni \ensuremath{\geq} 95\%, xTRam1-pt \ensuremath{\geq} 90\%) %
+ \\
+5 out & Rodada A (xTRam1-pt 81,8\%); rodada B (Weni 72,3\%); v2 (Weni 74,3\%); trava anti-vazamento; hook pronto, mas desligado %
+ \\
+6 out & v4 (Weni 66,7\%); v5 (89,7\%); v3 reavaliada (94,67\%); mistura (91,3\%); v3 escolhida, status experimental %
+ \\
+6 out & Defeitos do hook encontrados; avaliação por página: 100\% de avisos falsos nos dois tamanhos de janela; guard rejeitado para web fetch %
+ \\
+6 out & Iniciada a exportação da v6 com dados benignos técnicos %
+ \\
+6 out & Baselines públicos no protocolo de página; v6 treinada e avaliada contra a v3 nas páginas congeladas; hook mantido desligado %
+ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+\end{document}

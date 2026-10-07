@@ -1,0 +1,26 @@
+passing-the-benchmark
+Copyright 2026 Rodrigo Faria
+
+The code in this repository is licensed under the Apache License, Version 2.0 (see LICENSE).
+The paper (paper/) and the result files (results/, bench/paginas/manifesto.jsonl) are licensed under
+CC BY 4.0 (see LICENSE-CC-BY-4.0.md).
+
+No third-party dataset text, README text or model weights are redistributed in this repository. The
+code downloads each dataset and model from its original source at the revision pinned in
+ptguard/revisoes.json; their licenses and attributions are listed in ATTRIBUTION.md.
+
+-------------------------------------------------------------------------------
+NOTICE file of yanismiraoui/prompt_injections (Apache-2.0), used as training data,
+reproduced in full:
+
+prompt_injections dataset
+Copyright 2023 Yanis Miraoui
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use the contents of this repository except in compliance
+with the License. You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+This NOTICE applies to the dataset contents (including prompt_injections.csv)
+as well as the accompanying documentation in this repository.
