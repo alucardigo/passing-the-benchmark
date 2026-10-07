@@ -74,7 +74,9 @@ the position taken is stated explicitly.
 | `protectai/deberta-v3-base-prompt-injection-v2` | `90c9989b` | Apache-2.0 |
 | `proventra/mdeberta-v3-base-prompt-injection` | `b8a89d30` | MIT (as recorded from its model card on 2026-10-06) |
 | `deepset/deberta-v3-base-injection` | `80dda00d` | MIT |
-| `meta-llama/Llama-Prompt-Guard-2-86M` | `a8ded8e6` | Llama 4 Community License; gated. **Not evaluated** (access not granted). If it is evaluated later, its outputs will not be used to train, calibrate or distill any model of this project. |
+| `meta-llama/Llama-Prompt-Guard-2-86M` | `a8ded8e6` | Llama 4 Community License; gated. Evaluated on 2026-10-07 after the license was accepted; only numbers are published and the weights are not redistributed. Its outputs are not used to train, calibrate or distill any model of this project. |
+| `meta-llama/Llama-Prompt-Guard-2-22M` | `11614a15` | Llama 4 Community License; gated. Same as above. |
+| `meta-llama/Prompt-Guard-86M` | — | Llama 3.1 Community License; gated. Not evaluated (access not granted, HTTP 403 on 2026-10-07). |
 
 ## Python packages
 

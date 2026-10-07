@@ -41,7 +41,10 @@ embeddings; 17 KB; no e5 weights inside) and its metadata JSON. Loads with `ptgu
 
 `baselines.md` (write-up, in Portuguese), `baselines.json` (all runs) and `por-rodada/` (one JSON per run).
 Each run has the configuration, Hub revision, metrics per threshold with Wilson intervals where
-available, and the log-odds of every page and sentence. The 300-character README excerpts of the
+available, and the log-odds of every page and sentence. The Llama Prompt Guard 2 runs (86M and 22M,
+2026-10-07) ran on Kaggle CPU kernels (x86) with the same `bench/baselines.py avaliar`; they also record the
+kernel environment (`ambiente`), the label check (`checagem_rotulo`) and the latency of the proventra model
+on the same VM (`ancora_latencia`), because their latency is not comparable with the ARM VM of the other runs. The 300-character README excerpts of the
 "most suspicious benign pages" were removed from the public files (third-party text).
 
 ## `v6/`: v3 x v6 comparison / comparação v3 x v6

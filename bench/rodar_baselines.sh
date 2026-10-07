@@ -2,7 +2,8 @@
 # Roda a comparação de guards públicos no protocolo de página (a do artigo rodou numa VM ARM de 4 núcleos,
 # Ampere A1, 24 GB). Antes: python bench/paginas/construir.py (monta work/paginas.json).
 #   bash bench/rodar_baselines.sh [PID_A_ESPERAR] > baselines.log 2>&1
-# Variáveis: PYTHON (padrão: python), E5 (pasta do nosso e5-large v3; padrão models/prompt_injection-e5large).
+# Variáveis: PYTHON (padrão: python), E5 (pasta do nosso e5-large v3; padrão models/prompt_injection-e5large),
+# PG2=1 (acrescenta o Llama Prompt Guard 2 86M e 22M; repositórios gated).
 # Em máquina compartilhada, mede antes de cada rodada a CPU ocupada por outros processos e usa 2, 3 ou 4
 # threads (thread a mais que núcleo livre faz o OpenMP esperar e fica MAIS lento).
 set -u
@@ -50,5 +51,18 @@ fi
 # O deepset não entra: a saída dele já satura em 1300 e o controle não acrescenta informação.
 run "$PA" INJECTION --janela 640 --sobra 160 --max-length 512 --sem-frases --nome protectai-v2 --saida "$R/protectai-v2-640.json"
 run "$PV" INJECTION --janela 640 --sobra 160 --max-length 512 --sem-frases --nome proventra-mdeberta --saida "$R/proventra-mdeberta-640.json"
+
+# Llama Prompt Guard 2 (PG2=1): repositórios gated; aceite a licença Llama 4 Community no Hub e use um token
+# com acesso. O config.json não traz id2label: o transformers chama as classes de LABEL_0/LABEL_1, e o card
+# diz que a classe 1 é "malicious". No estudo estas rodadas foram em kernels de CPU do Kaggle (x86), com o
+# mesmo `avaliar`; a latência delas não é comparável à da VM ARM (ver results/baselines/baselines.md).
+if [ "${PG2:-0}" = 1 ]; then
+  P86=meta-llama/Llama-Prompt-Guard-2-86M
+  P22=meta-llama/Llama-Prompt-Guard-2-22M
+  run "$P86" LABEL_1 --janela 1300 --sobra 200 --max-length 512 --nome llama-prompt-guard-2-86m --saida "$R/llama-prompt-guard-2-86m-1300.json"
+  run "$P22" LABEL_1 --janela 1300 --sobra 200 --max-length 512 --nome llama-prompt-guard-2-22m --saida "$R/llama-prompt-guard-2-22m-1300.json"
+  run "$P86" LABEL_1 --janela 640 --sobra 160 --max-length 512 --sem-frases --nome llama-prompt-guard-2-86m --saida "$R/llama-prompt-guard-2-86m-640.json"
+  run "$P22" LABEL_1 --janela 640 --sobra 160 --max-length 512 --sem-frases --nome llama-prompt-guard-2-22m --saida "$R/llama-prompt-guard-2-22m-640.json"
+fi
 
 echo "=== FIM $(date -Is)"

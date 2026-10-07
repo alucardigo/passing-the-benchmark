@@ -38,9 +38,12 @@ use it: page by page, not sentence by sentence.
 1. **Sentence benchmarks did not predict deployment.** v3 passes the sentence tests (Weni 94.7%,
    Wilson 95% CI 91.5–96.7; xTRam1 98.7%; 0.13–0.7% of conversational benign sentences flagged) and fails every page.
 2. **It is not only our model.** Under the same page protocol, deepset/deberta-v3-base-injection also
-   warned on every page; ProtectAI v2 and Proventra mDeBERTa warned on ~15% of pages at 0.5, and no
-   model detected more than 55% of injected pages at a 2% false-alarm rate. Sentence and page benchmarks
-   ranked the models in opposite orders.
+   warned on every page, and ProtectAI v2 and Proventra mDeBERTa warned on ~15% of pages at 0.5. Of five
+   public classifiers, only Llama Prompt Guard 2 86M stayed within a 2% page false-alarm budget with useful
+   detection (4 of 217 pages at 0.5, Wilson 95% CI 0.7–4.6%; 62% of injected pages detected), and most of
+   that detection came from the long Weni injections (93%, against 30% of the short xTRam1 ones); its
+   22M sibling raised no alarm but detected 15%. Sentence and page benchmarks ranked the models in
+   opposite orders.
 3. **The diagnosis held, the fix did not.** Adding 10,000 technical benign texts (Stack Overflow,
    docstrings) removed false alarms on technical sentences (38–87% → 0%) and cut benign README windows
    flagged from 99.6% to 7.2%, but page false alarms stayed at 19–35% (worst window of ~10 per page) and
@@ -72,9 +75,13 @@ Public classifiers under the page protocol (window = what fits the model's `max_
 | protectai/deberta-v3-base-prompt-injection-v2 (1300/200 @ 512) | 15.7% / 63% | 5.5% / 55% | 50% | 0.813 | 99.3% | 94.9% |
 | proventra/mdeberta-v3-base-prompt-injection (1300/200 @ 512) | 14.7% / 70% | 8.3% / 60% | 40% | 0.883 | 79.0% | 89.6% |
 | deepset/deberta-v3-base-injection (1300/200 @ 512) | 100% / 100% | 100% / 100% | 32% | 0.829 | 100% | 48.3% |
+| meta-llama/Llama-Prompt-Guard-2-86M (1300/200 @ 512) | 1.8% / 62% | 0.0% / 47% | 63% | 0.956 | 93.7% | 84.7% |
+| meta-llama/Llama-Prompt-Guard-2-22M (1300/200 @ 512) | 0.0% / 15% | 0.0% / 3% | 23% | 0.639 | 16.3% | 77.3% |
 
-`meta-llama/Llama-Prompt-Guard-2-86M` was not evaluated (gated; access not granted). With 60 injected
-pages, detection differences below ~15 points are within noise. Details: [`results/`](results/README.md),
+The two Llama Prompt Guard 2 models were measured on 2026-10-07, once access to the gated repositories
+was granted, with the same script and pages on Kaggle CPU kernels (x86); their latency is not comparable
+with the ARM VM used for the others. Prompt Guard v1 (`meta-llama/Prompt-Guard-86M`) is still gated and
+was not evaluated. With 60 injected pages, detection differences below ~15 points are within noise. Details: [`results/`](results/README.md),
 [`results/baselines/baselines.md`](results/baselines/baselines.md), [`results/v6/v6.md`](results/v6/v6.md)
 (write-ups in Portuguese).
 
@@ -107,7 +114,7 @@ pytest -q                                             # offline: no network, no 
 python bench/paginas/construir.py                     # -> work/paginas.json
 
 # 2. public baselines on the same pages (and sentence tests, latency)
-bash bench/rodar_baselines.sh
+bash bench/rodar_baselines.sh                         # PG2=1 adds Llama Prompt Guard 2 (gated: accept its license)
 python bench/baselines.py tabela results/baselines/por-rodada/*.json
 
 # 3. training data for a round (v3, v5, v6 or the planned leakage-free v3-pub)
@@ -195,9 +202,12 @@ avaliado do jeito que um hook de agente o usaria: página a página, não frase 
    Wilson 91,5–96,7; xTRam1 98,7%; 0,13–0,7% de aviso falso em frase benigna conversacional) e reprova em
    todas as páginas.
 2. **Não é só o nosso modelo.** No mesmo protocolo, o deepset/deberta-v3-base-injection também avisou em
-   toda página; ProtectAI v2 e Proventra mDeBERTa avisaram em ~15% das páginas a 0,5, e nenhum detectou
-   mais de 55% das páginas com injeção com 2% de aviso falso. Frase e página ordenaram os modelos em
-   sentidos opostos.
+   toda página, e ProtectAI v2 e Proventra mDeBERTa avisaram em ~15% das páginas a 0,5. Dos cinco
+   classificadores públicos, só o Llama Prompt Guard 2 86M ficou dentro de 2% de aviso falso por página com
+   detecção útil (4 de 217 páginas a 0,5, IC 95% de Wilson 0,7–4,6%; 62% das páginas com injeção
+   detectadas), e quase toda essa detecção veio das injeções longas do Weni (93%, contra 30% das curtas do
+   xTRam1); o irmão 22M não avisou, mas detectou 15%. Frase e página ordenaram os modelos em sentidos
+   opostos.
 3. **O diagnóstico se confirmou, a correção não.** Acrescentar 10.000 textos técnicos benignos
    (StackOverflow, docstrings) zerou o aviso falso em frase técnica (38–87% → 0%) e derrubou as janelas
    de README marcadas de 99,6% para 7,2%, mas o aviso falso por página ficou em 19–35% (pior de ~10 janelas
@@ -213,7 +223,8 @@ em [`results/`](results/README.md).
 
 Os comandos são os da seção [Reproduce](#reproduce). Em resumo: `pip install -e ".[train,bench,test]"`,
 `pytest -q`, `python bench/paginas/construir.py` (monta as páginas e confere os hashes),
-`bash bench/rodar_baselines.sh`, `python pipeline/treinar.py exportar --rodada v6 --saida work/v6`,
+`bash bench/rodar_baselines.sh` (com `PG2=1` entra o Llama Prompt Guard 2, que exige aceitar a licença
+dele no Hub), `python pipeline/treinar.py exportar --rodada v6 --saida work/v6`,
 treino no Kaggle com `kaggle/publicar.py` (dataset **privado**: contém texto de terceiros) e avaliação com
 `pipeline/treinar.py avaliar` e `bench/paginas/avaliar.py`.
 

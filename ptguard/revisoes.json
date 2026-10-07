@@ -24,6 +24,7 @@
   "protectai/deberta-v3-base-prompt-injection-v2": "90c9989b1a342275dd0d1a95aad283c04e075671",
   "proventra/mdeberta-v3-base-prompt-injection": "b8a89d3096cf11a71d57b283c854f5ae2ed3df83",
   "deepset/deberta-v3-base-injection": "80dda00d0b0d9a03917a7685e2ddbcd28e04dbb1",
-  "meta-llama/Llama-Prompt-Guard-2-86M": "a8ded8e697ce7c355e395a0df51f94adb4a2fd27"
+  "meta-llama/Llama-Prompt-Guard-2-86M": "a8ded8e697ce7c355e395a0df51f94adb4a2fd27",
+  "meta-llama/Llama-Prompt-Guard-2-22M": "11614a155199674a0a95e6602d6ab0417b790ed0"
  }
 }
