@@ -3,7 +3,8 @@ Copyright 2026 Rodrigo Faria
 
 The code in this repository is licensed under the Apache License, Version 2.0 (see LICENSE).
 The paper (paper/) and the result files (results/, bench/paginas/manifesto.jsonl) are licensed under
-CC BY 4.0 (see LICENSE-CC-BY-4.0.md).
+CC BY 4.0 (see LICENSE-CC-BY-4.0.md). The probe weights in results/sonda-b/prompt_injection-e5.npz are
+licensed under the MIT License, like every model weight of this project (see results/sonda-b/LICENSE).
 
 No third-party dataset text, README text or model weights are redistributed in this repository. The
 code downloads each dataset and model from its original source at the revision pinned in

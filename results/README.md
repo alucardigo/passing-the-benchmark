@@ -36,6 +36,7 @@ benign pages warned at every threshold from 0.5 to 0.999.
 
 `prompt_injection-e5.npz` (StandardScaler + logistic regression over frozen `intfloat/multilingual-e5-base`
 embeddings; 17 KB; no e5 weights inside) and its metadata JSON. Loads with `ptguard.sonda.Sonda.load`.
+The `.npz` weights are MIT, like every model weight of the project (`sonda-b/LICENSE`); the JSON is CC BY 4.0.
 
 ## `baselines/`: public classifiers under the page protocol / classificadores públicos no protocolo de página
 

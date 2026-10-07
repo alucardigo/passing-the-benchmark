@@ -47,7 +47,7 @@ of conversational benign sentences. Scored page by page through the code path of
 technical documentation pages at every threshold from 0.5 to 0.999%
 . Under the same protocol, one of five public classifiers also warned on every page; only Llama Prompt Guard 2 (86M) combined a 1.8\% page false-alarm rate with 62\% detection; and sentence and page benchmarks ranked the models in opposite orders%
 . Retraining with 10,000 technical benign texts supported our diagnosis, a shortcut equating technical prose with injection: false alarms vanished on technical sentences and fell to 19–35\% of pages, but Weni detection dropped to 63.7\%%
-. No version we trained meets both acceptance criteria. We contribute the case study, with an acceptance criterion fixed before measurement; a page-level evaluation protocol; integration lessons for agent hooks; and planned open artifacts%
+. No version we trained meets both acceptance criteria. We contribute the case study, with an acceptance criterion fixed before measurement; a page-level evaluation protocol; integration lessons for agent hooks; and open artifacts%
 .
 
 \end{abstract}
@@ -82,12 +82,12 @@ A concurrent study by \citet{liu2026passing}, which appeared while this work was
 , and a post-hoc leakage audit that attributes about 1.3 of the best model's 94.7 points to near-duplicates in its training data%
 .
 \item \textbf{A page-level evaluation protocol for injection classifiers} that reuses the exact code path of the deployment hook, scores pages by the maximum over overlapping windows, and reports false alarms on benign technical pages alongside detection on pages with an inserted injection. Applied to five public classifiers, it shows that sentence-level and page-level evaluation can rank models in opposite orders%
-. The benchmark is designed to be distributed as a hash-pinned manifest plus a builder, so no third-party text is redistributed; the hash list of the 217 benign pages exists, while the builder and the insertion entries are still to be written%
+. The benchmark is distributed as a hash-pinned manifest (217 benign pages and 60 insertions) plus a builder that downloads the pages from their sources, so no third-party text is redistributed%
 .
 \item \textbf{Engineering lessons for integrating classifiers into agents}: an encoding bug that made benign text look like an injection, a server-version mismatch silently swallowed by a fail-open hook, a sliding window longer than the model's context%
 , and an evaluation input list that drifted between runs%
 .
-\item \textbf{Open artifacts (planned; nothing is released yet)}: code (Apache-2.0), model weights (MIT), all metric files, and the page benchmark builder (Section~\ref{sec:13})%
+\item \textbf{Open artifacts}: code (Apache-2.0), including the page benchmark builder, and all metric files and the benchmark manifest (CC-BY-4.0), released with this paper; model weights (MIT) are planned (Section~\ref{sec:13})%
 .
 \end{enumerate}
 
@@ -711,7 +711,8 @@ I5 & Window larger than the model & 1,500 characters exceed 256 tokens at about 
 
 \textbf{Lesson 4: measure the window in tokens.} I5 is an instance of a general trap: the integration layer measures text in characters, the model in tokens, and the ratio depends on the genre. Technical READMEs measured a median of 3.04 characters per token (10th percentile 2.61), so a 1,500-character window is about 493 tokens and roughly half of each window was discarded%
 . The measurement script was not preserved (lacuna L5). The 640-character windows chosen to fit still left 9.2\% of windows over the limit in the baseline run (median 196 tokens, maximum 646), because the ratio varies within a page as well as across genres%
-. Windows should be cut in tokens, as the planned evaluator does (Section~\ref{sec:13}).
+. Windows should be cut in tokens; the released evaluator still cuts them in characters, as in this study, but counts the tokens of every window and reports the share that exceeds the model's context (Section~\ref{sec:13})%
+.
 
 \textbf{Lesson 5: evaluate through the deployment code path.} The page evaluator calls the hook's own scoring function%
 . Every defect above would have been invisible to an evaluator that called the model directly.
@@ -826,7 +827,7 @@ All training and evaluation data are public. Licenses were read from the Hugging
 . Llama Prompt Guard 2 was evaluated under the Llama 4 Community License as a baseline only: its outputs were not used to train, calibrate or distil our models, and its weights are not redistributed (the copy used to run it sits in private storage of the notebook service)%
 .
 
-The page benchmark will not redistribute any README: it will ship package names, versions and hashes, and a builder will download the pages from PyPI and verify them%
+The page benchmark does not redistribute any README: it ships package names, versions and hashes, and a builder downloads the pages from PyPI and verifies them%
 . No personal data, private text or organisational data was used in this study. The released model detects injections and is not an attack tool; we do not release attack text beyond what the cited public datasets already contain.
 
 A guard with a 100\% false-alarm rate is harmful in a subtle way: users learn to ignore its warnings. The model card will state the page-level failure in its first line%
@@ -836,7 +837,7 @@ A guard with a 100\% false-alarm rate is harmful in a subtle way: users learn to
 
 \section{Artifacts}\label{sec:13}
 
-At the time of writing nothing has been published; the release plan is fixed, and the artifacts will be released at \url{https://github.com/alucardigo/passing-the-benchmark}%
+Code, results and the page benchmark are released at \url{https://github.com/alucardigo/passing-the-benchmark}; the fine-tuned weights are not released yet%
 .
 
 \begin{itemize}
@@ -847,7 +848,7 @@ At the time of writing nothing has been published; the release plan is fixed, an
 \item \textbf{Results} (CC-BY-4.0): one JSON per round with the SHA-256 of the weights and page-level probabilities by index, the per-item probabilities of the v3–v6 comparison, and the per-page and per-sentence log-odds of the baseline run, without third-party text%
 .
 \item \textbf{Page benchmark}: a manifest of 217 benign pages and 60 insertions (package, version, SHA-256 of metadata and page; source, revision, md5 and position of each insertion) plus a builder that refuses mismatched hashes, following the Decision Index pattern%
-. The evaluator will accept any Hugging Face classifier, measure windows in tokens, and report false alarms and detection per threshold with Wilson intervals%
+. The evaluator accepts any Hugging Face classifier, cuts windows in characters, counts their tokens and reports the share that exceeds the model's context, and reports false alarms and detection per threshold with Wilson intervals%
 .
 \item \textbf{Attribution file} listing every dataset, model and revision with its license%
 .

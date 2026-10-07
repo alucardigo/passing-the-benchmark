@@ -47,7 +47,7 @@ das frases benignas conversacionais. Pontuando página a página pelo caminho de
 páginas de documentação técnica, em todo limiar de 0,5 a 0,999%
 . Sob o mesmo protocolo, um de cinco classificadores públicos também avisou em toda página; só o Llama Prompt Guard 2 (86M) combinou 1,8\% de aviso falso por página com 62\% de detecção; e os benchmarks por frase e por página ordenaram os modelos em sentidos opostos%
 . Um retreino com 10.000 textos benignos técnicos sustentou o nosso diagnóstico, um atalho que equipara prosa técnica a injeção: os avisos falsos sumiram nas frases técnicas e caíram para 19–35\% das páginas, mas a detecção no Weni caiu para 63,7\%%
-. Nenhuma versão que treinamos atende aos dois critérios de aceitação. Contribuímos com o estudo de caso, com um critério de aceitação fixado antes da medição; um protocolo de avaliação por página; lições de integração para hooks de agentes; e artefatos abertos planejados%
+. Nenhuma versão que treinamos atende aos dois critérios de aceitação. Contribuímos com o estudo de caso, com um critério de aceitação fixado antes da medição; um protocolo de avaliação por página; lições de integração para hooks de agentes; e artefatos abertos%
 .
 
 \end{abstract}
@@ -82,12 +82,12 @@ Um estudo concorrente de \citet{liu2026passing}, publicado enquanto este trabalh
 , e uma auditoria de vazamento a posteriori que atribui cerca de 1,3 dos 94,7 pontos do melhor modelo a quase duplicatas nos seus dados de treino%
 .
 \item \textbf{Um protocolo de avaliação por página para classificadores de injeção} que reutiliza exatamente o caminho de código do hook de implantação, pontua páginas pelo máximo sobre janelas sobrepostas e relata avisos falsos em páginas técnicas benignas ao lado da detecção em páginas com uma injeção inserida. Aplicado a cinco classificadores públicos, ele mostra que as avaliações por frase e por página podem ordenar os modelos em sentidos opostos%
-. O benchmark foi desenhado para ser distribuído como um manifesto fixado por hash mais um construtor, de modo que nenhum texto de terceiros é redistribuído; a lista de hashes das 217 páginas benignas existe, enquanto o construtor e as entradas de inserção ainda precisam ser escritos%
+. O benchmark é distribuído como um manifesto fixado por hash (217 páginas benignas e 60 inserções) mais um construtor que baixa as páginas das fontes, de modo que nenhum texto de terceiros é redistribuído%
 .
 \item \textbf{Lições de engenharia para integrar classificadores a agentes}: um bug de encoding que fazia texto benigno parecer injeção, uma incompatibilidade de versão do servidor engolida em silêncio por um hook fail-open, uma janela deslizante mais longa que o contexto do modelo %
 e uma lista de entradas de avaliação que mudou entre execuções%
 .
-\item \textbf{Artefatos abertos (planejados; nada foi publicado ainda)}: código (Apache-2.0), pesos do modelo (MIT), todos os arquivos de métricas e o construtor do benchmark de páginas (Seção~\ref{sec:13})%
+\item \textbf{Artefatos abertos}: código (Apache-2.0), inclusive o construtor do benchmark de páginas, e todos os arquivos de métricas e o manifesto do benchmark (CC-BY-4.0), publicados com este artigo; os pesos do modelo (MIT) estão planejados (Seção~\ref{sec:13})%
 .
 \end{enumerate}
 
@@ -711,7 +711,8 @@ I5 & Janela maior que o modelo & 1.500 caracteres excedem 256 tokens a cerca de 
 
 \textbf{Lição 4: meça a janela em tokens.} O I5 é um caso de uma armadilha geral: a camada de integração mede texto em caracteres, o modelo em tokens, e a razão depende do gênero do texto. READMEs técnicos mediram uma mediana de 3,04 caracteres por token (10º percentil 2,61), então uma janela de 1.500 caracteres tem cerca de 493 tokens e aproximadamente metade de cada janela era descartada%
 . O script de medição não foi preservado (lacuna L5). As janelas de 640 caracteres escolhidas para caber ainda deixaram 9,2\% das janelas acima do limite na execução dos baselines (mediana de 196 tokens, máximo de 646), porque a razão varia dentro de uma página, e não só entre gêneros%
-. As janelas deveriam ser cortadas em tokens, como faz o avaliador planejado (Seção~\ref{sec:13}).
+. As janelas deveriam ser cortadas em tokens; o avaliador publicado ainda as corta em caracteres, como neste estudo, mas conta os tokens de cada janela e relata a fração que passa do contexto do modelo (Seção~\ref{sec:13})%
+.
 
 \textbf{Lição 5: avalie pelo caminho de código da implantação.} O avaliador de páginas chama a própria função de pontuação do hook%
 . Todos os defeitos acima seriam invisíveis para um avaliador que chamasse o modelo diretamente.
@@ -826,7 +827,7 @@ Todos os dados de treino e de avaliação são públicos. As licenças foram lid
 . O Llama Prompt Guard 2 foi avaliado sob a Llama 4 Community License apenas como baseline: as suas saídas não foram usadas para treinar, calibrar ou destilar os nossos modelos, e os seus pesos não são redistribuídos (a cópia usada para rodá-lo fica num armazenamento privado do serviço de notebooks)%
 .
 
-O benchmark de páginas não vai redistribuir nenhum README: ele vai distribuir nomes de pacotes, versões e hashes, e um construtor vai baixar as páginas do PyPI e conferi-las%
+O benchmark de páginas não redistribui nenhum README: ele distribui nomes de pacotes, versões e hashes, e um construtor baixa as páginas do PyPI e as confere%
 . Nenhum dado pessoal, texto privado ou dado organizacional foi usado neste estudo. O modelo publicado detecta injeções e não é uma ferramenta de ataque; não publicamos texto de ataque além do que os conjuntos públicos citados já contêm.
 
 Um guard com taxa de aviso falso de 100\% é nocivo de um jeito sutil: os usuários aprendem a ignorar seus avisos. O model card vai declarar a falha por página na primeira linha%
@@ -836,7 +837,7 @@ Um guard com taxa de aviso falso de 100\% é nocivo de um jeito sutil: os usuár
 
 \section{Artefatos}\label{sec:13}
 
-Até a redação deste texto nada foi publicado; o plano de publicação está fixado, e os artefatos serão publicados em \url{https://github.com/alucardigo/passing-the-benchmark}%
+O código, os resultados e o benchmark de páginas estão publicados em \url{https://github.com/alucardigo/passing-the-benchmark}; os pesos ajustados ainda não foram publicados%
 .
 
 \begin{itemize}
@@ -847,7 +848,7 @@ Até a redação deste texto nada foi publicado; o plano de publicação está f
 \item \textbf{Resultados} (CC-BY-4.0): um JSON por rodada com o SHA-256 dos pesos e as probabilidades por página indexadas, as probabilidades por item da comparação entre v3 e v6, e os log-odds por página e por frase da execução dos baselines, sem texto de terceiros%
 .
 \item \textbf{Benchmark de páginas}: um manifesto de 217 páginas benignas e 60 inserções (pacote, versão, SHA-256 dos metadados e da página; fonte, revisão, md5 e posição de cada inserção) mais um construtor que recusa hashes divergentes, seguindo o padrão do Decision Index%
-. O avaliador vai aceitar qualquer classificador do Hugging Face, medir janelas em tokens e relatar avisos falsos e detecção por limiar com intervalos de Wilson%
+. O avaliador aceita qualquer classificador do Hugging Face, corta as janelas em caracteres, conta os tokens delas e relata a fração que passa do contexto do modelo, além dos avisos falsos e da detecção por limiar com intervalos de Wilson%
 .
 \item \textbf{Arquivo de atribuição} listando cada conjunto de dados, modelo e revisão com a sua licença%
 .

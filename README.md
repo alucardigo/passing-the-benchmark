@@ -147,7 +147,8 @@ Hugging Face Hub with a model card that opens with the page-level failure.
 ### Data and licenses
 
 - Code: Apache-2.0 ([`LICENSE`](LICENSE), [`NOTICE`](NOTICE)). Paper, results and benchmark manifest:
-  CC BY 4.0 ([`LICENSE-CC-BY-4.0.md`](LICENSE-CC-BY-4.0.md)).
+  CC BY 4.0 ([`LICENSE-CC-BY-4.0.md`](LICENSE-CC-BY-4.0.md)). Model weights: MIT (the probe-B weights in
+  [`results/sonda-b/`](results/sonda-b/LICENSE) and, when published, the fine-tuned weights).
 - No third-party text is redistributed: datasets, models and README pages are downloaded from their
   sources. Two evaluation sets (Weni, xTRam1) declare no license and are used for evaluation only.
   Every dataset, model and revision, with its license, is in [`ATTRIBUTION.md`](ATTRIBUTION.md).
@@ -237,7 +238,8 @@ sem licença, e este código lê a origem MIT, sem a equivalência conferida. Os
 
 ### Dados e licenças
 
-Código sob Apache-2.0; artigo, resultados e manifesto do benchmark sob CC BY 4.0. Nenhum texto de
+Código sob Apache-2.0; artigo, resultados e manifesto do benchmark sob CC BY 4.0; pesos de modelo sob MIT
+(os da sonda B, em `results/sonda-b/`, e os ajustados, quando forem publicados). Nenhum texto de
 terceiro é redistribuído: bases, modelos e páginas são baixados da fonte. Weni e xTRam1 não declaram
 licença e são usados só para avaliação. Todas as bases, modelos e revisões, com licença, estão em
 [`ATTRIBUTION.md`](ATTRIBUTION.md). O código tem comentários e identificadores em português.
