@@ -12,8 +12,11 @@ the 26.7-point drop is now an upper bound on the leakage effect, not a measure o
 texts without a near-duplicate in training than on those with one); the cause of v6's Weni drop is left open (the decontaminated
 control drops almost as far, but the two versions miss partly different texts); decontamination alone is credited
 with its partial effect on technical sentences; five Wilson bounds of Table 5 were re-rounded from the exact
-counts; and Sections 12–13 say that the v3-pub weights are on Kaggle Models. Earlier versions are in the git
-history.
+counts; and Sections 12–13 say that the v3-pub weights are on Kaggle Models. A last pass on 2026-10-08 corrected
+a claim about Llama Prompt Guard 2: the introduction and Section 5.4 called the 86M model the only one below 2% page
+false alarms, but the 22M model is below too (0 of 217 pages) while detecting only 15% of the injected pages; the
+abstract, introduction and Sections 5.4, 9.1 and 11 now say that the 86M is the only public model below 2% at
+threshold 0.5 with useful detection (62%). No number changed. Earlier versions are in the git history.
 
 | | English | Português |
 |---|---|---|
