@@ -1,10 +1,14 @@
 # Guard v3-pub: pesos com licença limpa
 
 > Relatório escrito durante o estudo (07/10/2026), em português. Os caminhos foram trocados pelos deste
-> repositório e os comandos de infraestrutura privada saíram; os números são os originais. Uma correção: na
-> seção 2, a frase "todos os 300 textos do Weni têm vizinho acima de 0,85" contradiz a própria tabela por
-> faixa; o mínimo é 0,826 e 271 de 300 ficam acima de 0,85. O artigo (seções 4d e 7.2) incorpora este
-> resultado com as ressalvas; o controle "v3 menos as 115" pedido na seção 3 ainda não foi rodado.
+> repositório e os comandos de infraestrutura privada saíram; os números são os originais. Duas correções:
+> (1) na seção 2, a frase "todos os 300 textos do Weni têm vizinho acima de 0,85" contradiz a própria tabela
+> por faixa; o mínimo é 0,826 e 271 de 300 ficam acima de 0,85. (2) No Resumo, "o xTRam1 agora é fora da
+> distribuição de verdade" vai além dos dados: a v3-pub não tem as linhas do xTRam1 nem duplicatas dos 1.500
+> itens de teste, mas 422 textos de treino dela (378 do jackhhao, 37 da Dolly) são iguais a textos do conjunto
+> xTRam1 (`dados/auditoria.json`, chave `linhas_de_treino_iguais_a_algum_texto_do_xtram1_train_ou_test`). O
+> artigo (seções 3.1, 4d e 7.2) incorpora este resultado com as ressalvas; o controle "v3 menos as 115" pedido
+> na seção 3 ainda não foi rodado.
 
 Rodada de 07/10/2026. Objeto: o classificador de prompt injection ("guard") deste estudo, e5-large ajustado, foco pt-BR.
 A v3-pub é a versão que o plano de publicação do estudo recomenda publicar no lugar da v3.
