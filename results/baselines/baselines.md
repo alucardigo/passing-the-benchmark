@@ -7,6 +7,10 @@
 > Nota de publicação (08/10/2026): o Weni de 94,7% do nosso e5-large v3 citado aqui é inflado por vazamento.
 > A mesma receita, retreinada sem as duplicatas de teste e as quase-duplicatas do Weni (v3-pub), detecta 68,0%
 > (`results/v3pub/v3pub.md`; artigo, seção 4d). Na página, a v3-pub falha igual à v3 (217 de 217 avisos falsos).
+> O xTRam1 também não é fora da distribuição para a v3: 577 linhas do treino vieram do split de treino dele,
+> pelo ShieldLM, e 83 dos 1.500 itens de teste tinham duplicata normalizada no treino (artigo, seção 3.1); a
+> v3-pub acerta 95,4% nele. Por isso foi corrigida a frase de "Ameaças à validade" que dizia que o nosso nunca
+> viu o xTRam1 e tinha trava contra o Weni: a trava só existe da v4 em diante (artigo, seção 3.4).
 
 Medido em 06/10/2026; o Llama Prompt Guard 2 (86M e 22M) entrou em 07/10/2026, quando o acesso ao
 repositório gated foi liberado. A pergunta: o aviso falso de 100% que o nosso guard (e5-large v3) dá em
@@ -253,11 +257,13 @@ O Prompt Guard 2 86M quase não sente a troca de janela. O aviso falso a 0,5 vai
   em página costumam vir escondidos (HTML oculto, texto branco) e podem ser mais fáceis ou mais
   difíceis de detectar.
 - **Possível contaminação dos modelos públicos com o xTRam1 ou o Weni em treino.** Os cards não listam
-  essas bases, mas o ProtectAI cita 20+ fontes sem nomear todas. O Weni é a HackAPrompt traduzida, então
-  um modelo que treinou com a HackAPrompt em inglês pode ter o Weni inflado pela sobreposição entre as
-  línguas. O nosso nunca viu o xTRam1 (nem treino, nem teste) e tem trava anti-vazamento contra o Weni
-  (cosseno > 0,9). O nosso e o Proventra treinaram com o deepset/prompt-injections, mas essa base não
-  entra em nenhum teste daqui.
+  essas bases, mas o ProtectAI cita 20+ fontes sem nomear todas. Se o Weni deriva da HackAPrompt (indício
+  indireto; artigo, seção 3.4), um modelo que treinou com a HackAPrompt em inglês pode ter o Weni inflado
+  pela sobreposição entre as línguas. O nosso também não é limpo: 577 linhas do treino da v3 vêm do split
+  de treino do xTRam1 (pelo ShieldLM), 83 dos 1.500 itens de teste do xTRam1 têm duplicata normalizada no
+  treino, e a v3 foi exportada antes da trava anti-vazamento contra o Weni (cosseno > 0,9), com 115
+  quase-duplicatas do Weni no treino (artigo, seções 3.1, 3.4 e 4d). O nosso e o Proventra treinaram com
+  o deepset/prompt-injections, mas essa base não entra em nenhum teste daqui.
 - **Máquina compartilhada.** Durante parte das rodadas, outro processo usou ~2 núcleos. Os números de
   qualidade não dependem disso. A latência foi medida de novo sem outra carga, e a medida antiga ficou
   no JSON como `latencia_sob_carga`. O campo `ms_por_janela_em_lote` da rodada principal mistura carga

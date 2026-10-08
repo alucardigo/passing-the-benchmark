@@ -38,7 +38,7 @@ page, not sentence by sentence), and of what a decontaminated retraining reveale
 ### Main findings
 
 1. **Sentence benchmarks did not predict deployment.** v3 passes the sentence tests (Weni 94.7%,
-   Wilson 95% CI 91.5–96.7, inflated by leakage, see 4; xTRam1 98.7%; 0.13–0.7% of conversational benign
+   Wilson 95% CI 91.5–96.7, inflated by leakage, see 4; xTRam1 98.7%; 0.2–0.7% of conversational benign
    sentences flagged) and fails every page.
 2. **It is not only our model.** Under the same page protocol, deepset/deberta-v3-base-injection also
    warned on every page, and ProtectAI v2 and Proventra mDeBERTa warned on ~15% of pages at 0.5. Of five
@@ -223,7 +223,7 @@ sobre o seu placar no benchmark.
 ### Principais achados
 
 1. **O benchmark de frase não previu o uso real.** A v3 passa nos testes de frase (Weni 94,7%, IC 95% de
-   Wilson 91,5–96,7, inflado por vazamento, ver 4; xTRam1 98,7%; 0,13–0,7% de aviso falso em frase benigna
+   Wilson 91,5–96,7, inflado por vazamento, ver 4; xTRam1 98,7%; 0,2–0,7% de aviso falso em frase benigna
    conversacional) e reprova em todas as páginas.
 2. **Não é só o nosso modelo.** No mesmo protocolo, o deepset/deberta-v3-base-injection também avisou em
    toda página, e ProtectAI v2 e Proventra mDeBERTa avisaram em ~15% das páginas a 0,5. Dos cinco
