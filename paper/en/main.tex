@@ -23,7 +23,6 @@
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=green!35!black,
             urlcolor=blue!60!black,pdfencoding=auto]{hyperref}
 
-\newcommand{\PENDENTE}[1]{\textcolor{red}{[PENDING:~#1]}}
 \newcommand{\code}[1]{\texttt{#1}}
 
 \setlist{itemsep=2pt,topsep=4pt}
@@ -43,9 +42,9 @@
 \begin{abstract}
 Prompt-injection classifiers increasingly sit between LLM agents and the content they fetch. We report a fully traced case study of building one for Brazilian Portuguese (pt-BR) from open data. Our best model, a fine-tuned multilingual-e5-large, detected 94.7\% %
 of injections in Weni, a native pt-BR test set, but the figure did not survive decontamination: retrained without test duplicates and near-duplicates, the same recipe detects 68.0\%%
-. Scored page by page through an agent hook's code path, both versions raised a false alarm on all 217 %
+. Scored page by page through an agent hook's code path, both versions raised false alarms on all 217 %
 technical documentation pages at every threshold from 0.5 to 0.999%
-. Among five public classifiers, one also warned on every page; only Llama Prompt Guard 2 (86M) kept false alarms below 2\% with useful detection (1.8\%, 62\%; the 22M model: 0\%, 15\%); sentence and page benchmarks ranked the models in opposite orders%
+. Among five public classifiers, one also warned on every page; at threshold 0.5, only Llama Prompt Guard 2 (86M) kept page false alarms below 2\% with useful detection (1.8\%, 62\%; the 22M model: 0\%, 15\%); sentence and page benchmarks gave opposite rankings%
 . Adding 10,000 technical benign texts supported our diagnosis, a shortcut equating technical prose with injection: false alarms vanished on technical sentences and fell to 19–35\% of pages, while Weni detection stayed near the decontaminated model's (63.7\% against 68.0\%)%
 . No version we trained meets both acceptance criteria. We contribute the case study, a leakage audit checked by retraining, a page-level evaluation protocol, agent-integration lessons and open artifacts%
 .
@@ -197,7 +196,8 @@ All partitions are deterministic functions of the text: \code{bucket = int(md5(t
 . The probe's validation set is bucket \textless{} 15 (15\%)%
 . For probes, the regularisation constant $C \in \{0.05, 0.2, 1, 4\}$ and class weighting \ensuremath{\in} \{none, balanced\} are chosen by balanced accuracy on validation%
 , and a temperature is fitted on validation by minimising log-loss over a 60-point log grid from 0.1 to about 20%
-. Test sets are used only to measure. Test sets are never uploaded to the fine-tuning service: the export for cloud fine-tuning contains training data only, and evaluation runs on the author's own machines (a laptop and an ARM cloud VM)%
+. Test sets are used only to measure: they never enter the training data and are never uploaded to a public dataset. The export for cloud fine-tuning contains training data only%
+. Evaluation runs on the author's own machines (a laptop and an ARM cloud VM) and, for Llama Prompt Guard 2 (Section~\ref{sec:5.4}), on private Kaggle CPU kernels that read the test pages and sentences from a private Kaggle dataset%
 .
 
 \textbf{Acceptance criteria were fixed before measurement} (Table~\ref{tab:2}). The criterion used for the decision (Weni \ensuremath{\geq} 95\% and xTRam1-pt \ensuremath{\geq} 90\%) was committed on 2 October, almost three days before the first Weni measurement%
@@ -853,7 +853,7 @@ The guard stays out of the web-fetch hook; v3 remains in the local toolkit for c
 . Which of v3-pub's removals carries the effect, and how much of it is leakage rather than lost attack data, is not isolated: it also removed 967 attack examples, 513 of them exact duplicates of other tests, and the ``v3 minus the 115'' control has not been run%
 . The per-source breakdown of the 4,008 examples removed in v4 was not recorded, and the accounting in Section~\ref{sec:4}(c) is an inference across exports (lacuna L1)%
 .
-\item \textbf{xTRam1 is not out of distribution} for v2–v6, and exact duplicates of test items were in v3's training data for nearly every test, among them 20 of the 262 jackhhao items and 83 of the 1,500 xTRam1 items (Section~\ref{sec:3.1})%
+\item \textbf{xTRam1 is not out of distribution} for round B and v2–v6, and exact duplicates of test items were in v3's training data for nearly every test, among them 20 of the 262 jackhhao items and 83 of the 1,500 xTRam1 items (Section~\ref{sec:3.1})%
 . Only v3-pub is free of them; on xTRam1 it scores 95.4\% against v3's 98.7\%%
 .
 \item \textbf{Incomplete evaluation of v3.} v3 was measured on deepset, jackhhao and the first 300 SPML items only in the v6 comparison, and never on rikka, ShieldLM or yanis; numbers for some of these that appear in the deployed pack's metadata have no traceable origin and are not used here%

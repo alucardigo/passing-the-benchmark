@@ -16,7 +16,13 @@ counts; and Sections 12–13 say that the v3-pub weights are on Kaggle Models. A
 a claim about Llama Prompt Guard 2: the introduction and Section 5.4 called the 86M model the only one below 2% page
 false alarms, but the 22M model is below too (0 of 217 pages) while detecting only 15% of the injected pages; the
 abstract, introduction and Sections 5.4, 9.1 and 11 now say that the 86M is the only public model below 2% at
-threshold 0.5 with useful detection (62%). No number changed. Earlier versions are in the git history.
+threshold 0.5 with useful detection (62%). No number changed. A final conference pass on 2026-10-08 (text only, no
+number changed) corrected Section 3.3, which said that test sets were never uploaded to the fine-tuning service and
+that evaluation ran only on the author's machines: the Prompt Guard 2 runs of 2026-10-07 used private Kaggle CPU
+kernels that read the test pages and sentences from a private Kaggle dataset, and the section now says so (test
+sets still never enter training or a public dataset). The abstract now names the threshold of the Prompt Guard 2
+claim (0.5), and the limitations say that xTRam1 is not out of distribution for round B either. Earlier versions
+are in the git history.
 
 | | English | Português |
 |---|---|---|
