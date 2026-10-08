@@ -6,7 +6,7 @@ and Shortcut Learning in a Brazilian Portuguese Prompt-Injection Classifier"** (
 [English](#english) · [Português](#português)
 
 > **Warning.** The best model of this study (v3, a fine-tuned multilingual-e5-large) detected 94.7% of the
-> native pt-BR injections of the Weni test set, **but that figure is inflated by leakage**: the same recipe
+> native pt-BR injections of the Weni test set, **but that figure does not survive decontamination**: the same recipe
 > retrained without test duplicates and near-duplicates (v3-pub) detects 68.0%. **Both raised a false alarm
 > on 217 of 217 technical documentation pages** (package READMEs) at every threshold from 0.5 to 0.999. The
 > retrained v6 brings page false alarms down to 19–35% and detects 63.7% of Weni, close to v3-pub. **No
@@ -51,14 +51,19 @@ page, not sentence by sentence), and of what a decontaminated retraining reveale
    docstrings) removed false alarms on technical sentences (38–87% → 0%) and cut benign README windows
    flagged from 99.6% to 7.2%, but page false alarms stayed at 19–35% (worst window of ~10 per page). Weni
    detection fell to 63.7%, which we first blamed on the new negatives; a decontaminated control without them
-   (v3-pub) detects 68.0% (paired difference 4.3 points, McNemar p = 0.18), so most of that drop is shared
-   with decontamination. A control that removes only the Weni near-duplicates has not been run yet.
-4. **Leakage inflated the headline number.** v3's training set had 115 near-duplicates of Weni texts,
+   (v3-pub) detects 68.0% (paired difference 4.3 points, McNemar p = 0.18), so the comparison with v3 cannot
+   charge that drop to the new negatives. The two versions miss partly different texts, though, and only a
+   control that removes just the Weni near-duplicates, not run yet, can say how much of the drop is theirs.
+4. **The headline number did not survive decontamination.** v3's training set had 115 near-duplicates of Weni texts,
    exact duplicates (after normalisation) of items of almost every test (83 of 1,500 xTRam1, 20 of 262
    jackhhao, among others), and 577 ShieldLM rows taken from xTRam1's train split. A cosine-similarity cut
    put the effect on Weni at 1.3 points. Retraining the same recipe without the duplicates, their
-   translations, the near-duplicates and the xTRam1 rows (v3-pub) costs 26.7 points on Weni (94.7% → 68.0%,
-   McNemar p < 1e-6) and 3.3 on xTRam1 (98.7% → 95.4%), and leaves the page failure untouched (217/217).
+   translations, the near-duplicates, the xTRam1 rows and the licence-excluded ShieldLM rows (v3-pub) costs
+   26.7 points on Weni (94.7% → 68.0%, McNemar p < 1e-6) and 3.3 on xTRam1 (98.7% → 95.4%), and leaves the
+   page failure untouched (217/217). Most of the Weni loss falls on texts without a near-duplicate in
+   training, so the 26.7 points bound the leakage effect from above rather than measure it: v3-pub also has
+   967 fewer attack examples, 513 of them duplicates of other tests, and a control that removes only the 115
+   near-duplicates has not been run.
 
 ### Results
 
@@ -74,9 +79,9 @@ page test (217 benign READMEs, 60 with an injection; decision = worst window):
 | v5 | e5-large + HackAPrompt | 89.7% | 99.1% | 98.0% | 100% | 99.5% | — |
 | ensemble | v3 ⊕ v5 (fixed 0.5/0.5) | 91.3% | 99.0% | 96.8% | 99.9% | 99.5% | — |
 | v6 | e5-large + 10k technical benign | 63.7% | 99.3% | 98.2% | 100% | 99.6% | 34.6% @0.5 · 19.4% @0.999 |
-| **v3-pub** | **e5-large, decontaminated** (no test duplicates, translations, Weni near-duplicates or xTRam1 rows) | **68.0%** | 95.4% | 94.8% | 99.9% | 99.8% | **100%** at every threshold 0.5–0.999 |
+| **v3-pub** | **e5-large, decontaminated** (no test duplicates, translations, Weni near-duplicates, xTRam1 rows or licence-excluded rows) | **68.0%** | 95.4% | 94.8% | 99.9% | 99.8% | **100%** at every threshold 0.5–0.999 |
 
-† Inflated by leakage: v3-pub, the same recipe on decontaminated data, detects 68.0% (Wilson 95% CI 62.5–73.0;
+† Does not survive decontamination: v3-pub, the same recipe on decontaminated data, detects 68.0% (Wilson 95% CI 62.5–73.0;
 v3 alone detects 81 texts that v3-pub misses, the reverse happens once). Details in
 [`results/v3pub/v3pub.md`](results/v3pub/v3pub.md) and in Section 4(d) and Table 5 of the paper.
 
@@ -155,15 +160,15 @@ slightly across library versions and hardware, which changes the translated part
 the translation cache of a run is what makes it exact (re-exporting v3 with the study's cache, offline,
 reproduced the original training file record for record: 23,693 examples in the same order). The HackAPrompt rounds (v4/v5) read an unlicensed
 mirror; this code reads the MIT origin, and the equivalence of the two subsets has not been verified.
-Fine-tuned weights are not in this repository; the plan is to publish `v3-pub` (trained 2026-10-07;
-Weni 68.0%, page false alarms 217/217) on the Hugging Face Hub with a model card that opens with the
-page-level failure and reports its own numbers, not v3's.
+Fine-tuned weights are not in this repository: `v3-pub` (trained 2026-10-07; Weni 68.0%, page false alarms
+217/217) and the round-B probe are published under MIT on Kaggle Models as `passing-the-benchmark-guard`, with a
+model card that opens with the page-level failure and reports v3-pub's own numbers.
 
 ### Data and licenses
 
 - Code: Apache-2.0 ([`LICENSE`](LICENSE), [`NOTICE`](NOTICE)). Paper, results and benchmark manifest:
   CC BY 4.0 ([`LICENSE-CC-BY-4.0.md`](LICENSE-CC-BY-4.0.md)). Model weights: MIT (the probe-B weights in
-  [`results/sonda-b/`](results/sonda-b/LICENSE) and, when published, the fine-tuned weights).
+  [`results/sonda-b/`](results/sonda-b/LICENSE) and the fine-tuned v3-pub weights on Kaggle Models).
 - No third-party text is redistributed: datasets, models and README pages are downloaded from their
   sources. Two evaluation sets (Weni, xTRam1) declare no license and are used for evaluation only.
   Every dataset, model and revision, with its license, is in [`ATTRIBUTION.md`](ATTRIBUTION.md).
@@ -230,14 +235,19 @@ sobre o seu placar no benchmark.
    de README marcadas de 99,6% para 7,2%, mas o aviso falso por página ficou em 19–35% (pior de ~10 janelas
    por página). A detecção no Weni caiu para 63,7%, o que atribuímos primeiro aos negativos novos; um
    controle descontaminado sem eles (v3-pub) detecta 68,0% (diferença pareada de 4,3 pontos, McNemar
-   p = 0,18), então a maior parte dessa queda é compartilhada com a descontaminação. Um controle que tire só
-   as quase-duplicatas do Weni ainda não foi rodado.
-4. **O vazamento inflou o número principal.** O treino da v3 tinha 115 quase-duplicatas de textos do Weni,
+   p = 0,18), então a comparação com a v3 não permite cobrar essa queda dos negativos novos. As duas versões,
+   porém, erram textos em parte diferentes, e só um controle que tire apenas as quase-duplicatas do Weni,
+   ainda não rodado, pode dizer quanto da queda é deles.
+4. **O número principal não sobreviveu à descontaminação.** O treino da v3 tinha 115 quase-duplicatas de textos do Weni,
    duplicatas exatas (após normalização) de itens de quase todo teste (83 de 1.500 no xTRam1, 20 de 262 no
    jackhhao, entre outros) e 577 linhas do ShieldLM tiradas do treino do xTRam1. Um corte de similaridade de
    cosseno estimava o efeito no Weni em 1,3 ponto. Retreinar a mesma receita sem as duplicatas, as traduções
-   delas, as quase-duplicatas e as linhas do xTRam1 (v3-pub) custa 26,7 pontos no Weni (94,7% → 68,0%,
-   McNemar p < 1e-6) e 3,3 no xTRam1 (98,7% → 95,4%), e não mexe na falha por página (217/217).
+   delas, as quase-duplicatas, as linhas do xTRam1 e as linhas do ShieldLM excluídas pela licença (v3-pub)
+   custa 26,7 pontos no Weni (94,7% → 68,0%, McNemar p < 1e-6) e 3,3 no xTRam1 (98,7% → 95,4%), e não mexe na
+   falha por página (217/217). A maior parte da perda no Weni cai em textos sem quase-duplicata no treino,
+   então os 26,7 pontos limitam o efeito do vazamento por cima, em vez de medi-lo: a v3-pub também tem 967
+   exemplos de ataque a menos, 513 deles duplicatas de outros testes, e um controle que tire só as 115
+   quase-duplicatas não foi rodado.
 
 As tabelas de resultados estão na seção em inglês acima (os números são os mesmos) e, com mais detalhe,
 em [`results/`](results/README.md).
@@ -257,14 +267,15 @@ cache de tradução é o que torna uma rodada exata: reexportar a v3 com o cache
 arquivo de treino original registro a registro, 23.693 exemplos na mesma ordem); as rodadas com HackAPrompt (v4/v5) leram um espelho
 sem licença, e este código lê a origem MIT, sem a equivalência conferida. A rodada `v3-pub` deste
 repositório é uma aproximação da exportação do estudo (tira só as linhas `safeguard/*` do ShieldLM e não
-aplica a regra de pares de tradução). Os pesos não estão aqui: o plano é publicar no Hugging Face a `v3-pub`
-(treinada em 07/10/2026; Weni 68,0%, aviso falso em 217/217 páginas), com model card que abre pela falha em
-página e relata os números dela, não os da v3.
+aplica a regra de pares de tradução). Os pesos não estão aqui: a `v3-pub` (treinada em 07/10/2026; Weni 68,0%,
+aviso falso em 217/217 páginas) e a sonda da rodada B estão publicadas sob MIT no Kaggle Models como
+`passing-the-benchmark-guard`, com model card que abre pela falha em página e relata os números da própria
+v3-pub.
 
 ### Dados e licenças
 
 Código sob Apache-2.0; artigo, resultados e manifesto do benchmark sob CC BY 4.0; pesos de modelo sob MIT
-(os da sonda B, em `results/sonda-b/`, e os ajustados, quando forem publicados). Nenhum texto de
+(os da sonda B, em `results/sonda-b/`, e os ajustados da v3-pub, no Kaggle Models). Nenhum texto de
 terceiro é redistribuído: bases, modelos e páginas são baixados da fonte. Weni e xTRam1 não declaram
 licença e são usados só para avaliação. Todas as bases, modelos e revisões, com licença, estão em
 [`ATTRIBUTION.md`](ATTRIBUTION.md). O código tem comentários e identificadores em português.

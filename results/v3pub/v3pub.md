@@ -1,14 +1,17 @@
 # Guard v3-pub: pesos com licença limpa
 
 > Relatório escrito durante o estudo (07/10/2026), em português. Os caminhos foram trocados pelos deste
-> repositório e os comandos de infraestrutura privada saíram; os números são os originais. Duas correções:
+> repositório e os comandos de infraestrutura privada saíram; os números são os originais. Três correções:
 > (1) na seção 2, a frase "todos os 300 textos do Weni têm vizinho acima de 0,85" contradiz a própria tabela
 > por faixa; o mínimo é 0,826 e 271 de 300 ficam acima de 0,85. (2) No Resumo, "o xTRam1 agora é fora da
 > distribuição de verdade" vai além dos dados: a v3-pub não tem as linhas do xTRam1 nem duplicatas dos 1.500
 > itens de teste, mas 422 textos de treino dela (378 do jackhhao, 37 da Dolly) são iguais a textos do conjunto
 > xTRam1 (`dados/auditoria.json`, chave `linhas_de_treino_iguais_a_algum_texto_do_xtram1_train_ou_test`). O
 > artigo (seções 3.1, 4d e 7.2) incorpora este resultado com as ressalvas; o controle "v3 menos as 115" pedido
-> na seção 3 ainda não foi rodado.
+> na seção 3 ainda não foi rodado. (3) A "Leitura" do Resumo (o 94,7% "dependia de vizinhos do teste") é hipótese,
+> não resultado: a tabela por faixa da seção 2 mostra a perda concentrada nos textos menos parecidos com os 115, e
+> nenhuma das 1.643 outras linhas removidas passa de 0,9 com algum texto do Weni. O artigo (revisão de 08/10) trata os
+> 26,7 pontos como teto do efeito do vazamento e deixa em aberto a causa da queda da v6.
 
 Rodada de 07/10/2026. Objeto: o classificador de prompt injection ("guard") deste estudo, e5-large ajustado, foco pt-BR.
 A v3-pub é a versão que o plano de publicação do estudo recomenda publicar no lugar da v3.

@@ -2,7 +2,8 @@
 
 Code in this repository: **Apache-2.0** (`LICENSE`). Paper and results: **CC BY 4.0**
 (`LICENSE-CC-BY-4.0.md`). Model weights: **MIT**, both the probe-B weights in `results/sonda-b/`
-(`results/sonda-b/LICENSE`) and the fine-tuned weights, when published on the Hugging Face Hub.
+(`results/sonda-b/LICENSE`) and the fine-tuned v3-pub weights, published on Kaggle Models
+(`passing-the-benchmark-guard`).
 
 **No third-party text is redistributed here.** Datasets and models are downloaded from their original
 source at the revisions pinned in `ptguard/revisoes.json` (captured on 2026-10-06, after the training

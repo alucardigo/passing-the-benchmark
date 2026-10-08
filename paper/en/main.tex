@@ -42,7 +42,7 @@
 
 \begin{abstract}
 Prompt-injection classifiers increasingly sit between LLM agents and the content they fetch. We report a fully traced case study of building one for Brazilian Portuguese (pt-BR) from open data. Our best model, a fine-tuned multilingual-e5-large, detected 94.7\% %
-of the injections in Weni, a native pt-BR test set, but the figure was inflated by leakage: retrained without test duplicates and near-duplicates, the same recipe detects 68.0\%%
+of the injections in Weni, a native pt-BR test set, but the figure did not survive decontamination: retrained without test duplicates and near-duplicates, the same recipe detects 68.0\%%
 . Scored page by page through the code path of an agent hook, both versions raised a false alarm on all 217 %
 technical documentation pages at every threshold from 0.5 to 0.999%
 . Among five public classifiers, one also warned on every page; only Llama Prompt Guard 2 (86M) combined a 1.8\% page false-alarm rate with 62\% detection; and sentence and page benchmarks ranked the models in opposite orders%
@@ -62,17 +62,18 @@ This paper documents what happened when we built one for Brazilian Portuguese, u
 
 The headline is a negative result in two parts. The best model passed the benchmark tests by a wide margin, missed its own pre-fixed acceptance criterion on the native pt-BR gold set by a single text (284/300 against 285 required)%
 , and then, evaluated page by page on ordinary technical documentation, raised a false alarm on 217 of 217 pages %
-at every threshold we tried. A hand-written smoke-test sentence had been flagging the failure mode since the second training round, and we did not read it as the signal it was (Section~\ref{sec:6}). The benchmark number then turned out to be inflated as well. A post-hoc audit had put the effect of near-duplicates of the gold test in the training data at about 1.3 points; retraining the same recipe without exact duplicates of any test item, their translations, or near-duplicates of the gold test (v3-pub) brought Weni detection down to 68.0\%, 26.7 points lower on the same items, while the page failure stayed exactly as it was (Section~\ref{sec:4}, Table~\ref{tab:5})%
+at every threshold we tried. A hand-written smoke-test sentence had been flagging the failure mode since the second training round, and we did not read it as the signal it was (Section~\ref{sec:6}). The benchmark number then turned out to be inflated as well. A post-hoc audit had put the effect of near-duplicates of the gold test in the training data at about 1.3 points; retraining the same recipe without exact duplicates of any test item, their translations, near-duplicates of the gold test, the rows an aggregated dataset had copied from xTRam1, or rows excluded for their licence (v3-pub) brought Weni detection down to 68.0\%, 26.7 points lower on the same items, while the page failure stayed exactly as it was (Section~\ref{sec:4}, Table~\ref{tab:5})%
+. The drop bounds the inflation from above rather than measuring it: v3-pub also has fewer attack examples, and most of its losses fall on Weni texts that have no near-duplicate in v3's training data%
 .
 
 Two further measurements sharpen the result. Under the same page protocol the failure is not peculiar to our model: one of five public classifiers also warned on every page, and two others warned on about 15\% of the benign pages at threshold 0.5 while detecting 63–70\% of the injected ones (Section~\ref{sec:5.4})%
 . The exception is instructive: Llama Prompt Guard 2 (86M), whose card reports benign web data in training, warned on 4 of the 217 benign pages (1.8\%) while detecting 62\% of the injected ones, although it caught only 30\% of the short English injections and detects 93.7\% of Weni's sentences, below our criterion%
-. And retraining with technical benign text (v6, Section~\ref{sec:7}) removed the false alarms on technical sentences and cut page false alarms to 19–35\%. It also lowered Weni detection from v3's leakage-inflated 94.7\% to 63.7\%, which we first read as the price of removing the shortcut. Against the decontaminated v3-pub, which has no technical negatives and still warns on every page, the difference is 4.3 points and not significant: most of that drop is shared with decontamination rather than caused by the new negatives, while the page improvement belongs to the new negatives (Section~\ref{sec:7.2})%
+. And retraining with technical benign text (v6, Section~\ref{sec:7}) removed the false alarms on technical sentences and cut page false alarms to 19–35\%. It also lowered Weni detection from v3's leakage-inflated 94.7\% to 63.7\%, which we first read as the price of removing the shortcut. The decontaminated v3-pub, which has no technical negatives and still warns on every page, drops almost as far: v6 is 4.3 points below it, not significantly, so the comparison with v3 cannot charge that drop to the new negatives. The two models miss partly different texts, however, and how much of v6's drop the new negatives cause remains open; the page improvement, by contrast, belongs to them (Section~\ref{sec:7.2})%
 . None of our models meets both acceptance criteria; of the models we tested, only Prompt Guard 2 (86M) meets the page-level one, and only as a point estimate (95\% interval 0.7–4.6\%)%
 .
 
 We think the case is useful beyond pt-BR because the failure is not exotic. The benign side of the training data was largely conversational (assistant commands and instruction-following prompts)%
-; the deployment distribution is mostly technical prose full of imperatives (install, run, configure, ignore this warning). A classifier can separate injections from chat with near-perfect accuracy and still have learned nothing that separates injections from documentation. Nor is the leakage exotic: it entered through machine-translated copies of test items and through aggregated datasets that contain other benchmarks, and an audit by embedding similarity underestimated it by an order of magnitude.
+; the deployment distribution is mostly technical prose full of imperatives (install, run, configure, ignore this warning). A classifier can separate injections from chat with near-perfect accuracy and still have learned nothing that separates injections from documentation. Nor is the leakage exotic: it entered through machine-translated copies of test items and through aggregated datasets that contain other benchmarks, and an audit by embedding similarity against the gold test missed most of the score's dependence on the leaked data.
 
 A concurrent study by \citet{liu2026passing}, which appeared while this work was under way, re-evaluates fifteen English detectors on agent tool outputs and on benign GitHub README chunks and reaches the same practical conclusions. We read our study as an independent replication of that gap in another language and with a detector we trained ourselves, so that the cause can be traced to the training recipe and tested by retraining; it adds whole-page aggregation, integration lessons for agent hooks, and the perspective of typed decision models (Section~\ref{sec:9.3}).
 
@@ -89,7 +90,7 @@ A concurrent study by \citet{liu2026passing}, which appeared while this work was
 \item \textbf{Engineering lessons for integrating classifiers into agents}: an encoding bug that made benign text look like an injection, a server-version mismatch silently swallowed by a fail-open hook, a sliding window longer than the model's context%
 , and an evaluation input list that drifted between runs%
 .
-\item \textbf{Open artifacts}: code (Apache-2.0), including the page benchmark builder, and all metric files and the benchmark manifest (CC-BY-4.0), released with this paper; model weights (MIT) are planned (Section~\ref{sec:13})%
+\item \textbf{Open artifacts}: code (Apache-2.0), including the page benchmark builder, and all metric files and the benchmark manifest (CC-BY-4.0), released with this paper; the v3-pub weights (MIT) are published separately (Section~\ref{sec:13})%
 .
 \end{enumerate}
 
@@ -362,7 +363,7 @@ The v3 numbers are restricted to the tests that decided the criterion%
 
 \textbf{(b) The criterion was missed by one text, and the miss is not statistically meaningful.} v3 detected 284 of 300 Weni items; the criterion required 285%
 . The Wilson 95\% interval \citep{wilson1927probable} for v3 is 91.5–96.7\%, which contains 95\%%
-; at n = 300 the pass/fail distinction is not statistically meaningful. And (d) shows that the score itself was inflated by leakage: the near miss was not a near pass. Intervals for the other rounds on Weni are 85.7–92.6\% (v5), 87.6–94.0\% (mix), 69.1–78.9\% (v2) and 61.2–71.8\% (v4)%
+; at n = 300 the pass/fail distinction is not statistically meaningful. And (d) shows that the score itself depended on leaked training data: the near miss was not a near pass. Intervals for the other rounds on Weni are 85.7–92.6\% (v5), 87.6–94.0\% (mix), 69.1–78.9\% (v2) and 61.2–71.8\% (v4)%
 .
 
 \textbf{(c) Adding HackAPrompt with the leakage lock made both backbones worse on Weni}: \ensuremath{-}7.7 points for e5-base (v4 vs v2) and \ensuremath{-}5.0 for e5-large (v5 vs v3)%
@@ -373,10 +374,10 @@ minus 4,008 removed by the lock%
 , so v4 and v5 differ from v2 and v3 mainly by (i) the removal of 115 Weni near-duplicates and (ii) about 107 surviving HackAPrompt items%
 . If this accounting is right, it also supports, indirectly, the claim that Weni derives from HackAPrompt, since it would imply that almost every successful HackAPrompt attack in the export has a Weni neighbour above cosine 0.9. Both readings are inferences across two exports and await a direct per-source count (lacuna L1, Section~\ref{sec:10}). They also bear on (d): v5 lost the same 115 neighbours and still detects 89.7\%, whereas v3-pub and v6 fall below 70\% (Table~\ref{tab:5}); if the roughly 107 surviving HackAPrompt items are close relatives of Weni texts, v5 is leaky in another way, which the same per-source count would show.
 
-\textbf{(d) Leakage inflated the v3 score far more than a cosine cut suggested.} v3 was trained before the leakage lock (Section~\ref{sec:3.4}). Applying the lock's rule afterwards flags 115 of its training examples; v3 detects all 58 Weni texts that have one of them as a neighbour and 226 of the other 242 (93.4\%), which put the inflation at about 1.3 points%
-. The decontaminated retraining shows that estimate to be far too low (Table~\ref{tab:5}). With the same recipe and without the test duplicates, their translations, the 115 near-duplicates and the xTRam1-derived rows, v3-pub detects 68.0\% of Weni: v3 alone detects 81 texts that v3-pub misses, and the reverse happens once (McNemar $p<10^{-6}$)%
-. On the 242 ``clean'' texts it detects 63.6\%, so the cut at 0.9 does not separate clean from contaminated items. Similarities between these embeddings are compressed: every Weni text has a neighbour above cosine 0.82 among the 115, nine in ten above 0.85, and v3-pub misses most where the similarity is lowest (it detects 2 of the 29 texts at or below 0.85)%
-. We therefore read v3's 94.7\% as inflated by leakage, by an amount closer to 27 points than to 1.3. Two caveats keep this from being a clean attribution. v3-pub also lost 967 of v3's 9,436 attack examples, 513 of them exact duplicates of other tests, so part of its drop may come from less attack data rather than from removed neighbours; and a ``v3 minus the 115'' control, which would separate the two, has not been run%
+\textbf{(d) The v3 score depended on leaked training data far more than a cosine cut suggested.} v3 was trained before the leakage lock (Section~\ref{sec:3.4}). Applying the lock's rule afterwards flags 115 of its training examples; v3 detects all 58 Weni texts that have one of them as a neighbour and 226 of the other 242 (93.4\%), which put the inflation at about 1.3 points%
+. The decontaminated retraining shows that the score depended on much more than those 115 (Table~\ref{tab:5}). With the same recipe and without the test duplicates, their translations, the 115 near-duplicates and the ShieldLM rows of excluded origin, v3-pub detects 68.0\% of Weni: v3 alone detects 81 texts that v3-pub misses, and the reverse happens once (McNemar $p<10^{-6}$)%
+. On the 242 ``clean'' texts it detects 63.6\%, and it misses most where the similarity to the 115 is lowest: every Weni text has a neighbour above cosine 0.82 among them, nine in ten above 0.85, and of the 29 texts at or below 0.85 v3-pub detects 2%
+. The loss therefore does not run mainly through the 115. Either a cut at 0.9 on these compressed similarities leaves leaked neighbours among the other 1,643 rows removed, none of them above 0.9 to any Weni text, or those rows, duplicates of other tests and their translations that are ordinary attack examples as far as Weni is concerned, carried detection that v3-pub lost with them: it has 967 fewer attack examples than v3 (out of 9,436), 513 of them exact duplicates of other tests. We read v3's 94.7\% as inflated by leakage, but the 26.7-point drop bounds that inflation from above rather than measuring it, and a ``v3 minus the 115'' control, which would test the 115 directly, has not been run%
 . The retraining also moves the in-distribution test as expected: without the xTRam1-derived rows, xTRam1 accuracy falls from 98.7\% to 95.4\% ($p<10^{-6}$), and by the same amount on the 1,417 items without a duplicate in training (98.6\% to 95.3\%), so v3's advantage there came from the shared distribution rather than from the duplicated items%
 . The page failure does not change: v3-pub, like v3, warns on all 217 benign pages at every threshold (Section~\ref{sec:5.2}). Measured on the same items, a 27-point paired drop is unlikely to be run-to-run variance, although seed variance was not measured (Section~\ref{sec:10}).
 
@@ -384,7 +385,7 @@ minus 4,008 removed by the lock%
 \centering
 \small
 \caption{Leakage audit: v3, the decontaminated v3-pub and v6 on the same items. Sentence rows: accuracy in \% at threshold 0.5 (for Weni, detection; for the technical sets, the share of benign texts not flagged) with Wilson 95\% intervals, and exact McNemar p-values on paired predictions: ``p pub/v3'' compares v3-pub with v3, ``p v6/pub'' compares v6 with v3-pub (v6 against v3 is in Table~\ref{tab:10}). Technical sets: Stack Overflow questions and answers and Python docstrings, all benign. v3-pub is v3's training set minus 1,758 examples (Section~\ref{sec:3.4}); v6 is v3's minus the 115 Weni near-duplicates plus 10,000 technical benign texts (Section~\ref{sec:7}). ``Clean'' and ``contam.'' split Weni by whether a text has one of the 115 as a neighbour above cosine 0.9. Page rows: 640/160 windows on the frozen page list of Section~\ref{sec:7.1}; false alarm (FA) on the 217 benign pages, detection on the 60 injected pages, and the share of the 2,247 benign windows with P \ensuremath{\geq} 0.5.}\label{tab:5}
-\begin{tabularx}{\linewidth}{@{}ll>{\raggedright\arraybackslash\hsize=1.01\hsize}X>{\raggedright\arraybackslash\hsize=1.00\hsize}X>{\raggedright\arraybackslash\hsize=1.00\hsize}Xll@{}}
+\begin{tabularx}{\linewidth}{@{}ll>{\raggedright\arraybackslash\hsize=1.00\hsize}X>{\raggedright\arraybackslash\hsize=1.00\hsize}X>{\raggedright\arraybackslash\hsize=1.00\hsize}Xll@{}}
 \toprule
 Test & n & v3 & v3-pub & v6 & p pub/v3 & p v6/pub \\
 \midrule
@@ -394,7 +395,7 @@ Weni, clean & 242 & 93.4 [89.5–95.9] & 63.6 [57.4–69.4] & 60.7 [54.5–66.7]
  \\
 Weni, contam. & 58 & 100.0 & 86.2 & 75.9 & — & 0.11 %
  \\
-xTRam1 & 1,500 & 98.7 [98.0–99.1] & 95.4 [94.2–96.4] & 99.3 [98.8–99.6] & $<10^{-6}$ & $<10^{-6}$ %
+xTRam1 & 1,500 & 98.7 [97.9–99.1] & 95.4 [94.2–96.3] & 99.3 [98.8–99.6] & $<10^{-6}$ & $<10^{-6}$ %
  \\
 xTRam1-pt & 500 & 96.0 [93.9–97.4] & 94.8 [92.5–96.4] & 98.2 [96.6–99.1] & 0.263 & $<10^{-4}$ %
  \\
@@ -402,9 +403,9 @@ deepset & 116 & 94.8 [89.2–97.6] & 94.0 [88.1–97.0] & 88.8 [81.8–93.3] & 1
  \\
 MASSIVE-pt & 1,500 & 99.8 [99.4–99.9] & 99.9 [99.5–100] & 100.0 [99.7–100] & 1.000 & 0.500 %
  \\
-SO questions & 300 & 33.3 [28.2–38.9] & 41.0 [35.6–46.7] & 100.0 [98.7–100] & 0.002 & $<10^{-6}$ %
+SO questions & 300 & 33.3 [28.2–38.8] & 41.0 [35.6–46.6] & 100.0 [98.7–100] & 0.002 & $<10^{-6}$ %
  \\
-SO answers & 300 & 13.3 [10.0–17.6] & 31.0 [26.0–36.4] & 100.0 [98.7–100] & $<10^{-6}$ & $<10^{-6}$ %
+SO answers & 300 & 13.3 [9.9–17.6] & 31.0 [26.0–36.4] & 100.0 [98.7–100] & $<10^{-6}$ & $<10^{-6}$ %
  \\
 Docstrings & 300 & 62.0 [56.4–67.3] & 74.0 [68.8–78.6] & 100.0 [98.7–100] & $<10^{-5}$ & $<10^{-6}$ %
  \\
@@ -656,7 +657,7 @@ v6 is compared with v3 on the same items: Wilson 95\% intervals per test and exa
 . Acceptance requires a page-level false-alarm rate below 2\% with detection reported%
 .
 
-\textbf{A decontaminated control.} v6 changed three things at once: it added technical negatives, dropped the 115 Weni near-duplicates and lowered the positive fraction. v3-pub (Section~\ref{sec:3.4}), trained a day later, is a partial control. Like v6 it lacks the 115 Weni near-duplicates, and unlike v6 it has no technical negatives; but it also drops the test duplicates, their translations and the xTRam1-derived rows that v6 keeps (1,758 examples removed against 115), and its positive fraction is 38.6\% against v6's 27.8\%%
+\textbf{A decontaminated control.} v6 changed three things at once: it added technical negatives, dropped the 115 Weni near-duplicates and lowered the positive fraction. v3-pub (Section~\ref{sec:3.4}), trained a day later, is a partial control. Like v6 it lacks the 115 Weni near-duplicates, and unlike v6 it has no technical negatives; but it also drops the test duplicates, their translations and the ShieldLM rows of excluded origin that v6 keeps (1,758 examples removed against 115), and its positive fraction is 38.6\% against v6's 27.8\%%
 . Comparing v6 with v3-pub therefore isolates the technical negatives better than comparing v6 with v3, but it is not an ablation. v3-pub was evaluated on the same items, frozen pages, code and machine as v3 and v6, and paired against both%
 .
 
@@ -714,7 +715,7 @@ Threshold & FA v3 & FA v6 [95\% CI] & Det. v3 & Det. v6 [95\% CI] & Det. v6, Wen
 \end{table}
 
 \textbf{The diagnosis is supported for technical prose.} On held-out technical benign sentences, v3 flagged 66.7\% of Stack Overflow questions, 86.7\% of answers and 38.0\% of docstrings; v6 flags none of the 900%
-. Decontamination alone does little: v3-pub, without technical negatives, still flags 59.0\%, 69.0\% and 26.0\% of them%
+. Decontamination alone helps much less: v3-pub, without technical negatives, still flags 59.0\%, 69.0\% and 26.0\% of them (51.3\% pooled, against 63.8\% for v3)%
 . These tests come from the same sources as v6's new training data, so they are in distribution for v6; the page test is not, since no README entered training (Section~\ref{sec:6.2}). On the READMEs, the share of benign 640-character windows scoring at least 0.5 fell from 99.6\% (v3) and 98.6\% (v3-pub) to 7.2\% (v6), a fourteen-fold reduction%
 .
 
@@ -727,15 +728,16 @@ Threshold & FA v3 & FA v6 [95\% CI] & Det. v3 & Det. v6 [95\% CI] & Det. v6, Wen
 . The windows that still fire, a median of 2 per flagged page, are README boilerplate absent from Stack Overflow and docstrings: HTML badges, sponsorship and donation links, markdown tables and link lists%
 .
 
-\textbf{Most of the Weni drop may not be the fix's.} On Weni, v6 detects 63.7\% against v3's 94.7\% (94 texts against 1; McNemar $p<10^{-6}$), and 60.7\% against 93.4\% on the 242 clean texts%
+\textbf{The Weni drop is not clearly the fix's.} On Weni, v6 detects 63.7\% against v3's 94.7\% (94 texts against 1; McNemar $p<10^{-6}$), and 60.7\% against 93.4\% on the 242 clean texts%
 . We first read this as the price of removing the shortcut. The decontaminated control undercuts that reading: v3-pub, which has no technical negatives, detects 68.0\% (63.6\% on the clean texts). Against it, v6 loses 4.3 points, with 47 texts detected only by v3-pub and 34 only by v6 (McNemar $p = 0.18$; on the clean texts 39 against 32, $p = 0.48$)%
-. The most economical reading is that what v6 and v3-pub share, the loss of training data close to the test, accounts for most of both drops, and the technical negatives for little at threshold 0.5. It is not the only reading. v5 lost the same 115 neighbours and kept 89.7\%, although it also gained about 107 HackAPrompt attacks that may be Weni's relatives (Section~\ref{sec:4}c), and v3-pub misses most where the similarity to the 115 is lowest (Section~\ref{sec:4}d); the shared factor may therefore be v3-pub's broader cuts rather than the 115, in which case v6's loss would owe more to its new negatives than the 4.3 points suggest. The bases also differ (Section~\ref{sec:7.1}). The ``v3 minus the 115'' control would decide between these readings. In ranking, the cost of the new negatives is clearer. Paired with assistant-style negatives, v3-pub still separates Weni well (AUC 0.977; 95.7\% detection at a 2\% false-positive rate), so its errors at 0.5 are mostly calibration; v6 separates it worse (AUC 0.883; 77.0\%) and gives P = 0.0000 to 23\% of Weni texts, against 4.3\% for v3-pub, so that lowering the threshold barely recovers them (67.0\% at 0.1 and 69.3\% at 0.01, against 73.0\% and 78.0\% for v3-pub)%
+. One reading is that what v6 and v3-pub share, the loss of the 115 training examples closest to Weni, accounts for most of both drops, and the technical negatives for little at threshold 0.5. The totals fit it; the pattern of errors fits it less well. v5 lost the same 115 neighbours and kept 89.7\%, although it also gained about 107 HackAPrompt attacks that may be Weni's relatives (Section~\ref{sec:4}c). Neither model loses most where the similarity to the 115 is highest (above 0.9, v3-pub detects 50 of 58 texts and v6 44), and the two part ways where it is lowest: of the 29 Weni texts least similar to the 115, v6 detects 20 and v3-pub 2. And the two models miss partly different texts: 62 are missed by both, 47 by v6 alone and 34 by v3-pub alone%
+. v3-pub's loss may therefore run through its broader cuts (Section~\ref{sec:4}d), which v6 does not share, in which case the two drops have different causes and v6's owes more to its new negatives than the 4.3 points suggest. The bases also differ (Section~\ref{sec:7.1}). The ``v3 minus the 115'' control would decide between these readings. In ranking, the cost of the new negatives is clearer. Paired with assistant-style negatives, v3-pub still separates Weni well (AUC 0.977; 95.7\% detection at a 2\% false-positive rate), so its errors at 0.5 are mostly calibration; v6 separates it worse (AUC 0.883; 77.0\%) and gives P = 0.0000 to 23\% of Weni texts, against 4.3\% for v3-pub, so that lowering the threshold barely recovers them (67.0\% at 0.1 and 69.3\% at 0.01, against 73.0\% and 78.0\% for v3-pub)%
 . Paired with the technical negatives the order flips: v3 and v3-pub detect none of Weni's injections at a 2\% false-positive rate (AUC 0.843 and 0.655, at the stored resolution), while v6 detects 77\% (AUC 0.885)%
 . The texts v6 loses relative to v3 are short (705 characters on average, against 1,101 for the rest) and framed as legitimate tasks (``generate a movie title about the sentence...'', ``translate...'', ``you are a search engine...''), with the attack's target phrase split or obfuscated%
 . The other tests with attacks hold or improve (xTRam1-pt 96.0\% \ensuremath{\rightarrow} 98.2\%, $p = 0.007$; jackhhao and SPML unchanged), except English deepset (94.8\% \ensuremath{\rightarrow} 88.8\%, $p = 0.016$), where v3-pub stays at 94.0\% (v6 against v3-pub: $p = 0.07$)%
 .
 
-\textbf{Reading.} Two effects that our first reading conflated can now be told apart, one firmly and one provisionally. Firmly: the technical negatives, not decontamination, are what improves technical text and pages; they take technical false alarms from v3-pub's 26–69\% to 0\% and page false alarms from 100\% to 34.6\% at threshold 0.5, where decontamination alone changes nothing on pages. Provisionally: most of the Weni drop is shared with decontamination rather than caused by the technical negatives, whose cost on Weni is small at 0.5 and visible in ranking against conversational negatives; the control that isolates the 115 Weni neighbours has not been run%
+\textbf{Reading.} Of the two effects that our first reading conflated, one can now be told apart firmly; the other remains open. Firmly: the technical negatives, not decontamination, are what removes the false alarms on technical text and pages; they take technical false alarms from v3-pub's 26–69\% to 0\% and page false alarms from 100\% to 34.6\% at threshold 0.5, while decontamination alone lowers technical false alarms only partly (from 63.8\% to 51.3\% pooled) and changes nothing on pages. Open: what causes most of v6's Weni drop. A decontaminated model without technical negatives drops almost as far at 0.5, so the comparison with v3 does not show that the negatives caused it; the pattern of errors and v5 argue against a shared cause, and in ranking against conversational negatives the negatives' cost is visible. The control that isolates the 115 Weni neighbours has not been run%
 . None of the three versions meets both criteria: v3 misses Weni by one text with an inflated score and fails the page criterion, and v3-pub and v6 fail both. v3 remains in the toolkit for conversational text only, and the hook stays disabled%
 .
 
@@ -805,8 +807,8 @@ Five concrete corrections follow for anyone evaluating an injection classifier f
 \item \textbf{Evaluate in the unit of decision.} If the deployed decision is ``warn on this page'', the metric is the page false-alarm rate at the deployed threshold, with detection measured on the same pages with an inserted attack.
 \item \textbf{Report intervals and margins.} At n = 300 the 95\% criterion could not be distinguished from the result (Section~\ref{sec:4}b); and the 20-point capacity effect between e5-base and e5-large on the same (leaky) data %
 dwarfs most of the differences between data recipes we tried.
-\item \textbf{Decontaminate against every test, and check the audit by retraining.} A cosine cut at 0.9 against the gold test, applied after the fact, put the leakage in our best model at 1.3 points; retraining without test duplicates and near-duplicates cost 26.7 (Section~\ref{sec:4}d). Embedding similarities are compressed, so a threshold that looks strict can separate little. Check every test, translated copies included: exact duplicates after normalisation turned up in nearly every test we used (Section~\ref{sec:3.1}).
-\item \textbf{Separate effects before attributing them.} We first credited v6's Weni drop to the new negatives; the decontaminated control showed that most of it is shared with decontamination (Section~\ref{sec:7.2}). A fix aimed at false alarms must be checked against the gold set again, and against a control that differs from it in the fix alone.
+\item \textbf{Decontaminate against every test, and check the audit by retraining.} A cosine cut at 0.9 against the gold test, applied after the fact, put the leakage in our best model at 1.3 points; retraining without the duplicates of every test, their translations and the gold test's near-duplicates cost 26.7, mostly on texts the cut had called clean (Section~\ref{sec:4}d). An audit against the gold test alone cannot see what duplicates of the other tests contribute, and embedding similarities are compressed, so a threshold that looks strict can separate little. Check every test, translated copies included: exact duplicates after normalisation turned up in nearly every test we used (Section~\ref{sec:3.1}).
+\item \textbf{Separate effects before attributing them.} We first credited v6's Weni drop to the new negatives; a decontaminated control without them dropped almost as far, so the credit was premature, although that control does not settle the question either (Section~\ref{sec:7.2}). A fix aimed at false alarms must be checked against the gold set again, and against a control that differs from it in the fix alone.
 \end{enumerate}
 
 \subsection{Typed decision models with agents: a dialogue with Akita (2026)}\label{sec:9.2}
@@ -822,7 +824,7 @@ Our fine-tuned models had the analogous defect (uncalibrated, saturated outputs)
 \textbf{Confidence-based escalation collapses under saturation.} A common integration pattern routes high-confidence decisions to automation and low-confidence ones to a stronger model or a human. With probabilities pinned at 1.0, the escalation band is empty: every page is a confident, wrong, ``easy'' case. v6 shows the mirror image: 23\% of Weni's attacks receive P = 0.0000, confident and wrong in the other direction (4.3\% for v3-pub)%
 . Confidence-based routing is only as good as the calibration \emph{under the deployment distribution}.
 
-\textbf{Fixing the negative class may move the boundary for the positive class, but check before concluding that it did.} We first read v6's 31-point loss on Weni as the price of the repair: attacks phrased as ordinary tasks becoming indistinguishable from technical instructions. The decontaminated control (Section~\ref{sec:7.2}) shows that most of that loss is shared with decontamination; at threshold 0.5 the new negatives cost 4.3 points against it, within noise, while in ranking against conversational negatives they cost more (AUC 0.977 against 0.883). When two classes share their surface form, more data on one side can shift the boundary through the other, and a typed interface does not tell the integrator when that is happening; but a drop on a gold set is evidence of a moved boundary only after leakage has been ruled out.
+\textbf{Fixing the negative class may move the boundary for the positive class, but check before concluding that it did.} We first read v6's 31-point loss on Weni as the price of the repair: attacks phrased as ordinary tasks becoming indistinguishable from technical instructions. The decontaminated control (Section~\ref{sec:7.2}) loses almost as much without any new negatives: at threshold 0.5 v6 is 4.3 points below it, within noise, while in ranking against conversational negatives the gap is larger (AUC 0.977 against 0.883); how much of the loss the negatives cause is still open. When two classes share their surface form, more data on one side can shift the boundary through the other, and a typed interface does not tell the integrator when that is happening; but a drop on a gold set is evidence of a moved boundary only after leakage has been ruled out.
 
 \textbf{Silent failure is a property of the integration, not the model.} The evidence in the post concerns the model's behaviour; our most dangerous bug (I3) had nothing to do with the model. A guard that fails open and silently looks exactly like a guard that finds nothing.
 
@@ -838,7 +840,7 @@ Liu's markup result bears directly on ours. The windows v6 still flags are badge
 \subsection{On negative results}\label{sec:9.4}
 
 The guard stays out of the web-fetch hook; v3 remains in the local toolkit for conversational text only, and the toolkit continues with other decisions%
-. We report the failure in detail because the path that led to it (open data, careful splits, a pre-fixed criterion, a strong benchmark result) is the path most practitioners would follow, and the step that caught the problem, evaluating in the unit of use on ordinary content, is cheap and still rarely reported; a recent exception measures detectors on benign English README chunks rather than whole pages \citep{liu2026passing}. The attempted fix and the decontaminated retraining are reported for the same reason: the first worked on what it targeted, and the second showed that most of the price we had attributed to it is shared with leakage leaving the benchmark.
+. We report the failure in detail because the path that led to it (open data, careful splits, a pre-fixed criterion, a strong benchmark result) is the path most practitioners would follow, and the step that caught the problem, evaluating in the unit of use on ordinary content, is cheap and still rarely reported; a recent exception measures detectors on benign English README chunks rather than whole pages \citep{liu2026passing}. The attempted fix and the decontaminated retraining are reported for the same reason: the first worked on what it targeted, and the second showed that a drop of nearly the same size happens without the fix once the leaked data leave the training set, so the price we had attributed to the fix is not established.
 
 \section{Limitations}\label{sec:10}
 
@@ -846,8 +848,8 @@ The guard stays out of the web-fetch hook; v3 remains in the local toolkit for c
 \item \textbf{Single run per configuration.} No seed variance was measured; differences of a few points between rounds (e.g., v3 vs v5, or v3-pub vs v6 on Weni) may be noise%
 . The 26.7-point paired difference between v3 and v3-pub is large for a seed effect, but this was not measured.
 \item \textbf{Leakage in the best model.} v3 was trained before the leakage lock; 115 of its training examples are near-duplicates of Weni texts%
-. A post-hoc cut at cosine 0.9 put their effect at 1.3 points; the decontaminated retraining loses 26.7 (Section~\ref{sec:4}d)%
-. Which of v3-pub's removals carries the effect is not isolated: it also removed 967 attack examples, 513 of them exact duplicates of other tests, and the ``v3 minus the 115'' control has not been run%
+. A post-hoc cut at cosine 0.9 put their effect at 1.3 points; the decontaminated retraining loses 26.7, mostly on texts without such a neighbour (Section~\ref{sec:4}d)%
+. Which of v3-pub's removals carries the effect, and how much of it is leakage rather than lost attack data, is not isolated: it also removed 967 attack examples, 513 of them exact duplicates of other tests, and the ``v3 minus the 115'' control has not been run%
 . The per-source breakdown of the 4,008 examples removed in v4 was not recorded, and the accounting in Section~\ref{sec:4}(c) is an inference across exports (lacuna L1)%
 .
 \item \textbf{xTRam1 is not out of distribution} for v2–v6, and exact duplicates of test items were in v3's training data for nearly every test, among them 20 of the 262 jackhhao items and 83 of the 1,500 xTRam1 items (Section~\ref{sec:3.1})%
@@ -872,7 +874,7 @@ The guard stays out of the web-fetch hook; v3 remains in the local toolkit for c
 .
 \item \textbf{Data card warnings.} The SPML card advises against training detectors on it; we used it and flag this as a threat to validity%
 .
-\item \textbf{Causal claims only partly tested.} v6 changed three things at once (technical negatives, removal of the 115 Weni near-duplicates, class balance) in a single run. The decontaminated v3-pub is a partial control, but the bases are not identical: v6 keeps the test duplicates, their translations and the xTRam1-derived rows that v3-pub removes, and v3-pub removes 1,758 examples where v6 removes 115 (Section~\ref{sec:7.1}). The attribution of the Weni drop therefore remains provisional until the ``v3 minus the 115'' control is run. v6's technical test sets are in distribution for it, and we did not measure the effect of markup (Sections~\ref{sec:7.2} and~\ref{sec:9.3})%
+\item \textbf{Causal claims only partly tested.} v6 changed three things at once (technical negatives, removal of the 115 Weni near-duplicates, class balance) in a single run. The decontaminated v3-pub is a partial control, but the bases are not identical: v6 keeps the test duplicates, their translations and the ShieldLM rows of excluded origin that v3-pub removes, and v3-pub removes 1,758 examples where v6 removes 115 (Section~\ref{sec:7.1}). The cause of v6's Weni drop therefore remains open until the ``v3 minus the 115'' control is run. v6's technical test sets are in distribution for it, and we did not measure the effect of markup (Sections~\ref{sec:7.2} and~\ref{sec:9.3})%
 .
 \item \textbf{Score resolution.} Our evaluation stored probabilities rounded to four decimals, which limits threshold and AUROC analysis near 0 and 1 (Section~\ref{sec:7.2}); only the baseline run stored log-odds%
 .
@@ -886,34 +888,34 @@ The guard stays out of the web-fetch hook; v3 remains in the local toolkit for c
 
 \section{Conclusion}\label{sec:11}
 
-A Brazilian Portuguese prompt-injection classifier trained only on open data passed its sentence benchmarks, missed its pre-fixed gold-set criterion by one text, and raised a false alarm on every technical documentation page it was shown. Both halves of that result turned out to matter. The benchmark number was inflated: retrained without test duplicates and near-duplicates, the same recipe detects 68.0\% of the native pt-BR attacks instead of 94.7\%, an inflation that a cosine-similarity audit had put at 1.3 points. The use failure is real and separate: the decontaminated model still warns on every page. It is not peculiar to our model, since a public classifier does the same, and the unit of evaluation changes the verdict: sentence and page benchmarks ranked the six models in opposite orders. Only one public model, Llama Prompt Guard 2 (86M), stays near 2\% page false alarms (1.8\%, with 62\% detection); it is also the one whose card reports benign web data in training, and it still detects only 30\% of the short injections and misses our sentence criterion on Weni, so it narrows the problem rather than closing it. Adding technical benign text removed the false alarms on technical sentences and most of those on pages; against the decontaminated control it cost 4.3 points of Weni detection at threshold 0.5, within noise, so most of the drop we had attributed to it is shared with decontamination, pending a control that isolates the Weni neighbours. No version we trained meets both criteria. The practical conclusions are modest: decontaminate against every test and check the audit by retraining; draw the benign side of the test from the deployment distribution; evaluate in the unit of decision through the deployment code path; freeze the inputs and keep raw scores; and separate effects before attributing them. The hook stays disabled.
+A Brazilian Portuguese prompt-injection classifier trained only on open data passed its sentence benchmarks, missed its pre-fixed gold-set criterion by one text, and raised a false alarm on every technical documentation page it was shown. Both halves of that result turned out to matter. The benchmark number was inflated: retrained without test duplicates and near-duplicates, the same recipe detects 68.0\% of the native pt-BR attacks instead of 94.7\%. A cosine-similarity audit had put the inflation at 1.3 points; the 26.7-point drop bounds it from above, since the retrained model also has fewer attack examples. The use failure is real and separate: the decontaminated model still warns on every page. It is not peculiar to our model, since a public classifier does the same, and the unit of evaluation changes the verdict: sentence and page benchmarks ranked the six models in opposite orders. Only one public model, Llama Prompt Guard 2 (86M), stays near 2\% page false alarms (1.8\%, with 62\% detection); it is also the one whose card reports benign web data in training, and it still detects only 30\% of the short injections and misses our sentence criterion on Weni, so it narrows the problem rather than closing it. Adding technical benign text removed the false alarms on technical sentences and most of those on pages; against the decontaminated control it cost 4.3 points of Weni detection at threshold 0.5, within noise, so the drop we had attributed to it cannot be charged to it on the comparison with v3 alone; a control that isolates the Weni neighbours would tell how much of it is the fix's. No version we trained meets both criteria. The practical conclusions are modest: decontaminate against every test and check the audit by retraining; draw the benign side of the test from the deployment distribution; evaluate in the unit of decision through the deployment code path; freeze the inputs and keep raw scores; and separate effects before attributing them. The hook stays disabled.
 
 \section{Ethics and data}\label{sec:12}
 
 All training and evaluation data are public. Licenses were read from the Hugging Face Hub API, dataset cards and LICENSE/NOTICE files on 6 October 2026%
 . Two evaluation sets (Weni and xTRam1) declare no license; we load them only for evaluation, download them at run time, and do not redistribute them or their translations%
 . However, 577 rows of xTRam1's training split reached our training data indirectly, through ShieldLM (Section~\ref{sec:3.1}); the v3-pub weights, trained on 7 October, exclude them, together with the ShieldLM rows whose licence differs between origin and aggregator (Section~\ref{sec:3.4})%
-. Dolly and Stack Overflow content are CC-BY-SA; we plan to publish weights under MIT following the precedent of models trained on the same data, and declare this position explicitly%
+. Dolly and Stack Overflow content are CC-BY-SA; the v3-pub weights, trained with Dolly and without Stack Overflow, are published under MIT following the precedent of models trained on the same data, and we declare this position explicitly%
 . Llama Prompt Guard 2 was evaluated under the Llama 4 Community License as a baseline only: its outputs were not used to train, calibrate or distil our models, and its weights are not redistributed (the copy used to run it sits in private storage of the notebook service)%
 .
 
 The page benchmark does not redistribute any README: it ships package names, versions and hashes, and a builder downloads the pages from PyPI and verifies them%
 . No personal data, private text or organisational data was used in this study. The released model detects injections and is not an attack tool; we do not release attack text beyond what the cited public datasets already contain.
 
-A guard with a 100\% false-alarm rate is harmful in a subtle way: users learn to ignore its warnings. The model card will state the page-level failure in its first line and report v3-pub's own numbers, not v3's leakage-inflated 94.7\%%
+A guard with a 100\% false-alarm rate is harmful in a subtle way: users learn to ignore its warnings. The model card opens with the page-level failure and reports v3-pub's own numbers; v3's leakage-inflated 94.7\% appears there only as a comparison%
 .
 
 \textbf{Use of AI assistance.} Much of the experimental code, the logging, and the first draft of this paper were produced with the help of an LLM coding agent. Every number reported is traced to a log line, result file or commit; claims that could not be traced are listed as limitations. %
 
 \section{Artifacts}\label{sec:13}
 
-Code, results and the page benchmark are released at \url{https://github.com/alucardigo/passing-the-benchmark}; the fine-tuned weights are not released yet%
+Code, results and the page benchmark are released at \url{https://github.com/alucardigo/passing-the-benchmark}; the fine-tuned weights are published separately, on Kaggle Models%
 .
 
 \begin{itemize}
 \item \textbf{Code} (Apache-2.0): training and export pipeline, deterministic translation with cache, fixed-weight ensemble, page benchmark builder and evaluator, a reference agent hook (disabled by default), tests. Repository: \url{https://github.com/alucardigo/passing-the-benchmark}. The public repository starts without the development history%
 .
-\item \textbf{Weights} (MIT): v3-pub, trained and evaluated (Section~\ref{sec:3.4}, Table~\ref{tab:5}) but not yet released. Its card will open with the page-level failure and report its own numbers (Weni 68.0\%, xTRam1 95.4\%, 217 of 217 page false alarms), not v3's%
+\item \textbf{Weights} (MIT): v3-pub (Section~\ref{sec:3.4}, Table~\ref{tab:5}) and the round-B probe, published on Kaggle Models as passing-the-benchmark-guard. The card opens with the page-level failure and reports v3-pub's own numbers (Weni 68.0\%, xTRam1 95.4\%, 217 of 217 page false alarms)%
 . v6 does not meet the page criterion (Section~\ref{sec:7.2}) and is not released as a guard%
 .
 \item \textbf{Results} (CC-BY-4.0): one JSON per round with the SHA-256 of the weights and page-level probabilities by index, the per-item probabilities of the v3–v6 and v3-pub comparisons, and the per-page and per-sentence log-odds of the baseline run, without third-party text%
@@ -1008,7 +1010,7 @@ Date (2026, UTC\ensuremath{-}3) & Event \\
  \\
 5 Oct & Round A (xTRam1-pt 81.8\%); round B (Weni 72.3\%); v2 (Weni 74.3\%); leakage lock; hook ready but disabled %
  \\
-6 Oct & v4 (Weni 66.7\%); v5 (89.7\%); v3 re-evaluated (94.67\%, later shown to be inflated by leakage); mix (91.3\%); v3 chosen, status experimental %
+6 Oct & v4 (Weni 66.7\%); v5 (89.7\%); v3 re-evaluated (94.67\%, later shown to depend on leaked training data); mix (91.3\%); v3 chosen, status experimental %
  \\
 6 Oct & Hook defects found; page-level evaluation: 100\% false alarms at both window sizes; guard rejected for web fetch %
  \\
