@@ -60,8 +60,9 @@ page, not sentence by sentence), and of what a decontaminated retraining reveale
    put the effect on Weni at 1.3 points. Retraining the same recipe without the duplicates, their
    translations, the near-duplicates, the xTRam1 rows and the licence-excluded ShieldLM rows (v3-pub) costs
    26.7 points on Weni (94.7% → 68.0%, McNemar p < 1e-6) and 3.3 on xTRam1 (98.7% → 95.4%), and leaves the
-   page failure untouched (217/217). Most of the Weni loss falls on texts without a near-duplicate in
-   training, so the 26.7 points bound the leakage effect from above rather than measure it: v3-pub also has
+   page failure untouched (217/217). v3-pub drops more on the Weni texts without a near-duplicate in training
+   (29.8 points) than on those with one (13.8), so the 26.7 points bound the leakage effect from above rather
+   than measure it: v3-pub also has
    967 fewer attack examples, 513 of them duplicates of other tests, and a control that removes only the 115
    near-duplicates has not been run.
 
@@ -244,8 +245,8 @@ sobre o seu placar no benchmark.
    cosseno estimava o efeito no Weni em 1,3 ponto. Retreinar a mesma receita sem as duplicatas, as traduções
    delas, as quase-duplicatas, as linhas do xTRam1 e as linhas do ShieldLM excluídas pela licença (v3-pub)
    custa 26,7 pontos no Weni (94,7% → 68,0%, McNemar p < 1e-6) e 3,3 no xTRam1 (98,7% → 95,4%), e não mexe na
-   falha por página (217/217). A maior parte da perda no Weni cai em textos sem quase-duplicata no treino,
-   então os 26,7 pontos limitam o efeito do vazamento por cima, em vez de medi-lo: a v3-pub também tem 967
+   falha por página (217/217). A v3-pub cai mais nos textos do Weni sem quase-duplicata no treino (29,8 pontos)
+   do que nos que têm uma (13,8), então os 26,7 pontos limitam o efeito do vazamento por cima, em vez de medi-lo: a v3-pub também tem 967
    exemplos de ataque a menos, 513 deles duplicatas de outros testes, e um controle que tire só as 115
    quase-duplicatas não foi rodado.
 
