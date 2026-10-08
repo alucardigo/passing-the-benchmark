@@ -7,7 +7,7 @@ Gerado pelo script de comparação de três versões do estudo (`comparar_v3pub.
 | teste | o que mede | n | v3 | v3pub | v6 | Δ v3pub (p.p.) | McNemar p v3pub | Δ v6 (p.p.) | McNemar p v6 |
 |---|---|---|---|---|---|---|---|---|---|
 | weni | injeção pt-BR nativa (HackAPrompt traduzida), fora da distribuição | 300 | 94,7% | 68,0% | 63,7% | -26,67 | < 1e-6 | -31,0 | < 1e-6 |
-| xtram1 | injeção/benigno en, fora da distribuição | 1500 | 98,7% | 95,4% | 99,3% | -3,27 | < 1e-6 | 0,67 | 0,031 |
+| xtram1 | injeção/benigno en, não é fora da distribuição (artigo, seção 3.1) | 1500 | 98,7% | 95,4% | 99,3% | -3,27 | < 1e-6 | 0,67 | 0,031 |
 | xtram1-pt | xTRam1 traduzido (Opus-MT) | 500 | 96,0% | 94,8% | 98,2% | -1,2 | 0,263 | 2,2 | 0,007 |
 | massive_pt | benigno pt (comandos a assistente) | 1500 | 99,8% | 99,9% | 100,0% | 0,07 | 1,000 | 0,2 | 0,250 |
 | dolly | benigno en (instruções a assistente) | 300 | 99,7% | 99,7% | 99,3% | 0,0 | 1,000 | -0,33 | 1,000 |

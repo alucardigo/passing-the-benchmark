@@ -81,7 +81,7 @@
    }
   },
   "xtram1": {
-   "papel": "injeção/benigno en, fora da distribuição",
+   "papel": "injeção/benigno en, não é fora da distribuição (artigo, seção 3.1)",
    "v3": {
     "n": 1500,
     "acuracia": 0.9867,
@@ -1865,7 +1865,7 @@
     }
    },
    "pesos": {
-    "pasta": "models/prompt_injection-e5large-v3pub (pesos ainda não publicados)",
+    "pasta": "models/prompt_injection-e5large-v3pub (pesos publicados depois, sob MIT, no Kaggle Models como passing-the-benchmark-guard)",
     "model_safetensors_sha256": "acb8d28f19b3613d8fe7ddf8c782993e5ef8cbf80830b455cbdbb45e7cf69769",
     "conferido": "o mesmo hash na saída do Kaggle, na cópia local e na cópia da VM ARM",
     "config": "idêntica à da v6 (XLMRobertaForSequenceClassification, id2label 0=false 1=true)",

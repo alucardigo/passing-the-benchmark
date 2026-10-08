@@ -10,7 +10,7 @@ The following parts of this repository are licensed under the
 
 Full legal code: <https://creativecommons.org/licenses/by/4.0/legalcode>.
 
-Attribution: Rodrigo Faria, "Passing the Benchmark, Failing the README: A Negative Result on Deploying a
+Attribution: Rodrigo Faria, "Passing the Benchmark, Failing the README: Leakage and Shortcut Learning in a
 Brazilian Portuguese Prompt-Injection Classifier", 2026, <https://github.com/alucardigo/passing-the-benchmark>.
 
 The code is licensed under Apache-2.0 (see `LICENSE`). Third-party datasets, models and package

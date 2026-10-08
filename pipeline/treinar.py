@@ -12,8 +12,10 @@ Rodadas (o que entra no treino exportado; ver results/README.md):
   anti-vazamento (a trava só passou a existir depois dessa exportação).
 - v5 (= v4): v3 + HackAPrompt (só ataques que funcionaram); com a trava.
 - v6: v3 + 10.000 benignos técnicos (StackOverflow e docstrings); com a trava; sem HackAPrompt.
-- v3-pub (ainda não treinada): v3 sem as linhas do xTRam1 dentro do ShieldLM, sem duplicatas exatas dos
-  testes e com a trava. É a candidata a pesos públicos.
+- v3-pub (treinada em 07/10/2026; pesos publicados sob MIT no Kaggle Models): esta rodada aproxima a
+  exportação do estudo. Tira as linhas do xTRam1 dentro do ShieldLM (safeguard/*) e as duplicatas exatas
+  dos testes (sem os traduzidos) e aplica a trava; não tira as linhas trustailab/* nem aplica a regra de
+  pares de tradução (ver results/v3pub/v3pub.md).
 - sonda-b: a sonda da rodada B (sem Dolly), sem trava.
 
 Protocolo: validação = 15% do treino por hash do texto (sonda) ou 8% estratificada (notebook do Kaggle);

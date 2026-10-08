@@ -1,9 +1,10 @@
 # Guard v3-pub: pesos com licença limpa
 
 > Relatório escrito durante o estudo (07/10/2026), em português. Os caminhos foram trocados pelos deste
-> repositório e os comandos de infraestrutura privada saíram; os números são os originais. Três correções:
+> repositório, os comandos de infraestrutura privada saíram e o estado de publicação dos pesos foi atualizado;
+> os números são os originais. Três correções:
 > (1) na seção 2, a frase "todos os 300 textos do Weni têm vizinho acima de 0,85" contradiz a própria tabela
-> por faixa; o mínimo é 0,826 e 271 de 300 ficam acima de 0,85. (2) No Resumo, "o xTRam1 agora é fora da
+> por faixa; o mínimo é 0,826 e 271 de 300 ficam acima de 0,85. (2) No Resumo e na seção 3, "o xTRam1 agora é fora da
 > distribuição de verdade" vai além dos dados: a v3-pub não tem as linhas do xTRam1 nem duplicatas dos 1.500
 > itens de teste, mas 422 textos de treino dela (378 do jackhhao, 37 da Dolly) são iguais a textos do conjunto
 > xTRam1 (`dados/auditoria.json`, chave `linhas_de_treino_iguais_a_algum_texto_do_xtram1_train_ou_test`). O
@@ -97,7 +98,7 @@ O que não muda:
   estratificada. Rodou em Kaggle 2× T4 em 1 h 58 min. A validação interna deu 99,49% (v3: 99,63%; v6: 99,70%).
 - **Dados no Kaggle.** O dataset de treino e o kernel são privados (`is_private=True`, conferido pela API); o dataset
   não é publicado porque contém texto de bases de terceiros.
-- **Instalação.** Os pesos (ainda não publicados) ficaram em `models/prompt_injection-e5large-v3pub`, com temperatura
+- **Instalação.** Os pesos (publicados depois, sob MIT, no Kaggle Models como `passing-the-benchmark-guard`) ficaram em `models/prompt_injection-e5large-v3pub`, com temperatura
   1 e prefixo `query: `. O
   `config.json` é idêntico ao da v6. O sha256 de `model.safetensors` é
   `acb8d28f19b3613d8fe7ddf8c782993e5ef8cbf80830b455cbdbb45e7cf69769`, o mesmo na saída do Kaggle, na cópia local e na
@@ -116,7 +117,7 @@ Os testes de frase usam limiar 0,5 e temperatura 1. Δ = versão − v3, em pont
 | teste | o que mede | n | v3 | v3-pub | v6 | Δ v3-pub | p v3-pub | Δ v6 | p v6 |
 |---|---|---|---|---|---|---|---|---|---|
 | weni | injeção pt-BR nativa, fora da distribuição | 300 | 94,7% | 68,0% | 63,7% | −26,7 | < 1e-6 | −31,0 | < 1e-6 |
-| xtram1 | injeção/benigno en, fora da distribuição | 1500 | 98,7% | 95,4% | 99,3% | −3,3 | < 1e-6 | +0,7 | 0,031 |
+| xtram1 | injeção/benigno en, não é fora da distribuição (artigo, seção 3.1) | 1500 | 98,7% | 95,4% | 99,3% | −3,3 | < 1e-6 | +0,7 | 0,031 |
 | xtram1-pt | xTRam1 traduzido | 500 | 96,0% | 94,8% | 98,2% | −1,2 | 0,263 | +2,2 | 0,007 |
 | massive_pt | benigno pt (comandos a assistente) | 1500 | 99,8% | 99,9% | 100,0% | +0,1 | 1,000 | +0,2 | 0,250 |
 | dolly | benigno en | 300 | 99,7% | 99,7% | 99,3% | 0,0 | 1,000 | −0,3 | 1,000 |

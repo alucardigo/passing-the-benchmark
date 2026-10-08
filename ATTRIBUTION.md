@@ -64,7 +64,7 @@ the position taken is stated explicitly.
 ## Evaluation only (never redistributed, never translated in public)
 
 - `Weni/prompt-injections-1.0.0` @`9707fa47` — no license declared. Native pt-BR test set; the training
-  pipeline removes near-duplicates of it (cosine > 0.9) from rounds v4–v6.
+  pipeline removes near-duplicates of it (cosine > 0.9) from rounds v4–v6 and v3-pub.
 - `xTRam1/safe-guard-prompt-injection` @`a3a877d6` — no license declared. English test set (and, through
   ShieldLM, 577 training rows: it is the same distribution, not out-of-distribution).
 - Page benchmark: long descriptions (README) of 217 PyPI packages, each under the license of its package.

@@ -3,6 +3,10 @@
 > Relatório escrito durante o estudo (06/10/2026; Prompt Guard 2 em 07/10/2026), em português. Os
 > caminhos foram trocados pelos deste repositório e os comandos de infraestrutura privada saíram; os
 > números são os originais.
+>
+> Nota de publicação (08/10/2026): o Weni de 94,7% do nosso e5-large v3 citado aqui é inflado por vazamento.
+> A mesma receita, retreinada sem as duplicatas de teste e as quase-duplicatas do Weni (v3-pub), detecta 68,0%
+> (`results/v3pub/v3pub.md`; artigo, seção 4d). Na página, a v3-pub falha igual à v3 (217 de 217 avisos falsos).
 
 Medido em 06/10/2026; o Llama Prompt Guard 2 (86M e 22M) entrou em 07/10/2026, quando o acesso ao
 repositório gated foi liberado. A pergunta: o aviso falso de 100% que o nosso guard (e5-large v3) dá em

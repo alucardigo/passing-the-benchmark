@@ -171,7 +171,8 @@ model card that opens with the page-level failure and reports v3-pub's own numbe
   CC BY 4.0 ([`LICENSE-CC-BY-4.0.md`](LICENSE-CC-BY-4.0.md)). Model weights: MIT (the probe-B weights in
   [`results/sonda-b/`](results/sonda-b/LICENSE) and the fine-tuned v3-pub weights on Kaggle Models).
 - No third-party text is redistributed: datasets, models and README pages are downloaded from their
-  sources. Two evaluation sets (Weni, xTRam1) declare no license and are used for evaluation only.
+  sources. Two evaluation sets (Weni, xTRam1) declare no license and are loaded for evaluation only;
+  577 rows of xTRam1's train split reached training indirectly, through ShieldLM, until v3-pub removed them.
   Every dataset, model and revision, with its license, is in [`ATTRIBUTION.md`](ATTRIBUTION.md).
 
 ### Citation
@@ -278,7 +279,8 @@ v3-pub.
 Código sob Apache-2.0; artigo, resultados e manifesto do benchmark sob CC BY 4.0; pesos de modelo sob MIT
 (os da sonda B, em `results/sonda-b/`, e os ajustados da v3-pub, no Kaggle Models). Nenhum texto de
 terceiro é redistribuído: bases, modelos e páginas são baixados da fonte. Weni e xTRam1 não declaram
-licença e são usados só para avaliação. Todas as bases, modelos e revisões, com licença, estão em
+licença e são carregados só para avaliação; 577 linhas do treino do xTRam1 chegaram ao treino por
+dentro do ShieldLM, até a v3-pub tirá-las. Todas as bases, modelos e revisões, com licença, estão em
 [`ATTRIBUTION.md`](ATTRIBUTION.md). O código tem comentários e identificadores em português.
 
 ### Citação e autor

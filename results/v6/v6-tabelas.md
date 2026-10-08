@@ -7,7 +7,7 @@ Gerado por `analysis/comparar_versoes.py` em 2026-10-06. Limiar 0,5 nos testes d
 | teste | o que mede | n | v3 | v6 | Δ (p.p.) | McNemar p |
 |---|---|---|---|---|---|---|
 | weni | injeção pt-BR nativa (HackAPrompt traduzida), fora da distribuição | 300 | 94,7% | 63,7% | -31,0 | < 1e-6 |
-| xtram1 | injeção/benigno en, fora da distribuição | 1500 | 98,7% | 99,3% | 0,67 | 0,031 |
+| xtram1 | injeção/benigno en, não é fora da distribuição (artigo, seção 3.1) | 1500 | 98,7% | 99,3% | 0,67 | 0,031 |
 | xtram1-pt | xTRam1 traduzido (Opus-MT) | 500 | 96,0% | 98,2% | 2,2 | 0,007 |
 | massive_pt | benigno pt (comandos a assistente) | 1500 | 99,8% | 100,0% | 0,2 | 0,250 |
 | dolly | benigno en (instruções a assistente) | 300 | 99,7% | 99,3% | -0,33 | 1,000 |

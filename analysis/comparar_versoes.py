@@ -35,7 +35,7 @@ ALVO_AVISO_FALSO = 0.02
 # ordem e papel de cada teste na tabela (o que ele mede)
 PAPEL = {
     "weni": "injeção pt-BR nativa (HackAPrompt traduzida), fora da distribuição",
-    "xtram1": "injeção/benigno en, fora da distribuição",
+    "xtram1": "injeção/benigno en, não é fora da distribuição (artigo, seção 3.1)",
     "xtram1-pt": "xTRam1 traduzido (Opus-MT)",
     "massive_pt": "benigno pt (comandos a assistente)",
     "dolly": "benigno en (instruções a assistente)",
