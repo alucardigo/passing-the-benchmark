@@ -910,18 +910,18 @@ A guard with a 100\% false-alarm rate is harmful in a subtle way: users learn to
 
 \section{Artifacts}\label{sec:13}
 
-Code, results and the page benchmark are released at \url{https://github.com/alucardigo/passing-the-benchmark}; the fine-tuned weights are published separately, on Kaggle Models%
+Code, results and the page benchmark are released at \url{https://github.com/alucardigo/passing-the-benchmark}; the fine-tuned weights are published separately, on Kaggle Models and on Hugging Face%
 .
 
 \begin{itemize}
 \item \textbf{Code} (Apache-2.0): training and export pipeline, deterministic translation with cache, fixed-weight ensemble, page benchmark builder and evaluator, a reference agent hook (disabled by default), tests. Repository: \url{https://github.com/alucardigo/passing-the-benchmark}. The public repository starts without the development history%
 .
-\item \textbf{Weights} (MIT): v3-pub (Section~\ref{sec:3.4}, Table~\ref{tab:5}) and the round-B probe, published on Kaggle Models as passing-the-benchmark-guard. The card opens with the page-level failure and reports v3-pub's own numbers (Weni 68.0\%, xTRam1 95.4\%, 217 of 217 page false alarms)%
+\item \textbf{Weights} (MIT): v3-pub (Section~\ref{sec:3.4}, Table~\ref{tab:5}) and the round-B probe, published on Kaggle Models as passing-the-benchmark-guard and on Hugging Face as RodrigoSFaria/ptbr-injection-e5large-v3pub. The card opens with the page-level failure and reports v3-pub's own numbers (Weni 68.0\%, xTRam1 95.4\%, 217 of 217 page false alarms)%
 . v6 does not meet the page criterion (Section~\ref{sec:7.2}) and is not released as a guard%
 .
 \item \textbf{Results} (CC-BY-4.0): one JSON per round with the SHA-256 of the weights and page-level probabilities by index, the per-item probabilities of the v3–v6 and v3-pub comparisons, and the per-page and per-sentence log-odds of the baseline run, without third-party text%
 .
-\item \textbf{Page benchmark}: a manifest of 217 benign pages and 60 insertions (package, version, SHA-256 of metadata and page; source, revision, md5 and position of each insertion) plus a builder that refuses mismatched hashes, following the Decision Index pattern%
+\item \textbf{Page benchmark}: a manifest of 217 benign pages and 60 insertions (package, version, SHA-256 of metadata and page; source, revision, md5 and position of each insertion) plus a builder that refuses mismatched hashes, following the Decision Index pattern Also on Hugging Face as RodrigoSFaria/passing-the-benchmark-pages.%
 . The evaluator accepts any Hugging Face classifier, cuts windows in characters, counts their tokens and reports the share that exceeds the model's context, and reports false alarms and detection per threshold with Wilson intervals%
 .
 \item \textbf{Attribution file} listing every dataset, model and revision with its license%

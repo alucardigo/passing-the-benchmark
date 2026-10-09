@@ -162,7 +162,7 @@ the translation cache of a run is what makes it exact (re-exporting v3 with the 
 reproduced the original training file record for record: 23,693 examples in the same order). The HackAPrompt rounds (v4/v5) read an unlicensed
 mirror; this code reads the MIT origin, and the equivalence of the two subsets has not been verified.
 Fine-tuned weights are not in this repository: `v3-pub` (trained 2026-10-07; Weni 68.0%, page false alarms
-217/217) and the round-B probe are published under MIT on Kaggle Models as `passing-the-benchmark-guard`, with a
+217/217) and the round-B probe are published under MIT on Kaggle Models as `passing-the-benchmark-guard` and on Hugging Face as `RodrigoSFaria/ptbr-injection-e5large-v3pub`, with a
 model card that opens with the page-level failure and reports v3-pub's own numbers. The v3-pub weights are
 also on Hugging Face: [`RodrigoSFaria/ptbr-injection-e5large-v3pub`](https://huggingface.co/RodrigoSFaria/ptbr-injection-e5large-v3pub);
 the page-benchmark manifest and builder: [`RodrigoSFaria/passing-the-benchmark-pages`](https://huggingface.co/datasets/RodrigoSFaria/passing-the-benchmark-pages).
@@ -171,7 +171,7 @@ the page-benchmark manifest and builder: [`RodrigoSFaria/passing-the-benchmark-p
 
 - Code: Apache-2.0 ([`LICENSE`](LICENSE), [`NOTICE`](NOTICE)). Paper, results and benchmark manifest:
   CC BY 4.0 ([`LICENSE-CC-BY-4.0.md`](LICENSE-CC-BY-4.0.md)). Model weights: MIT (the probe-B weights in
-  [`results/sonda-b/`](results/sonda-b/LICENSE) and the fine-tuned v3-pub weights on Kaggle Models).
+  [`results/sonda-b/`](results/sonda-b/LICENSE) and the fine-tuned v3-pub weights on Kaggle Models and on Hugging Face).
 - No third-party text is redistributed: datasets, models and README pages are downloaded from their
   sources. Two evaluation sets (Weni, xTRam1) declare no license and are loaded for evaluation only;
   577 rows of xTRam1's train split reached training indirectly, through ShieldLM, until v3-pub removed them.
@@ -272,7 +272,7 @@ arquivo de treino original registro a registro, 23.693 exemplos na mesma ordem);
 sem licença, e este código lê a origem MIT, sem a equivalência conferida. A rodada `v3-pub` deste
 repositório é uma aproximação da exportação do estudo (tira só as linhas `safeguard/*` do ShieldLM e não
 aplica a regra de pares de tradução). Os pesos não estão aqui: a `v3-pub` (treinada em 07/10/2026; Weni 68,0%,
-aviso falso em 217/217 páginas) e a sonda da rodada B estão publicadas sob MIT no Kaggle Models como
+aviso falso em 217/217 páginas) e a sonda da rodada B estão publicadas sob MIT no Kaggle Models e no Hugging Face como
 `passing-the-benchmark-guard`, com model card que abre pela falha em página e relata os números da própria
 v3-pub. Os pesos da v3-pub também estão no Hugging Face:
 [`RodrigoSFaria/ptbr-injection-e5large-v3pub`](https://huggingface.co/RodrigoSFaria/ptbr-injection-e5large-v3pub);
@@ -282,7 +282,7 @@ manifesto e construtor do benchmark de páginas:
 ### Dados e licenças
 
 Código sob Apache-2.0; artigo, resultados e manifesto do benchmark sob CC BY 4.0; pesos de modelo sob MIT
-(os da sonda B, em `results/sonda-b/`, e os ajustados da v3-pub, no Kaggle Models). Nenhum texto de
+(os da sonda B, em `results/sonda-b/`, e os ajustados da v3-pub, no Kaggle Models e no Hugging Face). Nenhum texto de
 terceiro é redistribuído: bases, modelos e páginas são baixados da fonte. Weni e xTRam1 não declaram
 licença e são carregados só para avaliação; 577 linhas do treino do xTRam1 chegaram ao treino por
 dentro do ShieldLM, até a v3-pub tirá-las. Todas as bases, modelos e revisões, com licença, estão em

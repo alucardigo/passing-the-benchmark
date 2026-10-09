@@ -910,18 +910,18 @@ Um guard com taxa de aviso falso de 100\% é nocivo de um jeito sutil: os usuár
 
 \section{Artefatos}\label{sec:13}
 
-O código, os resultados e o benchmark de páginas estão publicados em \url{https://github.com/alucardigo/passing-the-benchmark}; os pesos ajustados são publicados à parte, no Kaggle Models%
+O código, os resultados e o benchmark de páginas estão publicados em \url{https://github.com/alucardigo/passing-the-benchmark}; os pesos ajustados são publicados à parte, no Kaggle Models e no Hugging Face%
 .
 
 \begin{itemize}
 \item \textbf{Código} (Apache-2.0): pipeline de treino e exportação, tradução determinística com cache, ensemble de pesos fixos, construtor e avaliador do benchmark de páginas, um hook de agente de referência (desligado por padrão), testes. Repositório: \url{https://github.com/alucardigo/passing-the-benchmark}. O repositório público começa sem o histórico de desenvolvimento%
 .
-\item \textbf{Pesos} (MIT): a v3-pub (Seção~\ref{sec:3.4}, Tabela~\ref{tab:5}) e a sonda da rodada B, publicadas no Kaggle Models como passing-the-benchmark-guard. O card abre com a falha por página e relata os números da própria v3-pub (Weni 68,0\%, xTRam1 95,4\%, 217 de 217 avisos falsos por página)%
+\item \textbf{Pesos} (MIT): a v3-pub (Seção~\ref{sec:3.4}, Tabela~\ref{tab:5}) e a sonda da rodada B, publicadas no Kaggle Models como passing-the-benchmark-guard e no Hugging Face como RodrigoSFaria/ptbr-injection-e5large-v3pub. O card abre com a falha por página e relata os números da própria v3-pub (Weni 68,0\%, xTRam1 95,4\%, 217 de 217 avisos falsos por página)%
 . A v6 não atende ao critério por página (Seção~\ref{sec:7.2}) e não é publicada como guard%
 .
 \item \textbf{Resultados} (CC-BY-4.0): um JSON por rodada com o SHA-256 dos pesos e as probabilidades por página indexadas, as probabilidades por item das comparações entre v3 e v6 e com a v3-pub, e os log-odds por página e por frase da execução dos baselines, sem texto de terceiros%
 .
-\item \textbf{Benchmark de páginas}: um manifesto de 217 páginas benignas e 60 inserções (pacote, versão, SHA-256 dos metadados e da página; fonte, revisão, md5 e posição de cada inserção) mais um construtor que recusa hashes divergentes, seguindo o padrão do Decision Index%
+\item \textbf{Benchmark de páginas}: um manifesto de 217 páginas benignas e 60 inserções (pacote, versão, SHA-256 dos metadados e da página; fonte, revisão, md5 e posição de cada inserção) mais um construtor que recusa hashes divergentes, seguindo o padrão do Decision Index Também no Hugging Face como RodrigoSFaria/passing-the-benchmark-pages.%
 . O avaliador aceita qualquer classificador do Hugging Face, corta as janelas em caracteres, conta os tokens delas e relata a fração que passa do contexto do modelo, além dos avisos falsos e da detecção por limiar com intervalos de Wilson%
 .
 \item \textbf{Arquivo de atribuição} listando cada conjunto de dados, modelo e revisão com a sua licença%
